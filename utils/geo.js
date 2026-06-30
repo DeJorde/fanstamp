@@ -1,5 +1,3 @@
-import { GOOGLE_API_KEY } from '../constants';
-
 export function eventToForm(event) {
   return {
     name:     event.name,
@@ -82,47 +80,81 @@ export async function fetchNominatimPlaces(query) {
   });
 }
 
-// Venue search via Google Places Autocomplete — returns actual establishments, not cities
+// OSM classes that represent physical venues (stadiums, arenas, golf courses, etc.)
+const VENUE_CLASSES = new Set(['amenity', 'leisure', 'tourism', 'man_made', 'building']);
+
+// Venue search via Nominatim — filters to amenity/leisure/tourism/man_made/building classes
 export async function fetchVenueSuggestions(query) {
   const url =
-    `https://maps.googleapis.com/maps/api/place/autocomplete/json` +
-    `?input=${encodeURIComponent(query)}&types=establishment&key=${GOOGLE_API_KEY}`;
-  const res  = await fetch(url);
-  const data = await res.json();
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') return [];
-  return (data.predictions ?? []).slice(0, 6).map((p) => {
-    const name      = p.structured_formatting?.main_text ?? p.description.split(',')[0].trim();
-    const terms     = p.terms ?? [];
-    // Drop venue-name (first) and country (last), take last two remaining → "City, State"
-    const addrTerms = terms.slice(1, -1);
-    const cityName  = addrTerms.slice(-2).map((t) => t.value).join(', ');
-    return {
-      id:       p.place_id,
-      name,
-      subtitle: p.structured_formatting?.secondary_text ?? '',
-      cityName,
-    };
-  });
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}` +
+    `&format=json&limit=10&addressdetails=1`;
+  console.log('[fetchVenueSuggestions] URL:', url);
+  try {
+    const res  = await fetch(url, { headers: { 'User-Agent': 'StadiumLog/1.0' } });
+    const data = await res.json();
+    console.log('[fetchVenueSuggestions] results:', data.length, '| classes:', data.map((d) => `${d.class}/${d.type}`).join(', '));
+    const venues = data.filter((item) => VENUE_CLASSES.has(item.class));
+    // Fallback: if OSM has no venue-class hits, show any non-administrative result
+    const hits = venues.length > 0
+      ? venues
+      : data.filter((item) => !['place', 'boundary', 'highway', 'waterway', 'railway', 'landuse'].includes(item.class));
+    return hits.slice(0, 6).map((item) => {
+      const addr = item.address || {};
+      const name = addr.amenity || addr.leisure || addr.tourism || item.name || item.display_name.split(',')[0].trim();
+      const city  = addr.city || addr.town || addr.village || addr.municipality || '';
+      const state = addr.state || '';
+      const country = addr.country || '';
+      return {
+        id:       item.place_id,
+        name,
+        subtitle: [city, state || country].filter(Boolean).join(', '),
+        cityName: [city, state].filter(Boolean).join(', '),
+      };
+    });
+  } catch (err) {
+    console.log('[fetchVenueSuggestions] error:', err.message);
+    return [];
+  }
 }
 
-// City search via Google Places Autocomplete — only returns city/town/locality results
+// OSM classes/types that represent populated places
+const CITY_CLASSES = new Set(['place', 'boundary']);
+const CITY_TYPES   = new Set(['city', 'town', 'village', 'hamlet', 'municipality', 'suburb', 'borough', 'administrative', 'county']);
+
+// City search via Nominatim — filters to place/boundary class, deduplicates by city name
 export async function fetchCitySuggestions(query) {
   const url =
-    `https://maps.googleapis.com/maps/api/place/autocomplete/json` +
-    `?input=${encodeURIComponent(query)}&types=(cities)&key=${GOOGLE_API_KEY}`;
-  const res  = await fetch(url);
-  const data = await res.json();
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') return [];
-  return (data.predictions ?? []).slice(0, 5).map((p) => {
-    const name   = p.structured_formatting?.main_text ?? p.description.split(',')[0].trim();
-    // description = "Chicago, IL, USA" → cityName = "Chicago, IL"
-    const parts    = p.description.split(',').map((s) => s.trim()).filter(Boolean);
-    const cityName = parts.length >= 2 ? `${parts[0]}, ${parts[1]}` : (parts[0] ?? name);
-    return {
-      id:       p.place_id,
-      name,
-      subtitle: p.structured_formatting?.secondary_text ?? '',
-      cityName,
-    };
-  });
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}` +
+    `&format=json&limit=8&addressdetails=1`;
+  console.log('[fetchCitySuggestions] URL:', url);
+  try {
+    const res  = await fetch(url, { headers: { 'User-Agent': 'StadiumLog/1.0' } });
+    const data = await res.json();
+    console.log('[fetchCitySuggestions] results:', data.length, '| types:', data.map((d) => `${d.class}/${d.type}`).join(', '));
+    const seen = new Set();
+    return data
+      .filter((item) => CITY_CLASSES.has(item.class) || CITY_TYPES.has(item.type))
+      .map((item) => {
+        const addr    = item.address || {};
+        const city    = addr.city || addr.town || addr.village || addr.municipality || '';
+        const state   = addr.state || '';
+        const country = addr.country || '';
+        const display = city || item.name || item.display_name.split(',')[0].trim();
+        return {
+          id:       item.place_id,
+          name:     display,
+          subtitle: [state, country].filter(Boolean).join(', '),
+          cityName: [display, state].filter(Boolean).join(', '),
+        };
+      })
+      .filter((r) => {
+        if (!r.name || seen.has(r.name)) return false;
+        seen.add(r.name);
+        return true;
+      })
+      .slice(0, 5);
+  } catch (err) {
+    console.log('[fetchCitySuggestions] error:', err.message);
+    return [];
+  }
 }
