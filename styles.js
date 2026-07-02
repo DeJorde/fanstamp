@@ -489,6 +489,53 @@ function buildStyles(c) {
     trophyLeague:   { fontSize: 13, fontWeight: '800', color: c.text, marginTop: 4 },
     trophyFraction: { fontSize: 12, fontWeight: '600', color: c.textMuted },
 
+    // ── Leagues (stadium passport) ──────────────────────────────────────────────
+    leaguesScroll:  { flex: 1 },
+    leaguesContent: { padding: 16, paddingBottom: 56, gap: 12 },
+    leaguesIntro:   { fontSize: 13, color: c.textDim, lineHeight: 18, marginBottom: 2 },
+
+    leagueChapterLabel: {
+      fontSize: 9, fontWeight: '700', color: c.textFaint,
+      textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 2,
+    },
+    leagueCard: {
+      flexDirection: 'row', alignItems: 'center', gap: 14,
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border, padding: 14,
+    },
+    leagueCardGold: {
+      borderColor: '#FFD700', borderWidth: 2,
+      shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.85, shadowRadius: 12, elevation: 10,
+    },
+    leagueCardRingEmoji: { fontSize: 22 },
+    leagueCardBody:      { flex: 1, gap: 2 },
+    leagueCardName:      { fontSize: 17, fontWeight: '800', color: c.text },
+    leagueCardFraction:  { fontSize: 13, color: c.textMuted, fontWeight: '500' },
+    leagueCardTrailing:  { alignItems: 'flex-end', gap: 2 },
+    leagueCardPct:       { fontSize: 15, fontWeight: '800', color: c.accent },
+    leagueCardChevron:   { fontSize: 18, color: c.textFaint },
+
+    leagueDetailSubtitle: { fontSize: 14, color: c.textMuted, fontWeight: '600', marginBottom: 4, marginTop: -8 },
+
+    leagueTeamCard: {
+      backgroundColor: c.bg2, borderRadius: 14,
+      borderWidth: 1, borderColor: c.border,
+      padding: 14, gap: 4,
+    },
+    leagueTeamCardLocked: { opacity: 0.45 },
+    leagueTeamHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    leagueTeamStadium: { fontSize: 15, fontWeight: '700', color: c.text, flex: 1 },
+    leagueTeamName:    { fontSize: 13, color: c.textSecondary, fontWeight: '500' },
+    leagueTeamCity:    { fontSize: 12, color: c.textDim },
+    leagueDateChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+    leagueDateChip: {
+      backgroundColor: c.bg3, borderRadius: 10,
+      borderWidth: 1, borderColor: c.border,
+      paddingHorizontal: 8, paddingVertical: 3,
+    },
+    leagueDateChipText: { fontSize: 11, color: c.textDim, fontWeight: '600' },
+
     // ── Photo picker (form) ────────────────────────────────────────────────────
     photoPickerRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     photoPickerThumbWrap: { position: 'relative', width: 90, height: 90 },

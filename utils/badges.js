@@ -120,3 +120,25 @@ export function computeBadges(events) {
 
   return { eventCount, venueExplorer, categoryFirsts, leagueCompletionist };
 }
+
+// Per-team breakdown for the Leagues passport screen: which of the league's
+// stadiums the user has attended, how many times, and on which dates —
+// using the same fuzzy venue matching as the completionist badges above.
+export function getLeagueDetail(events, league) {
+  const teams = LEAGUE_STADIUMS[league] ?? [];
+  const sorted = sortByDateAsc(events);
+  const leagueEvents = sorted.filter((e) => e.category === league);
+
+  return teams.map((t) => {
+    const matches = leagueEvents.filter((e) => venueMatches(e.venue, t.stadium));
+    const dates = matches.filter(hasDate).map((e) => e.date);
+    return {
+      team: t.team,
+      stadium: t.stadium,
+      city: t.city,
+      visited: matches.length > 0,
+      visitCount: matches.length,
+      dates,
+    };
+  });
+}

@@ -6,14 +6,17 @@ import { eventToForm, geocodeVenue } from './utils/geo';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
 import { StatsScreen } from './screens/StatsScreen';
+import { LeaguesScreen } from './screens/LeaguesScreen';
 import { EventFormModal } from './components/EventFormModal';
 import { DetailScreen } from './components/DetailScreen';
+import { LeagueDetailScreen } from './components/LeagueDetailScreen';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const TABS = [
-  { key: 'events', label: 'Events', icon: '🎟' },
-  { key: 'map',    label: 'Map',    icon: '🗺' },
-  { key: 'stats',  label: 'Stats',  icon: '📊' },
+  { key: 'events',  label: 'Events',  icon: '🎟' },
+  { key: 'map',     label: 'Map',     icon: '🗺' },
+  { key: 'stats',   label: 'Stats',   icon: '📊' },
+  { key: 'leagues', label: 'Leagues', icon: '🏆' },
 ];
 
 export default function App() {
@@ -29,7 +32,8 @@ function AppContent() {
   const [activeTab, setActiveTab]     = useState('events');
   const [events, setEvents]           = useState([]);
   const [hasLoaded, setHasLoaded]     = useState(false);
-  const [detailEvent, setDetailEvent] = useState(null);
+  const [detailEvent, setDetailEvent]   = useState(null);
+  const [selectedLeague, setSelectedLeague] = useState(null);
   const [formConfig, setFormConfig]   = useState({ visible: false, editingId: null });
   const [formPrefill, setFormPrefill] = useState(null);
 
@@ -115,20 +119,27 @@ function AppContent() {
     ]);
   }
 
-  const inDetail = detailEvent !== null && activeTab === 'events';
+  const inEventDetail  = detailEvent !== null && activeTab === 'events';
+  const inLeagueDetail = selectedLeague !== null && activeTab === 'leagues';
+  const inDetail = inEventDetail || inLeagueDetail;
   const formInitialValues = formConfig.editingId && detailEvent
     ? eventToForm(detailEvent)
     : formPrefill
       ? { ...EMPTY_FORM, venue: formPrefill.venue ?? '', city: formPrefill.city ?? '' }
       : EMPTY_FORM;
 
+  function handleBack() {
+    if (inEventDetail)  setDetailEvent(null);
+    if (inLeagueDetail) setSelectedLeague(null);
+  }
+
   return (
     <View style={styles.root}>
       <View style={styles.header}>
         <View style={styles.headerRow}>
           {inDetail ? (
-            <TouchableOpacity onPress={() => setDetailEvent(null)} style={styles.backBtn}>
-              <Text style={styles.backBtnText}>‹ Events</Text>
+            <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>‹ {inLeagueDetail ? 'Leagues' : 'Events'}</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.logoRow}>
@@ -144,13 +155,19 @@ function AppContent() {
 
       <View style={styles.screen}>
         {activeTab === 'events' ? (
-          inDetail ? (
+          inEventDetail ? (
             <DetailScreen event={detailEvent} onEdit={openEdit} onDelete={handleDelete} />
           ) : (
             <EventsScreen events={events} onCardPress={setDetailEvent} onAddPress={openAdd} onPlaceSelect={handlePlaceSelect} />
           )
         ) : activeTab === 'map' ? (
           <MapScreen events={events} />
+        ) : activeTab === 'leagues' ? (
+          inLeagueDetail ? (
+            <LeagueDetailScreen league={selectedLeague} events={events} />
+          ) : (
+            <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
+          )
         ) : (
           <StatsScreen events={events} />
         )}
