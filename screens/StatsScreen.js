@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
 import { FilterBar } from '../components/FilterBar';
+import { MilestonesSection } from '../components/MilestonesSection';
 import { useTheme } from '../context/ThemeContext';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -109,29 +110,26 @@ export function StatsScreen({ events }) {
     };
   }, [filtered]);
 
-  if (events.length === 0) {
-    return (
-      <View style={styles.statsEmpty}>
-        <Text style={styles.emptyIcon}>📊</Text>
-        <Text style={styles.emptyText}>No stats yet</Text>
-        <Text style={styles.emptySubtext}>Add events to see your breakdown</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={{ flex: 1 }}>
       <FilterBar value={filter} onChange={setFilter} />
 
-      {!stats ? (
-        <View style={styles.statsEmpty}>
-          <Text style={styles.emptyIcon}>📊</Text>
-          <Text style={styles.emptyText}>No events in this period</Text>
-          <Text style={styles.emptySubtext}>Try a different time range</Text>
-        </View>
-      ) : (
-        <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
 
+        {events.length === 0 ? (
+          <View style={styles.statsEmpty}>
+            <Text style={styles.emptyIcon}>📊</Text>
+            <Text style={styles.emptyText}>No stats yet</Text>
+            <Text style={styles.emptySubtext}>Add events to see your breakdown</Text>
+          </View>
+        ) : !stats ? (
+          <View style={styles.statsEmpty}>
+            <Text style={styles.emptyIcon}>📊</Text>
+            <Text style={styles.emptyText}>No events in this period</Text>
+            <Text style={styles.emptySubtext}>Try a different time range</Text>
+          </View>
+        ) : (
+          <>
           {/* ─ OVERVIEW ─ */}
           <StatsSectionHeader title="OVERVIEW" />
           <View style={styles.statsGrid}>
@@ -343,9 +341,12 @@ export function StatsScreen({ events }) {
               ))
             )}
           </View>
+          </>
+        )}
 
-        </ScrollView>
-      )}
+        <MilestonesSection events={events} />
+
+      </ScrollView>
     </View>
   );
 }

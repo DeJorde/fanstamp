@@ -362,7 +362,7 @@ function buildStyles(c) {
     // ── Stats tab ──────────────────────────────────────────────────────────────
     statsScroll: { flex: 1 },
     statsContent: { padding: 16, paddingBottom: 56, gap: 10 },
-    statsEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
+    statsEmpty: { alignItems: 'center', paddingVertical: 60, gap: 8 },
 
     statsSectionHeader: {
       fontSize: 11, fontWeight: '700', color: c.textDim,
@@ -453,6 +453,41 @@ function buildStyles(c) {
     statsMonthBar:     { width: '80%', borderRadius: 3 },
     statsMonthLabel:   { fontSize: 9, color: c.textVeryFaint, fontWeight: '600' },
     statsMonthCount:   { fontSize: 10, color: c.textMuted, fontWeight: '700' },
+
+    // ── Milestones & badges ────────────────────────────────────────────────────
+    badgeGroupLabel: {
+      fontSize: 10, fontWeight: '700', color: c.textFaint,
+      textTransform: 'uppercase', letterSpacing: 1.2,
+      marginTop: 4, paddingHorizontal: 2,
+    },
+    badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    badgeCard: {
+      width: '31%', backgroundColor: c.bg2, borderRadius: 14,
+      borderWidth: 1, borderColor: c.border,
+      paddingVertical: 14, paddingHorizontal: 6,
+      alignItems: 'center', gap: 4,
+    },
+    badgeCardLocked: { opacity: 0.4 },
+    badgeIcon:  { fontSize: 26 },
+    badgeLabel: { fontSize: 11, fontWeight: '700', color: c.textSecondary, textAlign: 'center' },
+    badgeDate:  { fontSize: 10, color: c.textDim, textAlign: 'center' },
+
+    trophyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    trophyCard: {
+      width: '47%', backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      paddingVertical: 16, alignItems: 'center', gap: 4,
+    },
+    // Gold border + glow — reserved for a fully-completed league, so the
+    // color is intentionally constant across themes (a trophy is gold either way).
+    trophyCardGold: {
+      borderColor: '#FFD700', borderWidth: 2,
+      shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.85, shadowRadius: 12, elevation: 10,
+    },
+    trophyIcon:     { fontSize: 22 },
+    trophyLeague:   { fontSize: 13, fontWeight: '800', color: c.text, marginTop: 4 },
+    trophyFraction: { fontSize: 12, fontWeight: '600', color: c.textMuted },
 
     // ── Photo picker (form) ────────────────────────────────────────────────────
     photoPickerRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
