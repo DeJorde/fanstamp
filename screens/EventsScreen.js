@@ -4,9 +4,10 @@ import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, FILTERS, CATEGORY_GRO
 import { matchesFilter } from '../utils/dates';
 import { fetchNominatimPlaces } from '../utils/geo';
 import { EventCard } from '../components/EventCard';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 export function EventsScreen({ events, onCardPress, onAddPress, onPlaceSelect }) {
+  const { styles, colors } = useTheme();
   const [timeFilter, setTimeFilter]   = useState('all');
   const [groupFilter, setGroupFilter] = useState('all');
   const [catFilter, setCatFilter]     = useState('all');
@@ -44,12 +45,12 @@ export function EventsScreen({ events, onCardPress, onAddPress, onPlaceSelect })
     const q = searchQuery.trim();
     if (q.length < 2) { setPlaceResults([]); setIsSearching(false); return; }
     setIsSearching(true);
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
-      try   { setPlaceResults(await fetchNominatimPlaces(q)); }
-      catch  { setPlaceResults([]); }
-      finally { setIsSearching(false); }
+      const r = await fetchNominatimPlaces(q, controller.signal);
+      if (!controller.signal.aborted) { setPlaceResults(r); setIsSearching(false); }
     }, 400);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); controller.abort(); };
   }, [searchQuery]);
 
   const showDropdown =
@@ -129,7 +130,7 @@ export function EventsScreen({ events, onCardPress, onAddPress, onPlaceSelect })
           <TextInput
             style={styles.searchInput}
             placeholder="Search events, venues, cities…"
-            placeholderTextColor="#444"
+            placeholderTextColor={colors.placeholder}
             value={searchQuery}
             onChangeText={(t) => { setSearchQuery(t); if (!t) setSearchCommit(null); }}
             onFocus={onSearchFocus}

@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS, CS, CR, ARM, TIP } from '../constants';
 import { matchesFilter } from '../utils/dates';
 import { computeRegion } from '../utils/geo';
 import { FilterBar } from '../components/FilterBar';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 function CompassRose() {
+  const { styles } = useTheme();
   return (
     <View style={styles.compassWrap} pointerEvents="none">
       {/* Faint ring */}
@@ -36,9 +37,15 @@ function CompassRose() {
 }
 
 export function MapScreen({ events }) {
+  const { styles, retro } = useTheme();
   const [styleKey, setStyleKey] = useState('standard');
   const [filter, setFilter]     = useState('all');
   const [pinMode, setPinMode]   = useState('emoji');  // 'emoji' | 'classic'
+
+  // Global retro mode drives the map's own style selector automatically.
+  useEffect(() => {
+    setStyleKey(retro ? 'retro' : 'standard');
+  }, [retro]);
 
   const filtered = useMemo(() => events.filter((e) => matchesFilter(e, filter)), [events, filter]);
 

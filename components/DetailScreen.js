@@ -2,9 +2,10 @@ import { ScrollView, TouchableOpacity, View, Text, Image, Modal } from 'react-na
 import { useState } from 'react';
 import { CategoryBadge } from './CategoryBadge';
 import { formatDisplayDate } from '../utils/dates';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 function FullScreenPhotoModal({ uri, onClose }) {
+  const { styles } = useTheme();
   return (
     <Modal visible={!!uri} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.photoFullScreen}>
@@ -20,6 +21,7 @@ function FullScreenPhotoModal({ uri, onClose }) {
 }
 
 function DetailRow({ icon, label, value }) {
+  const { styles } = useTheme();
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailRowIcon}>{icon}</Text>
@@ -32,6 +34,7 @@ function DetailRow({ icon, label, value }) {
 }
 
 export function DetailScreen({ event, onEdit, onDelete }) {
+  const { styles, colors } = useTheme();
   const [fullPhotoUri, setFullPhotoUri] = useState(null);
   const hasPhotos = event.photos && event.photos.length > 0;
 
@@ -67,7 +70,7 @@ export function DetailScreen({ event, onEdit, onDelete }) {
 
         <View style={styles.detailCard}>
           <Text style={styles.detailSectionLabel}>Personal Notes</Text>
-          <Text style={[styles.detailNotesText, !event.notes && { color: '#444' }]}>
+          <Text style={[styles.detailNotesText, !event.notes && { color: colors.placeholder }]}>
             {event.notes || 'No notes added.'}
           </Text>
         </View>

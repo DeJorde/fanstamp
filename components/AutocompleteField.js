@@ -1,8 +1,9 @@
 import { View, TextInput, TouchableOpacity, Text } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 export function AutocompleteField({ value, placeholder, onChangeText, onSelect, fetchSuggestions }) {
+  const { styles, colors } = useTheme();
   const [results, setResults]   = useState([]);
   const [loading, setLoading]   = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
@@ -12,12 +13,17 @@ export function AutocompleteField({ value, placeholder, onChangeText, onSelect, 
     const q = value.trim();
     if (q.length < 2) { setResults([]); setLoading(false); return; }
     setLoading(true);
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
-      try   { setResults(await fetchSuggestions(q)); }
-      catch  { setResults([]); }
-      finally { setLoading(false); }
+      try {
+        const r = await fetchSuggestions(q, controller.signal);
+        setResults(r);
+        setLoading(false);
+      } catch {
+        if (!controller.signal.aborted) { setResults([]); setLoading(false); }
+      }
     }, 400);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); controller.abort(); };
   }, [value, fetchSuggestions]);
 
   const showDrop = dropOpen && value.trim().length >= 2 && (results.length > 0 || loading);
@@ -41,7 +47,7 @@ export function AutocompleteField({ value, placeholder, onChangeText, onSelect, 
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#444"
+        placeholderTextColor={colors.placeholder}
         value={value}
         onChangeText={onChangeText}
         onFocus={handleFocus}

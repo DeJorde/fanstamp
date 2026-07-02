@@ -1,8 +1,9 @@
 import { ScrollView, TouchableOpacity, Text } from 'react-native';
 import { FILTERS } from '../constants';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 export function FilterBar({ value, onChange }) {
+  const { styles } = useTheme();
   return (
     <ScrollView
       horizontal

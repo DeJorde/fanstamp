@@ -3,15 +3,17 @@ import { View, Text, ScrollView } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
 import { FilterBar } from '../components/FilterBar';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function StatsSectionHeader({ title }) {
+  const { styles } = useTheme();
   return <Text style={styles.statsSectionHeader}>{title}</Text>;
 }
 
 function MetricCard({ label, value, icon }) {
+  const { styles } = useTheme();
   return (
     <View style={styles.statsMetricCard}>
       <Text style={styles.statsMetricIcon}>{icon}</Text>
@@ -22,6 +24,7 @@ function MetricCard({ label, value, icon }) {
 }
 
 export function StatsScreen({ events }) {
+  const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
 
   const filtered = useMemo(
@@ -264,7 +267,7 @@ export function StatsScreen({ events }) {
                               styles.statsMonthBar,
                               {
                                 height: count > 0 ? Math.max(4, Math.round(intensity * 40)) : 0,
-                                backgroundColor: `rgba(58,134,255,${(0.25 + intensity * 0.75).toFixed(2)})`,
+                                backgroundColor: `rgba(${colors.accentRgb},${(0.25 + intensity * 0.75).toFixed(2)})`,
                               },
                             ]}
                           />

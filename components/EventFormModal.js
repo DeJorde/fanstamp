@@ -6,9 +6,10 @@ import { fetchVenueSuggestions, fetchCitySuggestions } from '../utils/geo';
 import { CategoryBadge } from './CategoryBadge';
 import { DatePickerField } from './DatePickerField';
 import { AutocompleteField } from './AutocompleteField';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 export function EventFormModal({ visible, onClose, onSave, initialValues, editMode }) {
+  const { styles, colors } = useTheme();
   const [form, setForm] = useState(initialValues ?? EMPTY_FORM);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export function EventFormModal({ visible, onClose, onSave, initialValues, editMo
 
             <View style={styles.fieldGroup}>
               <Text style={styles.fieldLabel}>Event Name *</Text>
-              <TextInput style={styles.input} placeholder="e.g. Lakers vs Warriors" placeholderTextColor="#444" value={form.name} onChangeText={(v) => set('name', v)} />
+              <TextInput style={styles.input} placeholder="e.g. Lakers vs Warriors" placeholderTextColor={colors.placeholder} value={form.name} onChangeText={(v) => set('name', v)} />
             </View>
 
             <View style={styles.fieldGroup}>
@@ -123,7 +124,7 @@ export function EventFormModal({ visible, onClose, onSave, initialValues, editMo
 
             <View style={styles.fieldGroup}>
               <Text style={styles.fieldLabel}>Personal Notes</Text>
-              <TextInput style={[styles.input, styles.inputMultiline]} placeholder="Seats, who you went with, memories..." placeholderTextColor="#444" value={form.notes} onChangeText={(v) => set('notes', v)} multiline numberOfLines={4} textAlignVertical="top" />
+              <TextInput style={[styles.input, styles.inputMultiline]} placeholder="Seats, who you went with, memories..." placeholderTextColor={colors.placeholder} value={form.notes} onChangeText={(v) => set('notes', v)} multiline numberOfLines={4} textAlignVertical="top" />
             </View>
 
             <View style={styles.fieldGroup}>

@@ -1,9 +1,10 @@
 import { TouchableOpacity, View, Text, Image } from 'react-native';
 import { CategoryBadge } from './CategoryBadge';
 import { formatDisplayDate } from '../utils/dates';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 export function EventCard({ item, onPress }) {
+  const { styles } = useTheme();
   const thumb = item.photos && item.photos.length > 0 ? item.photos[0] : null;
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>

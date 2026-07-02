@@ -2,9 +2,10 @@ import { View, TouchableOpacity, Text, Modal, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { parseDateStr, toStorageDate, formatDisplayDate } from '../utils/dates';
-import { styles } from '../styles';
+import { useTheme } from '../context/ThemeContext';
 
 export function DatePickerField({ value, onChange }) {
+  const { styles } = useTheme();
   const [showPicker, setShowPicker] = useState(false);
   // iOS: track a temp value until the user taps Done
   const [tempDate, setTempDate] = useState(parseDateStr(value));

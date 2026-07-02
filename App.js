@@ -8,7 +8,7 @@ import { MapScreen } from './screens/MapScreen';
 import { StatsScreen } from './screens/StatsScreen';
 import { EventFormModal } from './components/EventFormModal';
 import { DetailScreen } from './components/DetailScreen';
-import { styles } from './styles';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const TABS = [
   { key: 'events', label: 'Events', icon: '🎟' },
@@ -17,6 +17,15 @@ const TABS = [
 ];
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { styles, retro, toggleRetro } = useTheme();
   const [activeTab, setActiveTab]     = useState('events');
   const [events, setEvents]           = useState([]);
   const [hasLoaded, setHasLoaded]     = useState(false);
@@ -116,16 +125,21 @@ export default function App() {
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        {inDetail ? (
-          <TouchableOpacity onPress={() => setDetailEvent(null)} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>‹ Events</Text>
+        <View style={styles.headerRow}>
+          {inDetail ? (
+            <TouchableOpacity onPress={() => setDetailEvent(null)} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>‹ Events</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.logoRow}>
+              <Text style={styles.headerLogo}>Stadium</Text>
+              <Text style={styles.headerLogoAccent}>Log</Text>
+            </View>
+          )}
+          <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
+            <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
           </TouchableOpacity>
-        ) : (
-          <View style={styles.logoRow}>
-            <Text style={styles.headerLogo}>Stadium</Text>
-            <Text style={styles.headerLogoAccent}>Log</Text>
-          </View>
-        )}
+        </View>
       </View>
 
       <View style={styles.screen}>
