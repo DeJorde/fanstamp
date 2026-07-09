@@ -320,6 +320,15 @@ function buildStyles(c) {
       textTransform: 'uppercase', letterSpacing: 1.2,
     },
 
+    resultChipRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    resultChip: {
+      borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
+      borderWidth: 1, borderColor: c.border, backgroundColor: c.bg2,
+    },
+    resultChipActive:     { backgroundColor: c.accentBgSoft, borderColor: c.accent },
+    resultChipText:       { fontSize: 13, fontWeight: '600', color: c.textDim },
+    resultChipTextActive: { color: c.accent },
+
     filterChipSm: { paddingHorizontal: 10, paddingVertical: 5 },
 
     // Map custom pins (colors supplied per-marker from CATEGORY_COLORS)
@@ -564,6 +573,82 @@ function buildStyles(c) {
       alignItems: 'center', justifyContent: 'center',
     },
     shareBtnIcon: { fontSize: 16 },
+
+    // ── My Teams (Stats tab) ───────────────────────────────────────────────────
+    teamCard: {
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      padding: 16, gap: 10,
+    },
+    // Favorite gets a touch more room + a warm gold border, same "always gold"
+    // convention as trophyCardGold — it's a personal pick, not theme-dependent.
+    teamCardFavorite: {
+      padding: 20, borderColor: '#FFD700', borderWidth: 2,
+      shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5, shadowRadius: 10, elevation: 6,
+    },
+    teamCardTopRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    teamCardBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    teamCardLeagueBadge: {
+      backgroundColor: c.bg3, borderRadius: 8,
+      paddingHorizontal: 8, paddingVertical: 3,
+      fontSize: 11, fontWeight: '700', color: c.textDim,
+    },
+    teamCardFavoritePill: {
+      backgroundColor: '#3a2e00', borderRadius: 8,
+      paddingHorizontal: 8, paddingVertical: 3,
+      fontSize: 11, fontWeight: '700', color: '#FFD700',
+    },
+    teamCardStarBtn:  { fontSize: 22 },
+    teamCardName:     { fontSize: 17, fontWeight: '800', color: c.text },
+    teamCardNameLarge: { fontSize: 20 },
+    teamCardStatsRow: { flexDirection: 'row' },
+    teamCardStat:     { flex: 1, alignItems: 'center', gap: 2 },
+    teamCardStatValue: { fontSize: 17, fontWeight: '800', color: c.text },
+    teamCardStatLabel: {
+      fontSize: 10, fontWeight: '700', color: c.textFaint,
+      textTransform: 'uppercase', letterSpacing: 0.6,
+    },
+    teamCardLabelPill: {
+      alignSelf: 'flex-start', borderRadius: 10,
+      paddingHorizontal: 10, paddingVertical: 5,
+    },
+    teamCardLabelText: { fontSize: 12, fontWeight: '700' },
+    // Fixed colors (not theme-adaptive) — same convention as CATEGORY_COLORS,
+    // which already reads consistently in both dark and retro mode.
+    teamLabelLucky:     { backgroundColor: '#0d2818' },
+    teamLabelLuckyText: { color: '#4ADE80' },
+    teamLabelBalanced:     { backgroundColor: '#1a1a2e' },
+    teamLabelBalancedText: { color: '#8ab4f8' },
+    teamLabelJinx:     { backgroundColor: '#2a0808' },
+    teamLabelJinxText: { color: '#ff6b6b' },
+    teamLabelUndecided:     { backgroundColor: '#1a1a1a' },
+    teamLabelUndecidedText: { color: '#999999' },
+
+    // ── Team Game Log screen ──────────────────────────────────────────────────
+    gameLogCard: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      backgroundColor: c.bg2, borderRadius: 14,
+      borderWidth: 1, borderColor: c.border,
+      padding: 14,
+    },
+    gameLogBadge: {
+      width: 40, height: 40, borderRadius: 20,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    gameLogBadgeText: { fontSize: 16, fontWeight: '800' },
+    gameLogBadgeWin:     { backgroundColor: '#0d2818' },
+    gameLogBadgeWinText: { color: '#4ADE80' },
+    gameLogBadgeLoss:     { backgroundColor: '#2a0808' },
+    gameLogBadgeLossText: { color: '#ff6b6b' },
+    gameLogBadgeTie:     { backgroundColor: '#1a1a2e' },
+    gameLogBadgeTieText: { color: '#8ab4f8' },
+    gameLogBadgeUnknown:     { backgroundColor: '#1a1a1a' },
+    gameLogBadgeUnknownText: { color: '#999999' },
+    gameLogBody:     { flex: 1, gap: 2 },
+    gameLogOpponent: { fontSize: 15, fontWeight: '700', color: c.text },
+    gameLogVenue:    { fontSize: 13, color: c.textSecondary },
+    gameLogDate:     { fontSize: 12, color: c.textDim },
 
     // ── Photo picker (form) ────────────────────────────────────────────────────
     photoPickerRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },

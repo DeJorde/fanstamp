@@ -7,6 +7,9 @@ export function eventToForm(event) {
     category: event.category,
     notes:    event.notes ?? '',
     photos:   event.photos ?? [],
+    homeTeam: event.homeTeam ?? '',
+    awayTeam: event.awayTeam ?? '',
+    result:   event.result ?? null,
   };
 }
 

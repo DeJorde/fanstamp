@@ -3,8 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
 import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
+import { computeTeamStats } from '../utils/teamStats';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
+import { TeamCard } from '../components/TeamCard';
 import { useTheme } from '../context/ThemeContext';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -25,7 +27,14 @@ function MetricCard({ label, value, icon }) {
   );
 }
 
-export function StatsScreen({ events, bucketList = [], onToggleBucketList }) {
+export function StatsScreen({
+  events,
+  bucketList = [],
+  onToggleBucketList,
+  favoriteTeam = null,
+  onToggleFavoriteTeam,
+  onSelectTeam,
+}) {
   const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
 
@@ -37,6 +46,15 @@ export function StatsScreen({ events, bucketList = [], onToggleBucketList }) {
       }))
       .filter((g) => g.items.length > 0);
   }, [bucketList]);
+
+  const myTeams = useMemo(() => {
+    const teams = computeTeamStats(events);
+    if (!favoriteTeam) return teams;
+    const favIdx = teams.findIndex((t) => t.league === favoriteTeam.league && t.team === favoriteTeam.team);
+    if (favIdx <= 0) return teams;
+    const fav = teams[favIdx];
+    return [fav, ...teams.slice(0, favIdx), ...teams.slice(favIdx + 1)];
+  }, [events, favoriteTeam]);
 
   const filtered = useMemo(
     () => events.filter((e) => matchesFilter(e, filter)),
@@ -352,6 +370,26 @@ export function StatsScreen({ events, bucketList = [], onToggleBucketList }) {
             )}
           </View>
           </>
+        )}
+
+        {/* ─ MY TEAMS ─ */}
+        <StatsSectionHeader title="MY TEAMS" />
+        {myTeams.length === 0 ? (
+          <View style={styles.statsCard}>
+            <Text style={styles.statsEmptyInCard}>No teams yet — add a Home/Away team when logging a game</Text>
+          </View>
+        ) : (
+          <View style={{ gap: 10 }}>
+            {myTeams.map((t) => (
+              <TeamCard
+                key={t.id}
+                team={t}
+                isFavorite={!!favoriteTeam && favoriteTeam.league === t.league && favoriteTeam.team === t.team}
+                onPress={() => onSelectTeam(t.league, t.team)}
+                onToggleFavorite={() => onToggleFavoriteTeam(t.league, t.team)}
+              />
+            ))}
+          </View>
         )}
 
         {/* ─ BUCKET LIST ─ */}

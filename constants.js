@@ -1,5 +1,16 @@
 export const STORAGE_KEY = '@stadiumlog_events';
 export const BUCKET_LIST_STORAGE_KEY = '@stadiumlog_bucket_list';
+export const FAVORITE_TEAM_STORAGE_KEY = '@stadiumlog_favorite_team';
+
+// Categories with a team roster in LEAGUE_STADIUMS — these get the Home/Away
+// Team + Game Result fields on the event form and feed the My Teams section.
+export const TEAM_TRACKED_CATEGORIES = ['NFL', 'MLB', 'NBA', 'NHL', 'WNBA', 'MLS', 'CFB'];
+
+export const RESULT_OPTIONS = [
+  { value: 'home', label: 'Home Win',        icon: '🏠' },
+  { value: 'away', label: 'Away Win',        icon: '🚌' },
+  { value: 'tie',  label: 'Tie / No Result', icon: '🤝' },
+];
 
 export const CATEGORY_GROUPS = [
   {
@@ -75,7 +86,10 @@ export const GROUP_COLORS = {
   entertainment: '#c47aff',
 };
 
-export const EMPTY_FORM = { name: '', venue: '', city: '', date: '', category: 'NFL', notes: '', photos: [] };
+export const EMPTY_FORM = {
+  name: '', venue: '', city: '', date: '', category: 'NFL', notes: '', photos: [],
+  homeTeam: '', awayTeam: '', result: null,
+};
 
 export const GOOGLE_API_KEY = 'AIzaSyCQPsXimsCknE1AjLf_eW11Vb53xeSE2Cs';
 

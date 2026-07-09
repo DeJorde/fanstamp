@@ -1,7 +1,8 @@
 import { Modal, View, Text, TouchableOpacity, KeyboardAvoidingView, ScrollView, TextInput, Platform, Alert, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, EMPTY_FORM } from '../constants';
+import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, EMPTY_FORM, TEAM_TRACKED_CATEGORIES, RESULT_OPTIONS } from '../constants';
+import { LEAGUE_STADIUMS } from '../leagueStadiums';
 import { fetchVenueSuggestions, fetchCitySuggestions } from '../utils/geo';
 import { CategoryBadge } from './CategoryBadge';
 import { DatePickerField } from './DatePickerField';
@@ -41,7 +42,17 @@ export function EventFormModal({ visible, onClose, onSave, initialValues, editMo
     }
   }
 
+  async function fetchTeamSuggestions(query) {
+    const teams = LEAGUE_STADIUMS[form.category] ?? [];
+    const q = query.toLowerCase();
+    return teams
+      .filter((t) => t.team.toLowerCase().includes(q))
+      .slice(0, 8)
+      .map((t) => ({ id: t.team, name: t.team, subtitle: t.stadium }));
+  }
+
   const canSave = form.name.trim().length > 0 && form.venue.trim().length > 0;
+  const showTeamFields = TEAM_TRACKED_CATEGORIES.includes(form.category);
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
@@ -63,6 +74,53 @@ export function EventFormModal({ visible, onClose, onSave, initialValues, editMo
               <Text style={styles.fieldLabel}>Event Name *</Text>
               <TextInput style={styles.input} placeholder="e.g. Lakers vs Warriors" placeholderTextColor={colors.placeholder} value={form.name} onChangeText={(v) => set('name', v)} />
             </View>
+
+            {showTeamFields && (
+              <>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Home Team</Text>
+                  <AutocompleteField
+                    value={form.homeTeam}
+                    placeholder="e.g. Los Angeles Lakers"
+                    fetchSuggestions={fetchTeamSuggestions}
+                    onChangeText={(v) => set('homeTeam', v)}
+                    onSelect={(r) => set('homeTeam', r.name)}
+                  />
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Away Team</Text>
+                  <AutocompleteField
+                    value={form.awayTeam}
+                    placeholder="e.g. Golden State Warriors"
+                    fetchSuggestions={fetchTeamSuggestions}
+                    onChangeText={(v) => set('awayTeam', v)}
+                    onSelect={(r) => set('awayTeam', r.name)}
+                  />
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Game Result</Text>
+                  <View style={styles.resultChipRow}>
+                    {RESULT_OPTIONS.map((opt) => {
+                      const active = form.result === opt.value;
+                      return (
+                        <TouchableOpacity
+                          key={opt.value}
+                          style={[styles.resultChip, active && styles.resultChipActive]}
+                          onPress={() => set('result', active ? null : opt.value)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.resultChipText, active && styles.resultChipTextActive]}>
+                            {opt.icon} {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              </>
+            )}
 
             <View style={styles.fieldGroup}>
               <Text style={styles.fieldLabel}>Venue *</Text>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, EMPTY_FORM } from './constants';
+import { STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, EMPTY_FORM } from './constants';
 import { eventToForm, geocodeVenue } from './utils/geo';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
@@ -10,6 +10,7 @@ import { LeaguesScreen } from './screens/LeaguesScreen';
 import { EventFormModal } from './components/EventFormModal';
 import { DetailScreen } from './components/DetailScreen';
 import { LeagueDetailScreen } from './components/LeagueDetailScreen';
+import { TeamGameLogScreen } from './components/TeamGameLogScreen';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const TABS = [
@@ -35,6 +36,8 @@ function AppContent() {
   const [hasLoaded, setHasLoaded]     = useState(false);
   const [detailEvent, setDetailEvent]   = useState(null);
   const [selectedLeague, setSelectedLeague] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [favoriteTeam, setFavoriteTeam] = useState(null);
   const [formConfig, setFormConfig]   = useState({ visible: false, editingId: null });
   const [formPrefill, setFormPrefill] = useState(null);
 
@@ -57,6 +60,9 @@ function AppContent() {
     AsyncStorage.getItem(BUCKET_LIST_STORAGE_KEY).then((raw) => {
       if (raw) setBucketList(JSON.parse(raw));
     });
+    AsyncStorage.getItem(FAVORITE_TEAM_STORAGE_KEY).then((raw) => {
+      if (raw) setFavoriteTeam(JSON.parse(raw));
+    });
   }, []);
 
   useEffect(() => {
@@ -69,6 +75,11 @@ function AppContent() {
     AsyncStorage.setItem(BUCKET_LIST_STORAGE_KEY, JSON.stringify(bucketList));
   }, [bucketList, hasLoaded]);
 
+  useEffect(() => {
+    if (!hasLoaded) return;
+    AsyncStorage.setItem(FAVORITE_TEAM_STORAGE_KEY, JSON.stringify(favoriteTeam));
+  }, [favoriteTeam, hasLoaded]);
+
   function toggleBucketList(league, team, stadium, city) {
     setBucketList((prev) => {
       const exists = prev.some((b) => b.league === league && b.team === team);
@@ -76,6 +87,10 @@ function AppContent() {
         ? prev.filter((b) => !(b.league === league && b.team === team))
         : [...prev, { league, team, stadium, city }];
     });
+  }
+
+  function toggleFavoriteTeam(league, team) {
+    setFavoriteTeam((prev) => (prev && prev.league === league && prev.team === team ? null : { league, team }));
   }
 
   function openAdd()  { setFormPrefill(null); setFormConfig({ visible: true, editingId: null }); }
@@ -98,6 +113,9 @@ function AppContent() {
         category: form.category,
         notes:    form.notes.trim(),
         photos:   form.photos,
+        homeTeam: form.homeTeam.trim(),
+        awayTeam: form.awayTeam.trim(),
+        result:   form.result,
       };
       setEvents((prev) => prev.map((e) => (e.id === editingId ? { ...e, ...updated } : e)));
       setDetailEvent((prev) => ({ ...prev, ...updated }));
@@ -120,6 +138,9 @@ function AppContent() {
         category:    form.category,
         notes:       form.notes.trim(),
         photos:      form.photos,
+        homeTeam:    form.homeTeam.trim(),
+        awayTeam:    form.awayTeam.trim(),
+        result:      form.result,
         coordinates: null,
       };
       setEvents((prev) => [newEvent, ...prev]);
@@ -139,7 +160,8 @@ function AppContent() {
 
   const inEventDetail  = detailEvent !== null && activeTab === 'events';
   const inLeagueDetail = selectedLeague !== null && activeTab === 'leagues';
-  const inDetail = inEventDetail || inLeagueDetail;
+  const inTeamDetail   = selectedTeam !== null && activeTab === 'stats';
+  const inDetail = inEventDetail || inLeagueDetail || inTeamDetail;
   const formInitialValues = formConfig.editingId && detailEvent
     ? eventToForm(detailEvent)
     : formPrefill
@@ -149,7 +171,10 @@ function AppContent() {
   function handleBack() {
     if (inEventDetail)  setDetailEvent(null);
     if (inLeagueDetail) setSelectedLeague(null);
+    if (inTeamDetail)   setSelectedTeam(null);
   }
+
+  const backLabel = inLeagueDetail ? 'Leagues' : inTeamDetail ? 'Stats' : 'Events';
 
   return (
     <View style={styles.root}>
@@ -157,7 +182,7 @@ function AppContent() {
         <View style={styles.headerRow}>
           {inDetail ? (
             <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-              <Text style={styles.backBtnText}>‹ {inLeagueDetail ? 'Leagues' : 'Events'}</Text>
+              <Text style={styles.backBtnText}>‹ {backLabel}</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.logoRow}>
@@ -191,8 +216,17 @@ function AppContent() {
           ) : (
             <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
           )
+        ) : inTeamDetail ? (
+          <TeamGameLogScreen league={selectedTeam.league} team={selectedTeam.team} events={events} />
         ) : (
-          <StatsScreen events={events} bucketList={bucketList} onToggleBucketList={toggleBucketList} />
+          <StatsScreen
+            events={events}
+            bucketList={bucketList}
+            onToggleBucketList={toggleBucketList}
+            favoriteTeam={favoriteTeam}
+            onToggleFavoriteTeam={toggleFavoriteTeam}
+            onSelectTeam={(league, team) => setSelectedTeam({ league, team })}
+          />
         )}
       </View>
 
