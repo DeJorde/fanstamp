@@ -4,9 +4,11 @@ import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGOR
 import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
 import { computeTeamStats } from '../utils/teamStats';
+import { computeStatesVisited } from '../utils/statesVisited';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
 import { TeamCard } from '../components/TeamCard';
+import { USStatesMap } from '../components/USStatesMap';
 import { useTheme } from '../context/ThemeContext';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -55,6 +57,8 @@ export function StatsScreen({
     const fav = teams[favIdx];
     return [fav, ...teams.slice(0, favIdx), ...teams.slice(favIdx + 1)];
   }, [events, favoriteTeam]);
+
+  const statesVisited = useMemo(() => computeStatesVisited(events), [events]);
 
   const filtered = useMemo(
     () => events.filter((e) => matchesFilter(e, filter)),
@@ -143,6 +147,10 @@ export function StatsScreen({
       <FilterBar value={filter} onChange={setFilter} />
 
       <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
+
+        {/* ─ STATES VISITED ─ */}
+        <StatsSectionHeader title="STATES VISITED" />
+        <USStatesMap statesVisited={statesVisited} />
 
         {events.length === 0 ? (
           <View style={styles.statsEmpty}>

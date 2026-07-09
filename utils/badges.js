@@ -34,7 +34,7 @@ function badgeFromTrack(idPrefix, n, track, label, icon) {
 
 // "City, State" (or just "City" when no state was captured) is the format
 // produced by the venue/city autocomplete — see utils/geo.js.
-function extractState(location) {
+export function extractState(location) {
   if (!location || location === '—') return null;
   const parts = location.split(',').map((s) => s.trim()).filter(Boolean);
   return parts.length >= 2 ? parts[parts.length - 1] : null;

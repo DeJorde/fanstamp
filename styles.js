@@ -379,6 +379,38 @@ function buildStyles(c) {
       marginTop: 6, paddingHorizontal: 2,
     },
 
+    // ── States Visited map ─────────────────────────────────────────────────────
+    statesCounter: { fontSize: 14, color: c.textMuted, fontWeight: '600', marginBottom: 8 },
+    statesMapWrap: {
+      width: '100%', aspectRatio: 975 / 610,
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      overflow: 'hidden',
+    },
+    statesModalBackdrop: {
+      flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+      alignItems: 'center', justifyContent: 'center', padding: 24,
+    },
+    statesModalCard: {
+      width: '100%', maxWidth: 380, maxHeight: '70%',
+      backgroundColor: c.bg1, borderRadius: 20,
+      borderWidth: 1, borderColor: c.border,
+      padding: 20, gap: 4,
+    },
+    statesModalTitle:    { fontSize: 19, fontWeight: '800', color: c.text },
+    statesModalSubtitle: { fontSize: 13, color: c.textMuted, fontWeight: '600', marginBottom: 8 },
+    statesModalList:     { flexGrow: 0 },
+    statesModalRow:      { paddingVertical: 10, gap: 2 },
+    statesModalEventName: { fontSize: 15, fontWeight: '700', color: c.text },
+    statesModalEventSub:  { fontSize: 12, color: c.textDim },
+    statesModalCloseBtn: {
+      marginTop: 14, alignSelf: 'center',
+      paddingHorizontal: 20, paddingVertical: 10,
+      backgroundColor: c.bg2, borderRadius: 12,
+      borderWidth: 1, borderColor: c.border,
+    },
+    statesModalCloseText: { fontSize: 14, fontWeight: '700', color: c.accent },
+
     // Overview grid
     statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     statsMetricCard: {
