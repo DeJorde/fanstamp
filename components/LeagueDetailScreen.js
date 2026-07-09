@@ -1,15 +1,12 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { Alert, Image, ScrollView, Share, Text, TouchableOpacity, View } from 'react-native';
-import { captureRef } from 'react-native-view-shot';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getLeagueDetail } from '../utils/badges';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
-import { SharePassportCard } from './SharePassportCard';
 
 export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketList }) {
   const { styles } = useTheme();
-  const shareCardRef = useRef(null);
   const teams = useMemo(() => getLeagueDetail(events, league), [events, league]);
   const visited = useMemo(
     () => teams.filter((t) => t.visited).sort((a, b) => a.team.localeCompare(b.team)),
@@ -36,15 +33,23 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
   }
 
   async function handleShare() {
+    const pct = teams.length > 0 ? Math.round((visited.length / teams.length) * 100) : 0;
+    const stadiumLines = visited.map(
+      (t) => `🏟 ${t.stadium} — ${t.dates.length > 0 ? t.dates.map(formatDisplayDate).join(', ') : 'date unknown'}`
+    );
+    const message = [
+      `${LEAGUE_ICONS[league]} ${league} Stadium Passport`,
+      `${visited.length}/${teams.length} stadiums visited (${pct}%)`,
+      '',
+      ...(stadiumLines.length > 0 ? stadiumLines : ['No stadiums visited yet — time to start!']),
+      '',
+      'Tracked with StadiumLog',
+    ].join('\n');
+
     try {
-      const uri = await captureRef(shareCardRef, { format: 'png', quality: 0.9, result: 'tmpfile' });
-      const message =
-        `I've visited ${visited.length}/${teams.length} ${league} stadiums! ${LEAGUE_ICONS[league]}\n\n` +
-        visited.map((t) => `🏟 ${t.stadium}`).join('\n') +
-        `\n\nTracked with StadiumLog`;
-      await Share.share({ url: uri, message, title: `${league} Stadium Passport` });
+      await Share.share({ message, title: `${league} Stadium Passport` });
     } catch {
-      Alert.alert('Share Failed', 'Could not generate the share image. Please try again.');
+      Alert.alert('Share Failed', 'Could not open the share sheet. Please try again.');
     }
   }
 
@@ -115,10 +120,6 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
           </View>
         </TouchableOpacity>
       ))}
-
-      <View style={{ position: 'absolute', top: -9999, left: 0 }}>
-        <SharePassportCard ref={shareCardRef} league={league} visited={visited} total={teams.length} />
-      </View>
     </ScrollView>
   );
 }
