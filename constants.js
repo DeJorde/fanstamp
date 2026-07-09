@@ -1,4 +1,5 @@
 export const STORAGE_KEY = '@stadiumlog_events';
+export const BUCKET_LIST_STORAGE_KEY = '@stadiumlog_bucket_list';
 
 export const CATEGORY_GROUPS = [
   {

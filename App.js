@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEY, EMPTY_FORM } from './constants';
+import { STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, EMPTY_FORM } from './constants';
 import { eventToForm, geocodeVenue } from './utils/geo';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
@@ -31,6 +31,7 @@ function AppContent() {
   const { styles, retro, toggleRetro } = useTheme();
   const [activeTab, setActiveTab]     = useState('events');
   const [events, setEvents]           = useState([]);
+  const [bucketList, setBucketList]   = useState([]);
   const [hasLoaded, setHasLoaded]     = useState(false);
   const [detailEvent, setDetailEvent]   = useState(null);
   const [selectedLeague, setSelectedLeague] = useState(null);
@@ -53,12 +54,29 @@ function AppContent() {
           if (coords) setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, coordinates: coords } : e)));
         });
     });
+    AsyncStorage.getItem(BUCKET_LIST_STORAGE_KEY).then((raw) => {
+      if (raw) setBucketList(JSON.parse(raw));
+    });
   }, []);
 
   useEffect(() => {
     if (!hasLoaded) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(events));
   }, [events, hasLoaded]);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+    AsyncStorage.setItem(BUCKET_LIST_STORAGE_KEY, JSON.stringify(bucketList));
+  }, [bucketList, hasLoaded]);
+
+  function toggleBucketList(league, team, stadium, city) {
+    setBucketList((prev) => {
+      const exists = prev.some((b) => b.league === league && b.team === team);
+      return exists
+        ? prev.filter((b) => !(b.league === league && b.team === team))
+        : [...prev, { league, team, stadium, city }];
+    });
+  }
 
   function openAdd()  { setFormPrefill(null); setFormConfig({ visible: true, editingId: null }); }
   function openEdit() { setFormConfig({ visible: true, editingId: detailEvent.id }); }
@@ -164,12 +182,17 @@ function AppContent() {
           <MapScreen events={events} />
         ) : activeTab === 'leagues' ? (
           inLeagueDetail ? (
-            <LeagueDetailScreen league={selectedLeague} events={events} />
+            <LeagueDetailScreen
+              league={selectedLeague}
+              events={events}
+              bucketList={bucketList}
+              onToggleBucketList={toggleBucketList}
+            />
           ) : (
             <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
           )
         ) : (
-          <StatsScreen events={events} />
+          <StatsScreen events={events} bucketList={bucketList} onToggleBucketList={toggleBucketList} />
         )}
       </View>
 

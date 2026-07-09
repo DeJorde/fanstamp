@@ -549,6 +549,36 @@ function buildStyles(c) {
     },
     leagueDateChipText: { fontSize: 11, color: c.textDim, fontWeight: '600' },
 
+    bucketBadge: {
+      backgroundColor: c.accentBgSoft, borderRadius: 10,
+      paddingHorizontal: 7, paddingVertical: 2,
+    },
+    bucketBadgeText: { fontSize: 12 },
+    bucketRemoveText: { fontSize: 16, color: c.textFaint, fontWeight: '700', paddingHorizontal: 4 },
+
+    // ── League Detail header + share button ──────────────────────────────────
+    leagueDetailHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+    shareBtn: {
+      width: 36, height: 36, borderRadius: 18,
+      backgroundColor: c.bg2, borderWidth: 1, borderColor: c.border,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    shareBtnIcon: { fontSize: 16 },
+
+    // ── Share passport card — captured off-screen as a shareable image ───────
+    shareCard: {
+      width: 340, backgroundColor: c.bg1,
+      borderWidth: 1, borderColor: c.border, borderRadius: 20,
+      paddingVertical: 28, paddingHorizontal: 24,
+      alignItems: 'center', gap: 6,
+    },
+    shareCardRingEmoji: { fontSize: 30 },
+    shareCardTitle:    { fontSize: 17, fontWeight: '800', color: c.text, marginTop: 10, textAlign: 'center' },
+    shareCardFraction: { fontSize: 14, color: c.textMuted, fontWeight: '600', textAlign: 'center', marginBottom: 4 },
+    shareCardListWrap: { alignSelf: 'stretch', gap: 4, marginTop: 6 },
+    shareCardStadium:  { fontSize: 13, color: c.textSecondary, fontWeight: '500' },
+    shareCardFooter:   { fontSize: 11, color: c.textFaint, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', marginTop: 14 },
+
     // ── Photo picker (form) ────────────────────────────────────────────────────
     photoPickerRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     photoPickerThumbWrap: { position: 'relative', width: 90, height: 90 },

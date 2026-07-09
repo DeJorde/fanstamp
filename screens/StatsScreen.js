@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
+import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
@@ -24,9 +25,18 @@ function MetricCard({ label, value, icon }) {
   );
 }
 
-export function StatsScreen({ events }) {
+export function StatsScreen({ events, bucketList = [], onToggleBucketList }) {
   const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
+
+  const bucketByLeague = useMemo(() => {
+    return LEAGUE_KEYS
+      .map((league) => ({
+        league,
+        items: bucketList.filter((b) => b.league === league).sort((a, b) => a.team.localeCompare(b.team)),
+      }))
+      .filter((g) => g.items.length > 0);
+  }, [bucketList]);
 
   const filtered = useMemo(
     () => events.filter((e) => matchesFilter(e, filter)),
@@ -342,6 +352,39 @@ export function StatsScreen({ events }) {
             )}
           </View>
           </>
+        )}
+
+        {/* ─ BUCKET LIST ─ */}
+        <StatsSectionHeader title="BUCKET LIST" />
+        {bucketByLeague.length === 0 ? (
+          <View style={styles.statsCard}>
+            <Text style={styles.statsEmptyInCard}>No stadiums yet — add one from a league's TO VISIT list</Text>
+          </View>
+        ) : (
+          bucketByLeague.map((group) => (
+            <View key={group.league} style={{ marginBottom: 4 }}>
+              <Text style={styles.badgeGroupLabel}>{LEAGUE_ICONS[group.league]} {group.league}</Text>
+              <View style={styles.statsCard}>
+                {group.items.map((b, i) => (
+                  <View key={b.team}>
+                    {i > 0 && <View style={styles.statsDivider} />}
+                    <View style={styles.statsRankRow}>
+                      <View style={styles.statsRankBody}>
+                        <Text style={styles.statsRankName}>{b.stadium}</Text>
+                        <Text style={styles.statsRankSub}>{b.team} · {b.city}</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => onToggleBucketList(b.league, b.team, b.stadium, b.city)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text style={styles.bucketRemoveText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))
         )}
 
         <MilestonesSection events={events} />
