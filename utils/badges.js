@@ -1,6 +1,7 @@
 import { CATEGORY_ICONS } from '../constants';
 import { LEAGUE_STADIUMS } from '../leagueStadiums';
 import { parseDateStr } from './dates';
+import { resolveStateName } from './usStates';
 
 function hasDate(e) { return !!(e.date && e.date !== '—'); }
 
@@ -74,7 +75,7 @@ export function computeBadges(events) {
 
   const venueTrack = trackUniqueMilestones(sorted, (e) => e.venue || null);
   const cityTrack   = trackUniqueMilestones(sorted, (e) => (e.location && e.location !== '—' ? e.location : null));
-  const stateTrack  = trackUniqueMilestones(sorted, (e) => extractState(e.location));
+  const stateTrack  = trackUniqueMilestones(sorted, (e) => resolveStateName(extractState(e.location)));
 
   const venueExplorer = [
     ...VENUE_THRESHOLDS.map((n) => badgeFromTrack('venue', n, venueTrack, `${n} Venues`, '🏟')),
