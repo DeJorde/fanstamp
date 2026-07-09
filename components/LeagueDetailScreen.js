@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getLeagueDetail } from '../utils/badges';
 import { formatDisplayDate } from '../utils/dates';
@@ -28,20 +28,30 @@ export function LeagueDetailScreen({ league, events }) {
       ) : (
         visited.map((t) => (
           <View key={t.team} style={styles.leagueTeamCard}>
-            <View style={styles.leagueTeamHeader}>
-              <Text style={styles.leagueTeamStadium}>{t.stadium}</Text>
-              <View style={styles.statsCountPill}>
-                <Text style={styles.statsCountPillText}>{t.visitCount}×</Text>
+            {t.photo ? (
+              <Image source={{ uri: t.photo }} style={styles.leagueTeamThumb} resizeMode="cover" />
+            ) : (
+              <View style={styles.leagueTeamThumbPlaceholder}>
+                <Text style={styles.leagueTeamThumbEmoji}>🏟️</Text>
+                <Text style={styles.leagueTeamThumbName} numberOfLines={2}>{t.team}</Text>
               </View>
-            </View>
-            <Text style={styles.leagueTeamName}>{t.team}</Text>
-            <Text style={styles.leagueTeamCity}>{t.city}</Text>
-            <View style={styles.leagueDateChipRow}>
-              {t.dates.map((d, i) => (
-                <View key={i} style={styles.leagueDateChip}>
-                  <Text style={styles.leagueDateChipText}>{formatDisplayDate(d)}</Text>
+            )}
+            <View style={styles.leagueTeamBody}>
+              <View style={styles.leagueTeamHeader}>
+                <Text style={styles.leagueTeamStadium}>{t.stadium}</Text>
+                <View style={styles.statsCountPill}>
+                  <Text style={styles.statsCountPillText}>{t.visitCount}×</Text>
                 </View>
-              ))}
+              </View>
+              <Text style={styles.leagueTeamName}>{t.team}</Text>
+              <Text style={styles.leagueTeamCity}>{t.city}</Text>
+              <View style={styles.leagueDateChipRow}>
+                {t.dates.map((d, i) => (
+                  <View key={i} style={styles.leagueDateChip}>
+                    <Text style={styles.leagueDateChipText}>{formatDisplayDate(d)}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         ))
@@ -50,9 +60,11 @@ export function LeagueDetailScreen({ league, events }) {
       <Text style={styles.badgeGroupLabel}>TO VISIT ({toVisit.length})</Text>
       {toVisit.map((t) => (
         <View key={t.team} style={[styles.leagueTeamCard, styles.leagueTeamCardLocked]}>
-          <Text style={styles.leagueTeamStadium}>{t.stadium}</Text>
-          <Text style={styles.leagueTeamName}>{t.team}</Text>
-          <Text style={styles.leagueTeamCity}>{t.city}</Text>
+          <View style={styles.leagueTeamBody}>
+            <Text style={styles.leagueTeamStadium}>{t.stadium}</Text>
+            <Text style={styles.leagueTeamName}>{t.team}</Text>
+            <Text style={styles.leagueTeamCity}>{t.city}</Text>
+          </View>
         </View>
       ))}
     </ScrollView>

@@ -519,11 +519,24 @@ function buildStyles(c) {
     leagueDetailSubtitle: { fontSize: 14, color: c.textMuted, fontWeight: '600', marginBottom: 4, marginTop: -8 },
 
     leagueTeamCard: {
+      flexDirection: 'row', alignItems: 'flex-start', gap: 12,
       backgroundColor: c.bg2, borderRadius: 14,
       borderWidth: 1, borderColor: c.border,
-      padding: 14, gap: 4,
+      padding: 14,
     },
     leagueTeamCardLocked: { opacity: 0.45 },
+    leagueTeamThumb: { width: 64, height: 64, borderRadius: 10 },
+    leagueTeamThumbPlaceholder: {
+      width: 64, height: 64, borderRadius: 10,
+      backgroundColor: c.bg3, borderWidth: 1, borderColor: c.border,
+      alignItems: 'center', justifyContent: 'center', gap: 2, padding: 4,
+    },
+    leagueTeamThumbEmoji: { fontSize: 20 },
+    leagueTeamThumbName: {
+      fontSize: 8, fontWeight: '600', color: c.textFaint,
+      textAlign: 'center', lineHeight: 10,
+    },
+    leagueTeamBody:    { flex: 1, gap: 4 },
     leagueTeamHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     leagueTeamStadium: { fontSize: 15, fontWeight: '700', color: c.text, flex: 1 },
     leagueTeamName:    { fontSize: 13, color: c.textSecondary, fontWeight: '500' },

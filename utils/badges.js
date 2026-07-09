@@ -132,6 +132,7 @@ export function getLeagueDetail(events, league) {
   return teams.map((t) => {
     const matches = leagueEvents.filter((e) => venueMatches(e.venue, t.stadium));
     const dates = matches.filter(hasDate).map((e) => e.date);
+    const withPhoto = matches.find((e) => e.photos && e.photos.length > 0);
     return {
       team: t.team,
       stadium: t.stadium,
@@ -139,6 +140,7 @@ export function getLeagueDetail(events, league) {
       visited: matches.length > 0,
       visitCount: matches.length,
       dates,
+      photo: withPhoto ? withPhoto.photos[0] : null,
     };
   });
 }
