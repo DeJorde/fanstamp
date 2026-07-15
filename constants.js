@@ -4,7 +4,7 @@ export const FAVORITE_TEAM_STORAGE_KEY = '@stadiumlog_favorite_team';
 
 // Categories with a team roster in LEAGUE_STADIUMS — these get the Home/Away
 // Team + Game Result fields on the event form and feed the My Teams section.
-export const TEAM_TRACKED_CATEGORIES = ['NFL', 'MLB', 'NBA', 'NHL', 'WNBA', 'MLS', 'CFB'];
+export const TEAM_TRACKED_CATEGORIES = ['NFL', 'MLB', 'NBA', 'NHL', 'WNBA', 'MLS', 'CFB', 'CBB', 'CBASE'];
 
 export const RESULT_OPTIONS = [
   { value: 'home', label: 'Home Win',        icon: '🏠' },
@@ -16,7 +16,7 @@ export const CATEGORY_GROUPS = [
   {
     key: 'stadium',
     label: 'Stadium Sports',
-    categories: ['NFL', 'MLB', 'NBA', 'NHL', 'WNBA', 'MLS', 'CFB', 'CBB', 'Other Sport'],
+    categories: ['NFL', 'MLB', 'NBA', 'NHL', 'WNBA', 'MLS', 'CFB', 'CBB', 'CBASE', 'Other Sport'],
   },
   {
     key: 'outdoor',
@@ -45,6 +45,7 @@ export const CATEGORY_COLORS = {
   MLS:             { bg: '#0a1535', text: '#4d7cff' },
   CFB:             { bg: '#250818', text: '#cc4466' },
   CBB:             { bg: '#282000', text: '#f5c518' },
+  CBASE:           { bg: '#241505', text: '#d99a44' },
   'Other Sport':   { bg: '#1a1a2e', text: '#8ab4f8' },
   // Outdoor & Course
   Golf:            { bg: '#0a2814', text: '#52d68a' },
@@ -67,7 +68,8 @@ export const CATEGORY_ICONS = {
   WNBA:            '🏀',
   MLS:             '⚽',
   CFB:             '🏈',
-  CBB:             '🏀',
+  CBB:             '🎓',
+  CBASE:           '🌽',
   'Other Sport':   '🏟',
   Golf:            '⛳',
   'Ski Resort':    '⛷',

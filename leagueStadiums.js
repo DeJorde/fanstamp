@@ -160,6 +160,171 @@ export const LEAGUE_STADIUMS = {
     { team: 'Wake Forest Demon Deacons', stadium: 'Allegacy Federal Credit Union Stadium',    city: 'Winston-Salem, North Carolina' },
   ],
 
+  // Power 4 basketball membership (2026 season): SEC 16, Big Ten 18, Big 12 16,
+  // ACC 18. Unlike CFB, Notre Dame is a full ACC member for basketball (only
+  // football is a scheduling-agreement independent), so it's included here.
+  // NC State shares Lenovo Center with the NHL's Carolina Hurricanes — same
+  // shared-venue caveat as the NFL/NHL entries above.
+  CBB: [
+    // ── SEC ──
+    { team: 'Alabama Crimson Tide',      stadium: 'Coleman Coliseum',                        city: 'Tuscaloosa, Alabama' },
+    { team: 'Arkansas Razorbacks',       stadium: 'Bud Walton Arena',                        city: 'Fayetteville, Arkansas' },
+    { team: 'Auburn Tigers',             stadium: 'Neville Arena',                           city: 'Auburn, Alabama' },
+    { team: 'Florida Gators',            stadium: 'Exactech Arena',                          city: 'Gainesville, Florida' },
+    { team: 'Georgia Bulldogs',          stadium: 'Stegeman Coliseum',                        city: 'Athens, Georgia' },
+    { team: 'Kentucky Wildcats',         stadium: 'Rupp Arena',                              city: 'Lexington, Kentucky' },
+    { team: 'LSU Tigers',                stadium: 'Pete Maravich Assembly Center',           city: 'Baton Rouge, Louisiana' },
+    { team: 'Mississippi State Bulldogs',stadium: 'Humphrey Coliseum',                       city: 'Starkville, Mississippi' },
+    { team: 'Missouri Tigers',           stadium: 'Mizzou Arena',                            city: 'Columbia, Missouri' },
+    { team: 'Ole Miss Rebels',           stadium: 'SJB Pavilion',                            city: 'Oxford, Mississippi' },
+    { team: 'Oklahoma Sooners',          stadium: 'Lloyd Noble Center',                       city: 'Norman, Oklahoma' },
+    { team: 'South Carolina Gamecocks',  stadium: 'Colonial Life Arena',                     city: 'Columbia, South Carolina' },
+    { team: 'Tennessee Volunteers',      stadium: 'Thompson-Boling Arena',                    city: 'Knoxville, Tennessee' },
+    { team: 'Texas Longhorns',           stadium: 'Moody Center',                            city: 'Austin, Texas' },
+    { team: 'Texas A&M Aggies',          stadium: 'Reed Arena',                              city: 'College Station, Texas' },
+    { team: 'Vanderbilt Commodores',     stadium: 'Memorial Gymnasium',                       city: 'Nashville, Tennessee' },
+
+    // ── Big Ten ──
+    { team: 'Illinois Fighting Illini',  stadium: 'State Farm Center',                        city: 'Champaign, Illinois' },
+    { team: 'Indiana Hoosiers',          stadium: 'Simon Skjodt Assembly Hall',              city: 'Bloomington, Indiana' },
+    { team: 'Iowa Hawkeyes',             stadium: 'Carver-Hawkeye Arena',                     city: 'Iowa City, Iowa' },
+    { team: 'Maryland Terrapins',        stadium: 'Xfinity Center',                          city: 'College Park, Maryland' },
+    { team: 'Michigan Wolverines',       stadium: 'Crisler Center',                           city: 'Ann Arbor, Michigan' },
+    { team: 'Michigan State Spartans',   stadium: 'Breslin Center',                          city: 'East Lansing, Michigan' },
+    { team: 'Minnesota Golden Gophers',  stadium: 'Williams Arena',                           city: 'Minneapolis, Minnesota' },
+    { team: 'Nebraska Cornhuskers',      stadium: 'Pinnacle Bank Arena',                      city: 'Lincoln, Nebraska' },
+    { team: 'Northwestern Wildcats',     stadium: 'Welsh-Ryan Arena',                         city: 'Evanston, Illinois' },
+    { team: 'Ohio State Buckeyes',       stadium: 'Value City Arena',                         city: 'Columbus, Ohio' },
+    { team: 'Oregon Ducks',              stadium: 'Matthew Knight Arena',                     city: 'Eugene, Oregon' },
+    { team: 'Penn State Nittany Lions',  stadium: 'Bryce Jordan Center',                      city: 'University Park, Pennsylvania' },
+    { team: 'Purdue Boilermakers',       stadium: 'Mackey Arena',                             city: 'West Lafayette, Indiana' },
+    { team: 'Rutgers Scarlet Knights',   stadium: "Jersey Mike's Arena",                      city: 'Piscataway, New Jersey' },
+    { team: 'UCLA Bruins',               stadium: 'Pauley Pavilion',                          city: 'Los Angeles, California' },
+    { team: 'USC Trojans',               stadium: 'Galen Center',                             city: 'Los Angeles, California' },
+    { team: 'Washington Huskies',        stadium: 'Alaska Airlines Arena',                    city: 'Seattle, Washington' },
+    { team: 'Wisconsin Badgers',         stadium: 'Kohl Center',                              city: 'Madison, Wisconsin' },
+
+    // ── Big 12 ──
+    { team: 'Arizona Wildcats',          stadium: 'McKale Center',                           city: 'Tucson, Arizona' },
+    { team: 'Arizona State Sun Devils',  stadium: 'Desert Financial Arena',                   city: 'Tempe, Arizona' },
+    { team: 'Baylor Bears',              stadium: 'Foster Pavilion',                          city: 'Waco, Texas' },
+    { team: 'BYU Cougars',               stadium: 'Marriott Center',                          city: 'Provo, Utah' },
+    { team: 'Cincinnati Bearcats',       stadium: 'Fifth Third Arena',                        city: 'Cincinnati, Ohio' },
+    { team: 'Colorado Buffaloes',        stadium: 'CU Events Center',                         city: 'Boulder, Colorado' },
+    { team: 'Houston Cougars',           stadium: 'Fertitta Center',                          city: 'Houston, Texas' },
+    { team: 'Iowa State Cyclones',       stadium: 'Hilton Coliseum',                          city: 'Ames, Iowa' },
+    { team: 'Kansas Jayhawks',           stadium: 'Allen Fieldhouse',                         city: 'Lawrence, Kansas' },
+    { team: 'Kansas State Wildcats',     stadium: 'Bramlage Coliseum',                        city: 'Manhattan, Kansas' },
+    { team: 'Oklahoma State Cowboys',    stadium: 'Gallagher-Iba Arena',                      city: 'Stillwater, Oklahoma' },
+    { team: 'TCU Horned Frogs',          stadium: 'Ed and Rae Schollmaier Arena',            city: 'Fort Worth, Texas' },
+    { team: 'Texas Tech Red Raiders',    stadium: 'United Supermarkets Arena',                city: 'Lubbock, Texas' },
+    { team: 'UCF Knights',               stadium: 'Addition Financial Arena',                 city: 'Orlando, Florida' },
+    { team: 'Utah Utes',                 stadium: 'Jon M. Huntsman Center',                   city: 'Salt Lake City, Utah' },
+    { team: 'West Virginia Mountaineers',stadium: 'WVU Coliseum',                             city: 'Morgantown, West Virginia' },
+
+    // ── ACC ──
+    { team: 'Boston College Eagles',     stadium: 'Conte Forum',                              city: 'Chestnut Hill, Massachusetts' },
+    { team: 'California Golden Bears',   stadium: 'Haas Pavilion',                            city: 'Berkeley, California' },
+    { team: 'Clemson Tigers',            stadium: 'Littlejohn Coliseum',                       city: 'Clemson, South Carolina' },
+    { team: 'Duke Blue Devils',          stadium: 'Cameron Indoor Stadium',                    city: 'Durham, North Carolina' },
+    { team: 'Florida State Seminoles',   stadium: 'Donald L. Tucker Civic Center',            city: 'Tallahassee, Florida' },
+    { team: 'Georgia Tech Yellow Jackets', stadium: 'McCamish Pavilion',                       city: 'Atlanta, Georgia' },
+    { team: 'Louisville Cardinals',      stadium: 'KFC Yum! Center',                           city: 'Louisville, Kentucky' },
+    { team: 'Miami Hurricanes',          stadium: 'Watsco Center',                            city: 'Coral Gables, Florida' },
+    { team: 'NC State Wolfpack',         stadium: 'Lenovo Center',                            city: 'Raleigh, North Carolina' },
+    { team: 'North Carolina Tar Heels',  stadium: 'Dean E. Smith Center',                      city: 'Chapel Hill, North Carolina' },
+    { team: 'Notre Dame Fighting Irish', stadium: 'Purcell Pavilion',                          city: 'Notre Dame, Indiana' },
+    { team: 'Pittsburgh Panthers',       stadium: 'Petersen Events Center',                    city: 'Pittsburgh, Pennsylvania' },
+    { team: 'SMU Mustangs',              stadium: 'Moody Coliseum',                            city: 'Dallas, Texas' },
+    { team: 'Stanford Cardinal',         stadium: 'Maples Pavilion',                           city: 'Stanford, California' },
+    { team: 'Syracuse Orange',           stadium: 'JMA Wireless Dome',                         city: 'Syracuse, New York' },
+    { team: 'Virginia Cavaliers',        stadium: 'John Paul Jones Arena',                     city: 'Charlottesville, Virginia' },
+    { team: 'Virginia Tech Hokies',      stadium: 'Cassell Coliseum',                          city: 'Blacksburg, Virginia' },
+    { team: 'Wake Forest Demon Deacons', stadium: 'Lawrence Joel Veterans Memorial Coliseum',  city: 'Winston-Salem, North Carolina' },
+  ],
+
+  // Top college baseball programs, weighted toward Power 4 conference members
+  // that sponsor D1 baseball (several Power 4 schools — Washington, Wisconsin,
+  // Syracuse, Colorado, Iowa State, Utah — do not field baseball teams and are
+  // excluded), plus two of the most decorated non-Power-4 programs in College
+  // World Series history (Oregon State, Coastal Carolina) to round out the
+  // list of the sport's top 64 programs.
+  CBASE: [
+    // ── SEC ──
+    { team: 'Alabama Crimson Tide',      stadium: 'Sewell-Thomas Stadium',                    city: 'Tuscaloosa, Alabama' },
+    { team: 'Arkansas Razorbacks',       stadium: 'Baum-Walker Stadium',                      city: 'Fayetteville, Arkansas' },
+    { team: 'Auburn Tigers',             stadium: 'Plainsman Park',                           city: 'Auburn, Alabama' },
+    { team: 'Florida Gators',            stadium: 'Condron Family Ballpark',                  city: 'Gainesville, Florida' },
+    { team: 'Georgia Bulldogs',          stadium: 'Foley Field',                              city: 'Athens, Georgia' },
+    { team: 'Kentucky Wildcats',         stadium: 'Kentucky Proud Park',                      city: 'Lexington, Kentucky' },
+    { team: 'LSU Tigers',                stadium: 'Alex Box Stadium',                         city: 'Baton Rouge, Louisiana' },
+    { team: 'Mississippi State Bulldogs',stadium: 'Dudy Noble Field',                         city: 'Starkville, Mississippi' },
+    { team: 'Missouri Tigers',           stadium: 'Taylor Stadium',                           city: 'Columbia, Missouri' },
+    { team: 'Ole Miss Rebels',           stadium: 'Swayze Field',                             city: 'Oxford, Mississippi' },
+    { team: 'Oklahoma Sooners',          stadium: 'L. Dale Mitchell Park',                    city: 'Norman, Oklahoma' },
+    { team: 'South Carolina Gamecocks',  stadium: 'Founders Park',                            city: 'Columbia, South Carolina' },
+    { team: 'Tennessee Volunteers',      stadium: 'Lindsey Nelson Stadium',                    city: 'Knoxville, Tennessee' },
+    { team: 'Texas Longhorns',           stadium: 'UFCU Disch-Falk Field',                    city: 'Austin, Texas' },
+    { team: 'Texas A&M Aggies',          stadium: 'Olsen Field at Blue Bell Park',            city: 'College Station, Texas' },
+    { team: 'Vanderbilt Commodores',     stadium: 'Hawkins Field',                            city: 'Nashville, Tennessee' },
+
+    // ── Big Ten ── (Washington & Wisconsin do not sponsor baseball)
+    { team: 'Illinois Fighting Illini',  stadium: 'Illinois Field',                           city: 'Champaign, Illinois' },
+    { team: 'Indiana Hoosiers',          stadium: 'Bart Kaufman Field',                       city: 'Bloomington, Indiana' },
+    { team: 'Iowa Hawkeyes',             stadium: 'Duane Banks Field',                        city: 'Iowa City, Iowa' },
+    { team: 'Maryland Terrapins',        stadium: 'Bob "Turtle" Smith Stadium',                city: 'College Park, Maryland' },
+    { team: 'Michigan Wolverines',       stadium: 'Ray Fisher Stadium',                       city: 'Ann Arbor, Michigan' },
+    { team: 'Michigan State Spartans',   stadium: 'McLane Baseball Stadium at Kobs Field',    city: 'East Lansing, Michigan' },
+    { team: 'Minnesota Golden Gophers',  stadium: 'Siebert Field',                            city: 'Minneapolis, Minnesota' },
+    { team: 'Nebraska Cornhuskers',      stadium: 'Haymarket Park',                           city: 'Lincoln, Nebraska' },
+    { team: 'Northwestern Wildcats',     stadium: 'Rocky and Berenice Miller Park',           city: 'Evanston, Illinois' },
+    { team: 'Ohio State Buckeyes',       stadium: 'Bill Davis Stadium',                       city: 'Columbus, Ohio' },
+    { team: 'Oregon Ducks',              stadium: 'PK Park',                                  city: 'Eugene, Oregon' },
+    { team: 'Penn State Nittany Lions',  stadium: 'Medlar Field at Lubrano Park',             city: 'University Park, Pennsylvania' },
+    { team: 'Purdue Boilermakers',       stadium: 'Alexander Field',                          city: 'West Lafayette, Indiana' },
+    { team: 'Rutgers Scarlet Knights',   stadium: 'Bainton Field',                            city: 'Piscataway, New Jersey' },
+    { team: 'UCLA Bruins',               stadium: 'Jackie Robinson Stadium',                  city: 'Los Angeles, California' },
+    { team: 'USC Trojans',               stadium: 'Dedeaux Field',                            city: 'Los Angeles, California' },
+
+    // ── Big 12 ── (Colorado, Iowa State & Utah do not sponsor baseball)
+    { team: 'Arizona Wildcats',          stadium: 'Hi Corbett Field',                         city: 'Tucson, Arizona' },
+    { team: 'Arizona State Sun Devils',  stadium: 'Phoenix Municipal Stadium',                city: 'Tempe, Arizona' },
+    { team: 'Baylor Bears',              stadium: 'Baylor Ballpark',                          city: 'Waco, Texas' },
+    { team: 'BYU Cougars',               stadium: 'Larry H. Miller Field',                    city: 'Provo, Utah' },
+    { team: 'Cincinnati Bearcats',       stadium: 'Marge Schott Stadium',                     city: 'Cincinnati, Ohio' },
+    { team: 'Houston Cougars',           stadium: 'Darryl & Lori Schroeder Park',             city: 'Houston, Texas' },
+    { team: 'Kansas Jayhawks',           stadium: 'Hoglund Ballpark',                         city: 'Lawrence, Kansas' },
+    { team: 'Kansas State Wildcats',     stadium: 'Tointon Family Stadium',                   city: 'Manhattan, Kansas' },
+    { team: 'Oklahoma State Cowboys',    stadium: "O'Brate Stadium",                          city: 'Stillwater, Oklahoma' },
+    { team: 'TCU Horned Frogs',          stadium: 'Lupton Stadium',                           city: 'Fort Worth, Texas' },
+    { team: 'Texas Tech Red Raiders',    stadium: 'Dan Law Field at Rip Griffin Park',        city: 'Lubbock, Texas' },
+    { team: 'UCF Knights',               stadium: 'John Euliano Park',                        city: 'Orlando, Florida' },
+    { team: 'West Virginia Mountaineers',stadium: 'Monongalia County Ballpark',               city: 'Morgantown, West Virginia' },
+
+    // ── ACC ── (Syracuse does not sponsor baseball)
+    { team: 'Boston College Eagles',     stadium: 'Eddie Pellagrini Diamond',                 city: 'Chestnut Hill, Massachusetts' },
+    { team: 'California Golden Bears',   stadium: 'Evans Diamond',                            city: 'Berkeley, California' },
+    { team: 'Clemson Tigers',            stadium: 'Doug Kingsmore Stadium',                    city: 'Clemson, South Carolina' },
+    { team: 'Duke Blue Devils',          stadium: 'Jack Coombs Field',                        city: 'Durham, North Carolina' },
+    { team: 'Florida State Seminoles',   stadium: 'Dick Howser Stadium',                      city: 'Tallahassee, Florida' },
+    { team: 'Georgia Tech Yellow Jackets', stadium: 'Russ Chandler Stadium',                  city: 'Atlanta, Georgia' },
+    { team: 'Louisville Cardinals',      stadium: 'Jim Patterson Stadium',                    city: 'Louisville, Kentucky' },
+    { team: 'Miami Hurricanes',          stadium: 'Alex Rodriguez Park at Mark Light Field',  city: 'Coral Gables, Florida' },
+    { team: 'NC State Wolfpack',         stadium: 'Doak Field at Dail Park',                  city: 'Raleigh, North Carolina' },
+    { team: 'North Carolina Tar Heels',  stadium: 'Boshamer Stadium',                         city: 'Chapel Hill, North Carolina' },
+    { team: 'Notre Dame Fighting Irish', stadium: 'Frank Eck Stadium',                        city: 'Notre Dame, Indiana' },
+    { team: 'Pittsburgh Panthers',       stadium: 'Charles L. Cost Field',                    city: 'Pittsburgh, Pennsylvania' },
+    { team: 'SMU Mustangs',              stadium: 'Kirk Perry Stadium',                       city: 'Dallas, Texas' },
+    { team: 'Stanford Cardinal',         stadium: 'Sunken Diamond',                           city: 'Stanford, California' },
+    { team: 'Virginia Cavaliers',        stadium: 'Disharoon Park',                           city: 'Charlottesville, Virginia' },
+    { team: 'Virginia Tech Hokies',      stadium: 'English Field',                            city: 'Blacksburg, Virginia' },
+    { team: 'Wake Forest Demon Deacons', stadium: 'David F. Couch Ballpark',                   city: 'Winston-Salem, North Carolina' },
+
+    // ── Other elite CWS programs ──
+    { team: 'Oregon State Beavers',      stadium: 'Goss Stadium at Coleman Field',            city: 'Corvallis, Oregon' },
+    { team: 'Coastal Carolina Chanticleers', stadium: 'Springs Brooks Stadium',               city: 'Conway, South Carolina' },
+  ],
+
   NBA: [
     { team: 'Atlanta Hawks',          stadium: 'State Farm Arena',               city: 'Atlanta, Georgia' },
     { team: 'Boston Celtics',         stadium: 'TD Garden',                      city: 'Boston, Massachusetts' },
@@ -279,7 +444,7 @@ export const LEAGUE_STADIUMS = {
 };
 
 export const LEAGUE_ICONS = {
-  MLB: '⚾', NFL: '🏈', NBA: '🏀', NHL: '🏒', MLS: '⚽', WNBA: '🏀', CFB: '🎓',
+  MLB: '⚾', NFL: '🏈', NBA: '🏀', NHL: '🏒', MLS: '⚽', WNBA: '🏀', CFB: '🏈', CBB: '🎓', CBASE: '🌽',
 };
 
 export const LEAGUE_KEYS = Object.keys(LEAGUE_STADIUMS);

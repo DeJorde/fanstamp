@@ -5,7 +5,7 @@ import { computeBadges } from '../utils/badges';
 import { useTheme } from '../context/ThemeContext';
 import { ProgressRing } from '../components/ProgressRing';
 
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
 export function LeaguesScreen({ events, onSelectLeague }) {
   const { styles, colors, retro } = useTheme();
