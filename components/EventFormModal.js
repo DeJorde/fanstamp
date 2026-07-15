@@ -7,11 +7,13 @@ import { fetchVenueSuggestions, fetchCitySuggestions } from '../utils/geo';
 import { CategoryBadge } from './CategoryBadge';
 import { DatePickerField } from './DatePickerField';
 import { AutocompleteField } from './AutocompleteField';
+import { FullScreenPhotoModal } from './FullScreenPhotoModal';
 import { useTheme } from '../context/ThemeContext';
 
 export function EventFormModal({ visible, onClose, onSave, initialValues, editMode }) {
   const { styles, colors } = useTheme();
   const [form, setForm] = useState(initialValues ?? EMPTY_FORM);
+  const [showTicketFull, setShowTicketFull] = useState(false);
 
   useEffect(() => {
     if (visible) setForm(initialValues ?? EMPTY_FORM);
@@ -39,6 +41,22 @@ export function EventFormModal({ visible, onClose, onSave, initialValues, editMo
         .filter((a) => a.base64)
         .map((a) => `data:image/jpeg;base64,${a.base64}`);
       set('photos', [...form.photos, ...picked]);
+    }
+  }
+
+  async function pickTicketPhoto() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Allow photo library access to attach a ticket photo.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.6,
+      base64: true,
+    });
+    if (!result.canceled && result.assets?.[0]?.base64) {
+      set('ticketPhoto', `data:image/jpeg;base64,${result.assets[0].base64}`);
     }
   }
 
@@ -211,8 +229,39 @@ export function EventFormModal({ visible, onClose, onSave, initialValues, editMo
               )}
             </View>
 
+            <View style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>Ticket</Text>
+              {form.ticketPhoto ? (
+                <>
+                  <View style={styles.photoPickerRow}>
+                    <View style={styles.photoPickerThumbWrap}>
+                      <Image source={{ uri: form.ticketPhoto }} style={styles.photoPickerThumb} resizeMode="cover" />
+                      <TouchableOpacity
+                        style={styles.photoPickerRemove}
+                        onPress={() => set('ticketPhoto', null)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={styles.photoPickerRemoveText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <TouchableOpacity style={styles.photoPickerAddBtn} onPress={() => setShowTicketFull(true)} activeOpacity={0.7}>
+                    <Text style={styles.photoPickerAddIcon}>🔍</Text>
+                    <Text style={styles.photoPickerAddText}>Read Ticket</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity style={styles.photoPickerAddBtn} onPress={pickTicketPhoto} activeOpacity={0.7}>
+                  <Text style={styles.photoPickerAddIcon}>🎟</Text>
+                  <Text style={styles.photoPickerAddText}>Add Ticket</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
           </ScrollView>
         </KeyboardAvoidingView>
+
+        <FullScreenPhotoModal uri={showTicketFull ? form.ticketPhoto : null} onClose={() => setShowTicketFull(false)} />
       </View>
     </Modal>
   );

@@ -1,5 +1,6 @@
 import { TouchableOpacity, View, Text, Image } from 'react-native';
 import { CategoryBadge } from './CategoryBadge';
+import { VerifiedBadge } from './VerifiedBadge';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 
@@ -12,7 +13,10 @@ export function EventCard({ item, onPress }) {
         <View style={styles.cardBody}>
           <View style={styles.cardTop}>
             <Text style={styles.eventName}>{item.name}</Text>
-            <CategoryBadge category={item.category} />
+            <View style={styles.badgeRow}>
+              {item.verified && <VerifiedBadge />}
+              <CategoryBadge category={item.category} />
+            </View>
           </View>
           <View style={styles.cardMeta}>
             <Text style={styles.metaIcon}>📍</Text>

@@ -4,6 +4,7 @@ import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getTeamGameLog } from '../utils/teamStats';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
+import { VerifiedBadge } from './VerifiedBadge';
 
 const OUTCOME_META = {
   win:  { label: 'W', styleKey: 'gameLogBadgeWin' },
@@ -37,6 +38,7 @@ export function TeamGameLogScreen({ league, team, events }) {
               </Text>
               <Text style={styles.gameLogVenue}>{g.venue}</Text>
               <Text style={styles.gameLogDate}>{formatDisplayDate(g.date)}</Text>
+              {g.verified && <VerifiedBadge />}
             </View>
           </View>
         );

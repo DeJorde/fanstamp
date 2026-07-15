@@ -116,6 +116,8 @@ function AppContent() {
         homeTeam: form.homeTeam.trim(),
         awayTeam: form.awayTeam.trim(),
         result:   form.result,
+        ticketPhoto: form.ticketPhoto || null,
+        verified: !!form.ticketPhoto,
       };
       setEvents((prev) => prev.map((e) => (e.id === editingId ? { ...e, ...updated } : e)));
       setDetailEvent((prev) => ({ ...prev, ...updated }));
@@ -141,6 +143,8 @@ function AppContent() {
         homeTeam:    form.homeTeam.trim(),
         awayTeam:    form.awayTeam.trim(),
         result:      form.result,
+        ticketPhoto: form.ticketPhoto || null,
+        verified:    !!form.ticketPhoto,
         coordinates: null,
       };
       setEvents((prev) => [newEvent, ...prev]);

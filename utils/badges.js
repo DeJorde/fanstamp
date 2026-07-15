@@ -142,6 +142,7 @@ export function getLeagueDetail(events, league) {
       visitCount: matches.length,
       dates,
       photo: withPhoto ? withPhoto.photos[0] : null,
+      verified: matches.some((e) => e.verified),
     };
   });
 }

@@ -4,6 +4,7 @@ import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getLeagueDetail } from '../utils/badges';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
+import { VerifiedBadge } from './VerifiedBadge';
 
 export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketList }) {
   const { styles } = useTheme();
@@ -80,8 +81,11 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
             <View style={styles.leagueTeamBody}>
               <View style={styles.leagueTeamHeader}>
                 <Text style={styles.leagueTeamStadium}>{t.stadium}</Text>
-                <View style={styles.statsCountPill}>
-                  <Text style={styles.statsCountPillText}>{t.visitCount}×</Text>
+                <View style={styles.badgeRow}>
+                  {t.verified && <VerifiedBadge />}
+                  <View style={styles.statsCountPill}>
+                    <Text style={styles.statsCountPillText}>{t.visitCount}×</Text>
+                  </View>
                 </View>
               </View>
               <Text style={styles.leagueTeamName}>{t.team}</Text>

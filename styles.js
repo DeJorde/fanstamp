@@ -682,6 +682,28 @@ function buildStyles(c) {
     gameLogVenue:    { fontSize: 13, color: c.textSecondary },
     gameLogDate:     { fontSize: 12, color: c.textDim },
 
+    // ── Verified attendance badge ──────────────────────────────────────────────
+    badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    // Fixed colors (not theme-adaptive) — same convention as gameLogBadgeWin.
+    verifiedBadge: {
+      alignSelf: 'flex-start', backgroundColor: '#0d2818', borderRadius: 8,
+      paddingHorizontal: 8, paddingVertical: 3,
+    },
+    verifiedBadgeText: { fontSize: 11, fontWeight: '700', color: '#4ADE80' },
+    // Retro-only "old passport stamp" look — sepia ink, rotated. Always these
+    // fixed brown tones regardless of which palette built this stylesheet,
+    // since a screen only ever renders this when retro mode is on.
+    verifiedStamp: {
+      alignSelf: 'flex-start', borderWidth: 2, borderColor: '#7A3B12', borderRadius: 4,
+      paddingHorizontal: 8, paddingVertical: 2,
+      backgroundColor: 'rgba(122, 59, 18, 0.1)',
+      transform: [{ rotate: '-6deg' }],
+    },
+    verifiedStampText: {
+      fontSize: 11, fontWeight: '800', color: '#7A3B12',
+      letterSpacing: 1.5, textTransform: 'uppercase',
+    },
+
     // ── Photo picker (form) ────────────────────────────────────────────────────
     photoPickerRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     photoPickerThumbWrap: { position: 'relative', width: 90, height: 90 },
@@ -724,6 +746,12 @@ function buildStyles(c) {
     },
     photoFullCloseText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
     photoFullImage:     { width: '100%', height: '82%' },
+    photoFullScrollView: { flex: 1, width: '100%' },
+    photoFullZoomContent: { flexGrow: 1, width: '100%', alignItems: 'center', justifyContent: 'center' },
+    photoFullHint: {
+      position: 'absolute', bottom: 42, alignSelf: 'center',
+      color: 'rgba(255,255,255,0.6)', fontSize: 12,
+    },
 
     // ── Form autocomplete dropdown ─────────────────────────────────────────────
     formDropdown: {

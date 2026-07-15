@@ -95,5 +95,6 @@ export function getTeamGameLog(events, league, team) {
     isHome: e.homeTeam === team,
     opponent: opponentForTeam(e, team),
     outcome: outcomeForTeam(e, team),
+    verified: !!e.verified,
   }));
 }

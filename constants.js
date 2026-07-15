@@ -90,7 +90,7 @@ export const GROUP_COLORS = {
 
 export const EMPTY_FORM = {
   name: '', venue: '', city: '', date: '', category: 'NFL', notes: '', photos: [],
-  homeTeam: '', awayTeam: '', result: null,
+  homeTeam: '', awayTeam: '', result: null, ticketPhoto: null,
 };
 
 export const GOOGLE_API_KEY = 'AIzaSyCQPsXimsCknE1AjLf_eW11Vb53xeSE2Cs';

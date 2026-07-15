@@ -1,24 +1,9 @@
-import { ScrollView, TouchableOpacity, View, Text, Image, Modal } from 'react-native';
+import { ScrollView, TouchableOpacity, View, Text, Image } from 'react-native';
 import { useState } from 'react';
 import { CategoryBadge } from './CategoryBadge';
+import { FullScreenPhotoModal } from './FullScreenPhotoModal';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
-
-function FullScreenPhotoModal({ uri, onClose }) {
-  const { styles } = useTheme();
-  return (
-    <Modal visible={!!uri} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.photoFullScreen}>
-        <TouchableOpacity style={styles.photoFullClose} onPress={onClose} activeOpacity={0.8}>
-          <Text style={styles.photoFullCloseText}>✕</Text>
-        </TouchableOpacity>
-        {uri ? (
-          <Image source={{ uri }} style={styles.photoFullImage} resizeMode="contain" />
-        ) : null}
-      </View>
-    </Modal>
-  );
-}
 
 function DetailRow({ icon, label, value }) {
   const { styles } = useTheme();
