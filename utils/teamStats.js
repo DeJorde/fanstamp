@@ -1,15 +1,5 @@
 import { TEAM_TRACKED_CATEGORIES } from '../constants';
-import { parseDateStr } from './dates';
-
-function hasDate(e) { return !!(e.date && e.date !== '—'); }
-
-// Chronological order, undated events pushed to the end — same convention as
-// utils/badges.js's sortByDateAsc.
-function sortByDateAsc(events) {
-  const dated   = events.filter(hasDate).sort((a, b) => parseDateStr(a.date) - parseDateStr(b.date));
-  const undated = events.filter((e) => !hasDate(e));
-  return [...dated, ...undated];
-}
+import { sortByDateAsc } from './eventDates';
 
 // Result is recorded from the home/away perspective, not the team's — this
 // resolves it to how `team` specifically fared in that event.

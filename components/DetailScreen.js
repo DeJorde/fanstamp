@@ -2,6 +2,7 @@ import { ScrollView, TouchableOpacity, View, Text, Image } from 'react-native';
 import { useState } from 'react';
 import { CategoryBadge } from './CategoryBadge';
 import { FullScreenPhotoModal } from './FullScreenPhotoModal';
+import { GameStatsCard } from './GameStatsCard';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 
@@ -18,7 +19,7 @@ function DetailRow({ icon, label, value }) {
   );
 }
 
-export function DetailScreen({ event, onEdit, onDelete }) {
+export function DetailScreen({ event, onEdit, onDelete, onRetryStats }) {
   const { styles, colors } = useTheme();
   const [fullPhotoUri, setFullPhotoUri] = useState(null);
   const hasPhotos = event.photos && event.photos.length > 0;
@@ -52,6 +53,8 @@ export function DetailScreen({ event, onEdit, onDelete }) {
           <View style={styles.detailDivider} />
           <DetailRow icon="📅" label="Date"     value={formatDisplayDate(event.date)} />
         </View>
+
+        <GameStatsCard event={event} onRetry={onRetryStats} />
 
         <View style={styles.detailCard}>
           <Text style={styles.detailSectionLabel}>Personal Notes</Text>

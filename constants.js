@@ -6,6 +6,12 @@ export const FAVORITE_TEAM_STORAGE_KEY = '@stadiumlog_favorite_team';
 // Team + Game Result fields on the event form and feed the My Teams section.
 export const TEAM_TRACKED_CATEGORIES = ['NFL', 'MLB', 'NBA', 'NHL', 'WNBA', 'MLS', 'CFB', 'CBB', 'CBASE'];
 
+// Categories with a free public game-stats API available (MLB Stats API for
+// MLB, ESPN's public site API for the rest) — gates automatic game-stats
+// fetching after an event is saved. Narrower than TEAM_TRACKED_CATEGORIES:
+// WNBA/MLS/CBASE have no wired-up stats source (yet).
+export const GAME_STATS_CATEGORIES = ['MLB', 'NFL', 'NBA', 'NHL', 'CFB', 'CBB'];
+
 export const RESULT_OPTIONS = [
   { value: 'home', label: 'Home Win',        icon: '🏠' },
   { value: 'away', label: 'Away Win',        icon: '🚌' },

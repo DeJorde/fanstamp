@@ -5,6 +5,7 @@ import { getTeamGameLog } from '../utils/teamStats';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 import { VerifiedBadge } from './VerifiedBadge';
+import { PlayerAttendanceStats } from './PlayerAttendanceStats';
 
 const OUTCOME_META = {
   win:  { label: 'W', styleKey: 'gameLogBadgeWin' },
@@ -24,6 +25,8 @@ export function TeamGameLogScreen({ league, team, events }) {
     <ScrollView style={styles.leaguesScroll} contentContainerStyle={styles.leaguesContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.detailName}>{LEAGUE_ICONS[league]} {team}</Text>
       <Text style={styles.leagueDetailSubtitle}>{games.length} game{games.length === 1 ? '' : 's'} attended</Text>
+
+      <PlayerAttendanceStats league={league} team={team} events={events} />
 
       {games.map((g) => {
         const meta = outcomeMeta(g.outcome);

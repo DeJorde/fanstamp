@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, EMPTY_FORM } from './constants';
 import { eventToForm, geocodeVenue } from './utils/geo';
+import { canFetchGameStats, fetchGameStats } from './utils/gameStatsApi';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
 import { StatsScreen } from './screens/StatsScreen';
@@ -55,6 +56,15 @@ function AppContent() {
         .forEach(async (event) => {
           const coords = await geocodeVenue(event.venue, event.location);
           if (coords) setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, coordinates: coords } : e)));
+        });
+      // Retry game-stats fetches that never resolved (app killed mid-fetch)
+      // or that were skipped because the event's date hadn't happened yet.
+      loaded
+        .filter((e) => canFetchGameStats(e) && (!e.gameStats || e.gameStats.status === 'loading'))
+        .forEach((event) => {
+          fetchGameStats(event).then((gameStats) => {
+            setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, gameStats } : e)));
+          });
         });
     });
     AsyncStorage.getItem(BUCKET_LIST_STORAGE_KEY).then((raw) => {
@@ -130,6 +140,17 @@ function AppContent() {
           setDetailEvent((prev) => prev && prev.id === editingId ? { ...prev, coordinates: coords } : prev);
         }
       }
+      if (existing && (
+        existing.date !== updated.date || existing.homeTeam !== updated.homeTeam ||
+        existing.awayTeam !== updated.awayTeam || existing.category !== updated.category
+      ) && canFetchGameStats(updated)) {
+        setEvents((prev) => prev.map((e) => (e.id === editingId ? { ...e, gameStats: { status: 'loading' } } : e)));
+        setDetailEvent((prev) => prev && prev.id === editingId ? { ...prev, gameStats: { status: 'loading' } } : prev);
+        fetchGameStats(updated).then((gameStats) => {
+          setEvents((prev) => prev.map((e) => (e.id === editingId ? { ...e, gameStats } : e)));
+          setDetailEvent((prev) => prev && prev.id === editingId ? { ...prev, gameStats } : prev);
+        });
+      }
     } else {
       const newEvent = {
         id:          Date.now().toString(),
@@ -152,7 +173,22 @@ function AppContent() {
       geocodeVenue(newEvent.venue, newEvent.location).then((coords) => {
         if (coords) setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? { ...e, coordinates: coords } : e)));
       });
+      if (canFetchGameStats(newEvent)) {
+        setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? { ...e, gameStats: { status: 'loading' } } : e)));
+        fetchGameStats(newEvent).then((gameStats) => {
+          setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? { ...e, gameStats } : e)));
+        });
+      }
     }
+  }
+
+  function retryGameStats(event) {
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, gameStats: { status: 'loading' } } : e)));
+    setDetailEvent((prev) => prev && prev.id === event.id ? { ...prev, gameStats: { status: 'loading' } } : prev);
+    fetchGameStats(event).then((gameStats) => {
+      setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, gameStats } : e)));
+      setDetailEvent((prev) => prev && prev.id === event.id ? { ...prev, gameStats } : prev);
+    });
   }
 
   function handleDelete() {
@@ -203,7 +239,7 @@ function AppContent() {
       <View style={styles.screen}>
         {activeTab === 'events' ? (
           inEventDetail ? (
-            <DetailScreen event={detailEvent} onEdit={openEdit} onDelete={handleDelete} />
+            <DetailScreen event={detailEvent} onEdit={openEdit} onDelete={handleDelete} onRetryStats={retryGameStats} />
           ) : (
             <EventsScreen events={events} onCardPress={setDetailEvent} onAddPress={openAdd} onPlaceSelect={handlePlaceSelect} />
           )

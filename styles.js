@@ -273,6 +273,29 @@ function buildStyles(c) {
     detailDivider: { height: StyleSheet.hairlineWidth, backgroundColor: c.border, marginLeft: 54 },
     detailSectionLabel: { fontSize: 11, fontWeight: '600', color: c.textDim, textTransform: 'uppercase', letterSpacing: 0.6, padding: 14, paddingBottom: 6 },
     detailNotesText: { fontSize: 15, color: c.textSecondary, lineHeight: 22, padding: 14, paddingTop: 0 },
+
+    // ── Game Stats card (event detail) ─────────────────────────────────────────
+    gameStatsLoadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
+    gameStatsLoadingText: { fontSize: 14, color: c.textSecondary },
+    gameStatsEmptyText: { fontSize: 14, color: c.textDim, padding: 14, paddingBottom: 4 },
+    gameStatsRetryText: { fontSize: 13, fontWeight: '700', color: c.accent, paddingHorizontal: 14, paddingBottom: 14 },
+    gameStatsScoreRow: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      paddingHorizontal: 14, paddingBottom: 12,
+    },
+    gameStatsScoreTeam: { flex: 1, fontSize: 13, fontWeight: '600', color: c.textSecondary, textAlign: 'center' },
+    gameStatsScoreValue: { fontSize: 22, fontWeight: '800', color: c.text, paddingHorizontal: 12 },
+    gameStatsStatRow: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      paddingHorizontal: 14, paddingVertical: 8,
+      borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.borderFaint,
+    },
+    gameStatsStatValue: { flex: 1, fontSize: 14, fontWeight: '700', color: c.text, textAlign: 'center' },
+    gameStatsStatLabel: {
+      flex: 1.4, fontSize: 11, color: c.textDim, textAlign: 'center',
+      textTransform: 'uppercase', letterSpacing: 0.4,
+    },
+
     editBtn: { backgroundColor: c.bg2, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, alignItems: 'center' },
     editBtnText: { fontSize: 16, fontWeight: '600', color: c.text },
     deleteBtn: { backgroundColor: '#2d0f0f', borderRadius: 14, borderWidth: 1, borderColor: '#5c1a1a', padding: 16, alignItems: 'center' },
@@ -681,6 +704,32 @@ function buildStyles(c) {
     gameLogOpponent: { fontSize: 15, fontWeight: '700', color: c.text },
     gameLogVenue:    { fontSize: 13, color: c.textSecondary },
     gameLogDate:     { fontSize: 12, color: c.textDim },
+
+    // ── My Player Stats (Team Game Log screen) ────────────────────────────────
+    playerStatsSection: { gap: 10, marginBottom: 22 },
+    playerStatCard: {
+      backgroundColor: c.bg2, borderRadius: 14,
+      borderWidth: 1, borderColor: c.border,
+      padding: 14, gap: 6,
+    },
+    playerStatTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    playerStatName: { flex: 1, fontSize: 15, fontWeight: '700', color: c.text },
+    playerStatPosition: {
+      fontSize: 11, fontWeight: '700', color: c.textDim,
+      backgroundColor: c.bg3, borderRadius: 6,
+      paddingHorizontal: 6, paddingVertical: 2,
+    },
+    playerStatLine: { fontSize: 13, color: c.textSecondary },
+    playerStatBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+    playerArrowPill: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+    playerArrowText: { fontSize: 12, fontWeight: '800' },
+    // Fixed colors (not theme-adaptive) — same convention as gameLogBadgeWin.
+    playerArrowUp:        { backgroundColor: '#0d2818' },
+    playerArrowUpText:    { color: '#4ADE80' },
+    playerArrowDown:      { backgroundColor: '#2a0808' },
+    playerArrowDownText:  { color: '#ff6b6b' },
+    playerArrowNeutral:     { backgroundColor: '#1a1a1a' },
+    playerArrowNeutralText: { color: '#999999' },
 
     // ── Verified attendance badge ──────────────────────────────────────────────
     badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

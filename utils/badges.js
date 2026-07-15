@@ -1,18 +1,8 @@
 import { CATEGORY_ICONS } from '../constants';
 import { LEAGUE_STADIUMS } from '../leagueStadiums';
-import { parseDateStr } from './dates';
 import { resolveStateName } from './usStates';
-
-function hasDate(e) { return !!(e.date && e.date !== '—'); }
-
-// Chronological order is the only sensible "timeline" we have — events carry
-// the date of the game/show itself, not a log-creation timestamp. Undated
-// events can't be placed on that timeline, so they're pushed to the end.
-function sortByDateAsc(events) {
-  const dated   = events.filter(hasDate).sort((a, b) => parseDateStr(a.date) - parseDateStr(b.date));
-  const undated = events.filter((e) => !hasDate(e));
-  return [...dated, ...undated];
-}
+import { fuzzyMatches } from './textMatch';
+import { hasDate, sortByDateAsc } from './eventDates';
 
 // Walks the timeline accumulating unique values, recording which event's date
 // first pushed the running total to each new size.
@@ -41,15 +31,8 @@ export function extractState(location) {
   return parts.length >= 2 ? parts[parts.length - 1] : null;
 }
 
-function normalize(s) {
-  return (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
-}
-
 function venueMatches(userVenue, canonicalName) {
-  const a = normalize(userVenue);
-  const b = normalize(canonicalName);
-  if (!a || !b) return false;
-  return a === b || a.includes(b) || b.includes(a);
+  return fuzzyMatches(userVenue, canonicalName);
 }
 
 const EVENT_COUNT_THRESHOLDS = [1, 10, 25, 50, 100];
