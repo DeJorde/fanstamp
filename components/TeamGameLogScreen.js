@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getTeamGameLog } from '../utils/teamStats';
 import { formatDisplayDate } from '../utils/dates';
@@ -17,7 +17,7 @@ function outcomeMeta(outcome) {
   return OUTCOME_META[outcome] ?? { label: '?', styleKey: 'gameLogBadgeUnknown' };
 }
 
-export function TeamGameLogScreen({ league, team, events }) {
+export function TeamGameLogScreen({ league, team, events, onSelectGame }) {
   const { styles } = useTheme();
   const games = useMemo(() => getTeamGameLog(events, league, team), [events, league, team]);
 
@@ -31,7 +31,12 @@ export function TeamGameLogScreen({ league, team, events }) {
       {games.map((g) => {
         const meta = outcomeMeta(g.outcome);
         return (
-          <View key={g.id} style={styles.gameLogCard}>
+          <TouchableOpacity
+            key={g.id}
+            style={styles.gameLogCard}
+            onPress={() => onSelectGame(g.raw)}
+            activeOpacity={0.7}
+          >
             <View style={[styles.gameLogBadge, styles[meta.styleKey]]}>
               <Text style={[styles.gameLogBadgeText, styles[`${meta.styleKey}Text`]]}>{meta.label}</Text>
             </View>
@@ -43,7 +48,8 @@ export function TeamGameLogScreen({ league, team, events }) {
               <Text style={styles.gameLogDate}>{formatDisplayDate(g.date)}</Text>
               {g.verified && <VerifiedBadge />}
             </View>
-          </View>
+            <Text style={styles.gameLogChevron}>›</Text>
+          </TouchableOpacity>
         );
       })}
     </ScrollView>

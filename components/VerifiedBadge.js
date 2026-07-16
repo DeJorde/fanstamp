@@ -6,7 +6,9 @@ export function VerifiedBadge() {
   if (retro) {
     return (
       <View style={styles.verifiedStamp}>
-        <Text style={styles.verifiedStampText}>Verified</Text>
+        <View style={styles.verifiedStampInner}>
+          <Text style={styles.verifiedStampText}>Verified</Text>
+        </View>
       </View>
     );
   }

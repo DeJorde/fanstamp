@@ -86,5 +86,6 @@ export function getTeamGameLog(events, league, team) {
     opponent: opponentForTeam(e, team),
     outcome: outcomeForTeam(e, team),
     verified: !!e.verified,
+    raw: e, // full event (incl. gameStats) — for the box score screen
   }));
 }

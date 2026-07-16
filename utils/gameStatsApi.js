@@ -30,6 +30,17 @@ export function canFetchGameStats(event) {
   return true;
 }
 
+// True for ESPN-backed events whose gameStats predate the full box score
+// fields (espnBoxscore/fullTeamStats) — lets App.js re-run the same idempotent
+// fetchGameStats() once to backfill older logged games for the box score
+// screen. MLB events never need this: gamesStarted/full player lines were
+// already retained in mlbBoxscore from day one.
+export function needsGameStatsRefresh(event) {
+  if (!event || event.gameStats?.status !== 'found') return false;
+  if (!ESPN_SPORT_SLUGS[event.category]) return false;
+  return !event.gameStats.espnBoxscore || !event.gameStats.fullTeamStats;
+}
+
 const ESPN_SPORT_SLUGS = {
   NFL: 'football/nfl',
   NBA: 'basketball/nba',
@@ -170,6 +181,36 @@ async function fetchEspnGameStats(event) {
     })
     .filter(Boolean);
 
+  // Every team stat ESPN reports (not just the 4 curated keyStats above) —
+  // powers the full box score screen's team-stats table. Same `summary`
+  // response already fetched above, no extra call.
+  const fullTeamStats = {
+    home: (homeBox?.statistics ?? []).map((s) => ({ label: s.label ?? s.displayName ?? s.name, value: s.displayValue })),
+    away: (awayBox?.statistics ?? []).map((s) => ({ label: s.label ?? s.displayName ?? s.name, value: s.displayValue })),
+  };
+
+  // Full per-player box score, generic across NFL/NBA/NHL/CFB/CBB: each team
+  // has one or more stat groups (passing/rushing/receiving for football, a
+  // single group for basketball, etc.), each with its own column labels and
+  // one row per athlete whose stats line up with those labels.
+  const boxPlayers = summary.boxscore?.players ?? [];
+  const homePlayerBox = boxPlayers.find((t) => fuzzyMatches(t.team?.displayName, homeC.team.displayName));
+  const awayPlayerBox = boxPlayers.find((t) => fuzzyMatches(t.team?.displayName, awayC.team.displayName));
+  const normalizeGroups = (teamBox) =>
+    (teamBox?.statistics ?? []).map((g) => ({
+      name: g.name ?? null,
+      labels: g.labels ?? [],
+      athletes: (g.athletes ?? []).map((a) => ({
+        name: a.athlete?.displayName ?? 'Unknown',
+        starter: !!a.starter,
+        stats: a.stats ?? [],
+      })),
+    })).filter((g) => g.athletes.length > 0);
+  const espnBoxscore = {
+    home: { groups: normalizeGroups(homePlayerBox) },
+    away: { groups: normalizeGroups(awayPlayerBox) },
+  };
+
   // Trimmed per-team leader board (already in this same response, no extra
   // call) — powers the best-effort "My Player Stats" view for non-MLB leagues.
   const espnLeaders = (summary.leaders ?? []).map((teamLeaders) => ({
@@ -189,6 +230,8 @@ async function fetchEspnGameStats(event) {
     sourceId: match.id,
     finalScore,
     keyStats,
+    fullTeamStats,
+    espnBoxscore,
     espnLeaders,
   };
 }

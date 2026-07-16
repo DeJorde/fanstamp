@@ -4,6 +4,8 @@ import { sortByDateAsc } from './eventDates';
 const MIN_SAMPLE_GAMES = 2;
 const MIN_SAMPLE_PA_OR_BF = 3;
 const FUN_LABEL_THRESHOLD = 0.10; // +10% better in attended games vs. season
+const MIN_CUMULATIVE_GAMES = 3;
+const TREND_IMPROVING_THRESHOLD = 0.08; // 2nd-half segment vs. 1st-half segment
 
 // MLB reports partial innings as .1/.2 (thirds), not decimal tenths.
 function inningsPitchedToOuts(ip) {
@@ -17,23 +19,13 @@ function outsToInningsPitched(outs) {
   return `${whole}.${third}`;
 }
 
-function emptyPlayerEntry(person, position) {
-  return {
-    personId: person.id,
-    name: person.fullName,
-    position: position?.abbreviation || position?.name || '',
-    gamesAttended: 0,
-    batting: { ab: 0, h: 0, hr: 0, rbi: 0, bb: 0, so: 0, pa: 0 },
-    pitching: { outs: 0, er: 0, h: 0, bb: 0, so: 0, bf: 0 },
-    latestSeasonStats: null,
-  };
-}
-
-// Pure aggregation over already-fetched event.gameStats.mlbBoxscore data — no
-// network calls here. Part 1's boxscore fetch already retained both this
-// game's stats AND the player's season-to-date stats as of that game, so the
-// "attended vs. season" comparison needs nothing extra.
-export function getMlbPlayerAttendanceStats(events, team) {
+// Shared walk over every attended MLB game for `team`, collecting each
+// player's per-game batting/pitching line (plus that game's seasonStats
+// snapshot and whether they started on the mound). Pure aggregation over
+// already-fetched event.gameStats.mlbBoxscore data — no network calls here.
+// Feeds getMlbPlayerAttendanceStats, getMlbStartingPitcherStats, and
+// getMlbCumulativePlayerStats so the boxscore-walking logic lives in one place.
+function collectMlbPlayerGames(events, team) {
   const teamId = resolveMlbTeamId(team);
   const attendedGames = sortByDateAsc(
     events.filter((e) =>
@@ -54,38 +46,69 @@ export function getMlbPlayerAttendanceStats(events, team) {
     Object.values(box[side].players || {}).forEach((p) => {
       const battingGame = p.stats?.batting;
       const pitchingGame = p.stats?.pitching;
-      const batted = battingGame && (battingGame.plateAppearances > 0);
-      const pitched = pitchingGame && (pitchingGame.battersFaced > 0);
+      const batted = battingGame && battingGame.plateAppearances > 0;
+      const pitched = pitchingGame && pitchingGame.battersFaced > 0;
       if (!batted && !pitched) return; // did not play (bench/DNP)
 
-      if (!byPlayer.has(p.person.id)) byPlayer.set(p.person.id, emptyPlayerEntry(p.person, p.position));
-      const entry = byPlayer.get(p.person.id);
-      entry.gamesAttended += 1;
-      entry.latestSeasonStats = p.seasonStats; // ascending order -> ends on most recent
-
-      if (batted) {
-        entry.batting.ab += battingGame.atBats || 0;
-        entry.batting.h += battingGame.hits || 0;
-        entry.batting.hr += battingGame.homeRuns || 0;
-        entry.batting.rbi += battingGame.rbi || 0;
-        entry.batting.bb += battingGame.baseOnBalls || 0;
-        entry.batting.so += battingGame.strikeOuts || 0;
-        entry.batting.pa += battingGame.plateAppearances || 0;
+      if (!byPlayer.has(p.person.id)) {
+        byPlayer.set(p.person.id, {
+          personId: p.person.id,
+          name: p.person.fullName,
+          position: p.position?.abbreviation || p.position?.name || '',
+          games: [],
+        });
       }
-      if (pitched) {
-        entry.pitching.outs += inningsPitchedToOuts(pitchingGame.inningsPitched);
-        entry.pitching.er += pitchingGame.earnedRuns || 0;
-        entry.pitching.h += pitchingGame.hits || 0;
-        entry.pitching.bb += pitchingGame.baseOnBalls || 0;
-        entry.pitching.so += pitchingGame.strikeOuts || 0;
-        entry.pitching.bf += pitchingGame.battersFaced || 0;
-      }
+      byPlayer.get(p.person.id).games.push({
+        date: event.date,
+        batting: batted ? battingGame : null,
+        pitching: pitched ? pitchingGame : null,
+        // MLB Stats API marks the pitcher who got the start with gamesStarted:
+        // 1 on their per-game line — no separate fetch needed to find the SP.
+        isStarter: !!(pitched && pitchingGame.gamesStarted === 1),
+        seasonStats: p.seasonStats,
+      });
     });
   });
 
+  return byPlayer;
+}
+
+function aggregateTotals(games) {
+  const batting = { ab: 0, h: 0, hr: 0, rbi: 0, bb: 0, so: 0, pa: 0 };
+  const pitching = { outs: 0, er: 0, h: 0, bb: 0, so: 0, bf: 0 };
+  games.forEach((g) => {
+    if (g.batting) {
+      batting.ab += g.batting.atBats || 0;
+      batting.h += g.batting.hits || 0;
+      batting.hr += g.batting.homeRuns || 0;
+      batting.rbi += g.batting.rbi || 0;
+      batting.bb += g.batting.baseOnBalls || 0;
+      batting.so += g.batting.strikeOuts || 0;
+      batting.pa += g.batting.plateAppearances || 0;
+    }
+    if (g.pitching) {
+      pitching.outs += inningsPitchedToOuts(g.pitching.inningsPitched);
+      pitching.er += g.pitching.earnedRuns || 0;
+      pitching.h += g.pitching.hits || 0;
+      pitching.bb += g.pitching.baseOnBalls || 0;
+      pitching.so += g.pitching.strikeOuts || 0;
+      pitching.bf += g.pitching.battersFaced || 0;
+    }
+  });
+  return { batting, pitching };
+}
+
+// "My Player Stats" — batters only. Pitchers get their own dedicated
+// "Starting Pitchers" subsection (getMlbStartingPitcherStats) with a richer,
+// starts-only view, so mixing them into one top-5-by-sample list (as this
+// used to do) would both duplicate them and compare AVG deltas against ERA
+// deltas when picking "Your Lucky Player" — apples to oranges.
+export function getMlbPlayerAttendanceStats(events, team) {
+  const byPlayer = collectMlbPlayerGames(events, team);
+
   const players = Array.from(byPlayer.values())
     .map((entry) => summarizePlayer(entry))
-    .filter(Boolean)
+    .filter((p) => p && p.role === 'batting')
     .sort((a, b) => b.gamesAttended - a.gamesAttended || b.sampleSize - a.sampleSize)
     .slice(0, 5);
 
@@ -104,44 +127,48 @@ export function getMlbPlayerAttendanceStats(events, team) {
 }
 
 function summarizePlayer(entry) {
-  const isBatter = entry.batting.pa > 0;
-  const isPitcher = entry.pitching.bf > 0;
+  const { batting, pitching } = aggregateTotals(entry.games);
+  const isBatter = batting.pa > 0;
+  const isPitcher = pitching.bf > 0;
   if (!isBatter && !isPitcher) return null;
 
   // Two-way players (rare) are summarized primarily by whichever role has
   // more of a sample this season — simplification, not a full dual-role view.
   const role = isBatter && isPitcher
-    ? (entry.batting.pa >= entry.pitching.bf ? 'batting' : 'pitching')
+    ? (batting.pa >= pitching.bf ? 'batting' : 'pitching')
     : (isBatter ? 'batting' : 'pitching');
+
+  const gamesAttended = entry.games.length;
+  const latestSeasonStats = entry.games[entry.games.length - 1]?.seasonStats;
 
   let attendedRate = null, seasonRate = null, delta = null, sampleSize, line;
 
   if (role === 'batting') {
-    const { ab, h, hr, rbi } = entry.batting;
+    const { ab, h, hr, rbi } = batting;
     attendedRate = ab > 0 ? h / ab : null;
-    const seasonAvg = parseFloat(entry.latestSeasonStats?.batting?.avg);
+    const seasonAvg = parseFloat(latestSeasonStats?.batting?.avg);
     seasonRate = Number.isFinite(seasonAvg) ? seasonAvg : null;
     if (attendedRate != null && seasonRate) delta = (attendedRate - seasonRate) / seasonRate;
-    sampleSize = entry.batting.pa;
-    line = `${formatRate(attendedRate)} AVG · ${hr} HR · ${rbi} RBI in ${entry.gamesAttended} game${entry.gamesAttended === 1 ? '' : 's'}`;
+    sampleSize = batting.pa;
+    line = `${formatRate(attendedRate)} AVG · ${hr} HR · ${rbi} RBI in ${gamesAttended} game${gamesAttended === 1 ? '' : 's'}`;
   } else {
-    const { outs, er, so } = entry.pitching;
+    const { outs, er, so } = pitching;
     const trueInnings = outs / 3;
     attendedRate = trueInnings > 0 ? (er * 9) / trueInnings : null;
-    const seasonEra = parseFloat(entry.latestSeasonStats?.pitching?.era);
+    const seasonEra = parseFloat(latestSeasonStats?.pitching?.era);
     seasonRate = Number.isFinite(seasonEra) ? seasonEra : null;
     if (attendedRate != null && seasonRate) delta = (seasonRate - attendedRate) / seasonRate; // lower ERA = better
-    sampleSize = entry.pitching.bf;
-    line = `${formatRate(attendedRate, 2, false)} ERA · ${so} K in ${outsToInningsPitched(outs)} IP (${entry.gamesAttended} game${entry.gamesAttended === 1 ? '' : 's'})`;
+    sampleSize = pitching.bf;
+    line = `${formatRate(attendedRate, 2, false)} ERA · ${so} K in ${outsToInningsPitched(outs)} IP (${gamesAttended} game${gamesAttended === 1 ? '' : 's'})`;
   }
 
-  const meetsSampleGuard = entry.gamesAttended >= MIN_SAMPLE_GAMES || sampleSize >= MIN_SAMPLE_PA_OR_BF;
+  const meetsSampleGuard = gamesAttended >= MIN_SAMPLE_GAMES || sampleSize >= MIN_SAMPLE_PA_OR_BF;
 
   return {
     personId: entry.personId,
     name: entry.name,
     position: entry.position,
-    gamesAttended: entry.gamesAttended,
+    gamesAttended,
     role,
     sampleSize,
     line,
@@ -150,6 +177,136 @@ function summarizePlayer(entry) {
     arrow: delta == null ? 'neutral' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'neutral',
     playsBetterWithYou: delta != null && delta > FUN_LABEL_THRESHOLD && meetsSampleGuard,
   };
+}
+
+// "Starting Pitchers" — starts-only aggregation (relief appearances excluded)
+// for whoever started a game the user attended, with the same
+// attended-vs-season-ERA arrow the batting cards use.
+export function getMlbStartingPitcherStats(events, team) {
+  const byPlayer = collectMlbPlayerGames(events, team);
+
+  return Array.from(byPlayer.values())
+    .map((entry) => {
+      const starts = entry.games.filter((g) => g.isStarter);
+      if (starts.length === 0) return null;
+
+      const totals = { outs: 0, er: 0, h: 0, bb: 0, so: 0, bf: 0 };
+      starts.forEach((g) => {
+        totals.outs += inningsPitchedToOuts(g.pitching.inningsPitched);
+        totals.er += g.pitching.earnedRuns || 0;
+        totals.h += g.pitching.hits || 0;
+        totals.bb += g.pitching.baseOnBalls || 0;
+        totals.so += g.pitching.strikeOuts || 0;
+        totals.bf += g.pitching.battersFaced || 0;
+      });
+
+      const trueInnings = totals.outs / 3;
+      const attendedRate = trueInnings > 0 ? (totals.er * 9) / trueInnings : null;
+      const seasonEra = parseFloat(starts[starts.length - 1].seasonStats?.pitching?.era);
+      const seasonRate = Number.isFinite(seasonEra) ? seasonEra : null;
+      const delta = attendedRate != null && seasonRate ? (seasonRate - attendedRate) / seasonRate : null;
+      const meetsSampleGuard = starts.length >= MIN_SAMPLE_GAMES || totals.bf >= MIN_SAMPLE_PA_OR_BF;
+
+      return {
+        personId: entry.personId,
+        name: entry.name,
+        position: entry.position,
+        gamesAttended: starts.length,
+        line: `${outsToInningsPitched(totals.outs)} IP · ${totals.h} H · ${totals.er} ER · ${totals.so} K · ${totals.bb} BB · ${formatRate(attendedRate, 2, false)} ERA (${starts.length} start${starts.length === 1 ? '' : 's'})`,
+        delta,
+        meetsSampleGuard,
+        arrow: delta == null ? 'neutral' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'neutral',
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.gamesAttended - a.gamesAttended)
+    .slice(0, 5);
+}
+
+// Per-game rate (not cumulative) for a single game, used only to classify a
+// trend direction — noisy on its own, which is why classifyTrend compares
+// segment averages rather than any single game.
+function gameRate(game, role) {
+  if (role === 'batting') {
+    const ab = game.batting?.atBats || 0;
+    return ab > 0 ? (game.batting.hits || 0) / ab : null;
+  }
+  const outs = inningsPitchedToOuts(game.pitching?.inningsPitched);
+  const trueInnings = outs / 3;
+  return trueInnings > 0 ? ((game.pitching.earnedRuns || 0) * 9) / trueInnings : null;
+}
+
+// Running cumulative rate after each game (AVG or ERA-to-date) — the
+// sparkline series. Smoother and more readable than plotting each game's own
+// noisy rate, while still telling the same improving/declining story.
+function buildTrendSeries(games, role) {
+  let runningAB = 0, runningH = 0, runningOuts = 0, runningER = 0;
+  const series = [];
+  games.forEach((g) => {
+    if (role === 'batting') {
+      if (!g.batting) return;
+      runningAB += g.batting.atBats || 0;
+      runningH += g.batting.hits || 0;
+      if (runningAB > 0) series.push(runningH / runningAB);
+    } else {
+      if (!g.pitching) return;
+      runningOuts += inningsPitchedToOuts(g.pitching.inningsPitched);
+      runningER += g.pitching.earnedRuns || 0;
+      const trueInnings = runningOuts / 3;
+      if (trueInnings > 0) series.push((runningER * 9) / trueInnings);
+    }
+  });
+  return series;
+}
+
+// Splits the player's per-game (non-cumulative) rates into a first-half and
+// second-half segment and compares the segment averages — "improving" needs
+// the second half to clear TREND_IMPROVING_THRESHOLD better than the first
+// (ERA sign-flipped, same convention as the existing arrow `delta`), so a
+// single hot or cold game doesn't flip the label.
+function classifyTrend(games, role) {
+  const rates = games.map((g) => gameRate(g, role)).filter((r) => r != null);
+  if (rates.length < MIN_CUMULATIVE_GAMES) return 'steady';
+
+  const mid = Math.ceil(rates.length / 2);
+  const firstHalf = rates.slice(0, mid);
+  const secondHalf = rates.slice(mid);
+  if (secondHalf.length === 0) return 'steady';
+
+  const avg = (arr) => arr.reduce((sum, v) => sum + v, 0) / arr.length;
+  const firstAvg = avg(firstHalf);
+  const secondAvg = avg(secondHalf);
+  if (firstAvg === 0) return 'steady';
+
+  const change = role === 'batting' ? (secondAvg - firstAvg) / firstAvg : (firstAvg - secondAvg) / firstAvg;
+  return change > TREND_IMPROVING_THRESHOLD ? 'improving' : 'steady';
+}
+
+// Players the user has seen at least MIN_CUMULATIVE_GAMES times — a
+// cumulative totals card with a running-rate sparkline, shown above "My
+// Player Stats". "Getting Hot" if their rate is trending up across the games
+// attended; "Your Regular" otherwise (a "you see this player a lot" label,
+// not a performance judgment).
+export function getMlbCumulativePlayerStats(events, team) {
+  const byPlayer = collectMlbPlayerGames(events, team);
+
+  return Array.from(byPlayer.values())
+    .filter((entry) => entry.games.length >= MIN_CUMULATIVE_GAMES)
+    .map((entry) => {
+      const summary = summarizePlayer(entry);
+      if (!summary) return null;
+      return {
+        personId: summary.personId,
+        name: summary.name,
+        position: summary.position,
+        gamesAttended: summary.gamesAttended,
+        line: summary.line,
+        trendSeries: buildTrendSeries(entry.games, summary.role),
+        trend: classifyTrend(entry.games, summary.role),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.gamesAttended - a.gamesAttended);
 }
 
 // Batting average conventionally drops the leading zero (".286"); ERA/WHIP

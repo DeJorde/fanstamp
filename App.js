@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, EMPTY_FORM } from './constants';
 import { eventToForm, geocodeVenue } from './utils/geo';
-import { canFetchGameStats, fetchGameStats } from './utils/gameStatsApi';
+import { canFetchGameStats, fetchGameStats, needsGameStatsRefresh } from './utils/gameStatsApi';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
 import { StatsScreen } from './screens/StatsScreen';
@@ -12,6 +12,7 @@ import { EventFormModal } from './components/EventFormModal';
 import { DetailScreen } from './components/DetailScreen';
 import { LeagueDetailScreen } from './components/LeagueDetailScreen';
 import { TeamGameLogScreen } from './components/TeamGameLogScreen';
+import { BoxScoreScreen } from './components/BoxScoreScreen';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const TABS = [
@@ -38,6 +39,7 @@ function AppContent() {
   const [detailEvent, setDetailEvent]   = useState(null);
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [boxScoreEvent, setBoxScoreEvent] = useState(null);
   const [favoriteTeam, setFavoriteTeam] = useState(null);
   const [formConfig, setFormConfig]   = useState({ visible: false, editingId: null });
   const [formPrefill, setFormPrefill] = useState(null);
@@ -57,10 +59,12 @@ function AppContent() {
           const coords = await geocodeVenue(event.venue, event.location);
           if (coords) setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, coordinates: coords } : e)));
         });
-      // Retry game-stats fetches that never resolved (app killed mid-fetch)
-      // or that were skipped because the event's date hadn't happened yet.
+      // Retry game-stats fetches that never resolved (app killed mid-fetch),
+      // were skipped because the event's date hadn't happened yet, or predate
+      // the full box score fields (needsGameStatsRefresh) — same idempotent
+      // fetchGameStats() backfills older logged games for the box score screen.
       loaded
-        .filter((e) => canFetchGameStats(e) && (!e.gameStats || e.gameStats.status === 'loading'))
+        .filter((e) => canFetchGameStats(e) && (!e.gameStats || e.gameStats.status === 'loading' || needsGameStatsRefresh(e)))
         .forEach((event) => {
           fetchGameStats(event).then((gameStats) => {
             setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, gameStats } : e)));
@@ -185,9 +189,11 @@ function AppContent() {
   function retryGameStats(event) {
     setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, gameStats: { status: 'loading' } } : e)));
     setDetailEvent((prev) => prev && prev.id === event.id ? { ...prev, gameStats: { status: 'loading' } } : prev);
+    setBoxScoreEvent((prev) => prev && prev.id === event.id ? { ...prev, gameStats: { status: 'loading' } } : prev);
     fetchGameStats(event).then((gameStats) => {
       setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, gameStats } : e)));
       setDetailEvent((prev) => prev && prev.id === event.id ? { ...prev, gameStats } : prev);
+      setBoxScoreEvent((prev) => prev && prev.id === event.id ? { ...prev, gameStats } : prev);
     });
   }
 
@@ -201,6 +207,7 @@ function AppContent() {
   const inEventDetail  = detailEvent !== null && activeTab === 'events';
   const inLeagueDetail = selectedLeague !== null && activeTab === 'leagues';
   const inTeamDetail   = selectedTeam !== null && activeTab === 'stats';
+  const inBoxScore     = boxScoreEvent !== null && inTeamDetail;
   const inDetail = inEventDetail || inLeagueDetail || inTeamDetail;
   const formInitialValues = formConfig.editingId && detailEvent
     ? eventToForm(detailEvent)
@@ -209,12 +216,16 @@ function AppContent() {
       : EMPTY_FORM;
 
   function handleBack() {
-    if (inEventDetail)  setDetailEvent(null);
-    if (inLeagueDetail) setSelectedLeague(null);
-    if (inTeamDetail)   setSelectedTeam(null);
+    // inBoxScore implies inTeamDetail is also true (selectedTeam still set),
+    // so this must be an else-if chain — otherwise both would clear at once
+    // and skip a level of back navigation.
+    if (inBoxScore)          setBoxScoreEvent(null);
+    else if (inEventDetail)  setDetailEvent(null);
+    else if (inLeagueDetail) setSelectedLeague(null);
+    else if (inTeamDetail)   setSelectedTeam(null);
   }
 
-  const backLabel = inLeagueDetail ? 'Leagues' : inTeamDetail ? 'Stats' : 'Events';
+  const backLabel = inLeagueDetail ? 'Leagues' : inBoxScore ? selectedTeam.team : inTeamDetail ? 'Stats' : 'Events';
 
   return (
     <View style={styles.root}>
@@ -257,7 +268,11 @@ function AppContent() {
             <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
           )
         ) : inTeamDetail ? (
-          <TeamGameLogScreen league={selectedTeam.league} team={selectedTeam.team} events={events} />
+          inBoxScore ? (
+            <BoxScoreScreen event={boxScoreEvent} onRetryStats={retryGameStats} />
+          ) : (
+            <TeamGameLogScreen league={selectedTeam.league} team={selectedTeam.team} events={events} onSelectGame={setBoxScoreEvent} />
+          )
         ) : (
           <StatsScreen
             events={events}
@@ -265,7 +280,7 @@ function AppContent() {
             onToggleBucketList={toggleBucketList}
             favoriteTeam={favoriteTeam}
             onToggleFavoriteTeam={toggleFavoriteTeam}
-            onSelectTeam={(league, team) => setSelectedTeam({ league, team })}
+            onSelectTeam={(league, team) => { setBoxScoreEvent(null); setSelectedTeam({ league, team }); }}
           />
         )}
       </View>

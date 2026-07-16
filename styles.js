@@ -679,6 +679,10 @@ function buildStyles(c) {
     teamLabelJinxText: { color: '#ff6b6b' },
     teamLabelUndecided:     { backgroundColor: '#1a1a1a' },
     teamLabelUndecidedText: { color: '#999999' },
+    teamLabelRegular:     { backgroundColor: '#1a1a2e' },
+    teamLabelRegularText: { color: '#8ab4f8' },
+    teamLabelHot:     { backgroundColor: '#0d2818' },
+    teamLabelHotText: { color: '#4ADE80' },
 
     // ── Team Game Log screen ──────────────────────────────────────────────────
     gameLogCard: {
@@ -704,6 +708,7 @@ function buildStyles(c) {
     gameLogOpponent: { fontSize: 15, fontWeight: '700', color: c.text },
     gameLogVenue:    { fontSize: 13, color: c.textSecondary },
     gameLogDate:     { fontSize: 12, color: c.textDim },
+    gameLogChevron:  { fontSize: 20, color: c.textFaint, fontWeight: '600' },
 
     // ── My Player Stats (Team Game Log screen) ────────────────────────────────
     playerStatsSection: { gap: 10, marginBottom: 22 },
@@ -721,6 +726,9 @@ function buildStyles(c) {
     },
     playerStatLine: { fontSize: 13, color: c.textSecondary },
     playerStatBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+    // Cumulative (multi-game) player card — stat line + running-rate sparkline.
+    cumulativeStatRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+    cumulativeStatLine: { flex: 1 },
     playerArrowPill: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
     playerArrowText: { fontSize: 12, fontWeight: '800' },
     // Fixed colors (not theme-adaptive) — same convention as gameLogBadgeWin.
@@ -739,18 +747,55 @@ function buildStyles(c) {
       paddingHorizontal: 8, paddingVertical: 3,
     },
     verifiedBadgeText: { fontSize: 11, fontWeight: '700', color: '#4ADE80' },
-    // Retro-only "old passport stamp" look — sepia ink, rotated. Always these
-    // fixed brown tones regardless of which palette built this stylesheet,
-    // since a screen only ever renders this when retro mode is on.
+    // Retro-only "old passport stamp" look — red ink, rotated, double-ruled
+    // border like a real notary/customs stamp. Always these fixed red tones
+    // regardless of which palette built this stylesheet, since a screen only
+    // ever renders this when retro mode is on.
     verifiedStamp: {
-      alignSelf: 'flex-start', borderWidth: 2, borderColor: '#7A3B12', borderRadius: 4,
-      paddingHorizontal: 8, paddingVertical: 2,
-      backgroundColor: 'rgba(122, 59, 18, 0.1)',
+      alignSelf: 'flex-start', borderWidth: 2, borderColor: '#CC0000', borderRadius: 4,
+      padding: 2,
+      backgroundColor: 'rgba(204, 0, 0, 0.06)',
       transform: [{ rotate: '-6deg' }],
     },
+    verifiedStampInner: {
+      borderWidth: 1, borderColor: '#CC0000', borderRadius: 2,
+      paddingHorizontal: 6, paddingVertical: 1,
+    },
     verifiedStampText: {
-      fontSize: 11, fontWeight: '800', color: '#7A3B12',
+      fontSize: 11, fontWeight: '400', color: '#CC0000',
       letterSpacing: 1.5, textTransform: 'uppercase',
+    },
+
+    // ── Box Score screen (Team Game Log → tap a game) ──────────────────────────
+    boxScoreTableCard: {
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      overflow: 'hidden',
+    },
+    boxScoreHeaderRow: {
+      flexDirection: 'row', backgroundColor: c.bg3,
+      borderBottomWidth: 1, borderBottomColor: c.border,
+    },
+    boxScoreRow: {
+      flexDirection: 'row', alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.borderFaint,
+    },
+    boxScoreColCell: { width: 48, textAlign: 'center', paddingVertical: 8 },
+    boxScoreHeaderText: {
+      fontSize: 10, fontWeight: '700', color: c.textDim,
+      textTransform: 'uppercase', letterSpacing: 0.4,
+    },
+    boxScoreCellText: { fontSize: 13, fontWeight: '600', color: c.textSecondary },
+    boxScoreNameCell: {
+      width: 150, flexDirection: 'row', alignItems: 'center', gap: 6,
+      paddingLeft: 12, paddingRight: 6,
+    },
+    boxScoreNameText: { flexShrink: 1, fontSize: 13, fontWeight: '600', color: c.text },
+    // Fixed colors (not theme-adaptive) — same convention as gameLogBadgeWin.
+    boxScoreTag: {
+      fontSize: 9, fontWeight: '800', color: '#3a86ff',
+      backgroundColor: '#1a2e4a', borderRadius: 4,
+      paddingHorizontal: 4, paddingVertical: 1,
     },
 
     // ── Photo picker (form) ────────────────────────────────────────────────────
