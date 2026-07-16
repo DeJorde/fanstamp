@@ -17,7 +17,7 @@ function outcomeMeta(outcome) {
   return OUTCOME_META[outcome] ?? { label: '?', styleKey: 'gameLogBadgeUnknown' };
 }
 
-export function TeamGameLogScreen({ league, team, events, onSelectGame }) {
+export function TeamGameLogScreen({ league, team, events, onSelectGame, onSelectFullStats }) {
   const { styles } = useTheme();
   const games = useMemo(() => getTeamGameLog(events, league, team), [events, league, team]);
 
@@ -25,6 +25,10 @@ export function TeamGameLogScreen({ league, team, events, onSelectGame }) {
     <ScrollView style={styles.leaguesScroll} contentContainerStyle={styles.leaguesContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.detailName}>{LEAGUE_ICONS[league]} {team}</Text>
       <Text style={styles.leagueDetailSubtitle}>{games.length} game{games.length === 1 ? '' : 's'} attended</Text>
+
+      <TouchableOpacity style={styles.fullTeamStatsBtn} onPress={onSelectFullStats} activeOpacity={0.8}>
+        <Text style={styles.fullTeamStatsBtnText}>📊 Full Team Stats</Text>
+      </TouchableOpacity>
 
       <PlayerAttendanceStats league={league} team={team} events={events} />
 

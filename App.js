@@ -13,6 +13,7 @@ import { DetailScreen } from './components/DetailScreen';
 import { LeagueDetailScreen } from './components/LeagueDetailScreen';
 import { TeamGameLogScreen } from './components/TeamGameLogScreen';
 import { BoxScoreScreen } from './components/BoxScoreScreen';
+import { CumulativeTeamStatsScreen } from './components/CumulativeTeamStatsScreen';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const TABS = [
@@ -40,6 +41,7 @@ function AppContent() {
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [boxScoreEvent, setBoxScoreEvent] = useState(null);
+  const [showFullTeamStats, setShowFullTeamStats] = useState(false);
   const [favoriteTeam, setFavoriteTeam] = useState(null);
   const [formConfig, setFormConfig]   = useState({ visible: false, editingId: null });
   const [formPrefill, setFormPrefill] = useState(null);
@@ -208,6 +210,7 @@ function AppContent() {
   const inLeagueDetail = selectedLeague !== null && activeTab === 'leagues';
   const inTeamDetail   = selectedTeam !== null && activeTab === 'stats';
   const inBoxScore     = boxScoreEvent !== null && inTeamDetail;
+  const inFullTeamStats = showFullTeamStats && inTeamDetail;
   const inDetail = inEventDetail || inLeagueDetail || inTeamDetail;
   const formInitialValues = formConfig.editingId && detailEvent
     ? eventToForm(detailEvent)
@@ -216,16 +219,19 @@ function AppContent() {
       : EMPTY_FORM;
 
   function handleBack() {
-    // inBoxScore implies inTeamDetail is also true (selectedTeam still set),
-    // so this must be an else-if chain — otherwise both would clear at once
-    // and skip a level of back navigation.
-    if (inBoxScore)          setBoxScoreEvent(null);
-    else if (inEventDetail)  setDetailEvent(null);
-    else if (inLeagueDetail) setSelectedLeague(null);
-    else if (inTeamDetail)   setSelectedTeam(null);
+    // inBoxScore/inFullTeamStats imply inTeamDetail is also true (selectedTeam
+    // still set), so this must be an else-if chain — otherwise multiple would
+    // clear at once and skip a level of back navigation.
+    if (inBoxScore)               setBoxScoreEvent(null);
+    else if (inFullTeamStats)     setShowFullTeamStats(false);
+    else if (inEventDetail)       setDetailEvent(null);
+    else if (inLeagueDetail)      setSelectedLeague(null);
+    else if (inTeamDetail)        setSelectedTeam(null);
   }
 
-  const backLabel = inLeagueDetail ? 'Leagues' : inBoxScore ? selectedTeam.team : inTeamDetail ? 'Stats' : 'Events';
+  const backLabel = inLeagueDetail ? 'Leagues'
+    : (inBoxScore || inFullTeamStats) ? selectedTeam.team
+    : inTeamDetail ? 'Stats' : 'Events';
 
   return (
     <View style={styles.root}>
@@ -270,8 +276,16 @@ function AppContent() {
         ) : inTeamDetail ? (
           inBoxScore ? (
             <BoxScoreScreen event={boxScoreEvent} onRetryStats={retryGameStats} />
+          ) : inFullTeamStats ? (
+            <CumulativeTeamStatsScreen league={selectedTeam.league} team={selectedTeam.team} events={events} />
           ) : (
-            <TeamGameLogScreen league={selectedTeam.league} team={selectedTeam.team} events={events} onSelectGame={setBoxScoreEvent} />
+            <TeamGameLogScreen
+              league={selectedTeam.league}
+              team={selectedTeam.team}
+              events={events}
+              onSelectGame={setBoxScoreEvent}
+              onSelectFullStats={() => setShowFullTeamStats(true)}
+            />
           )
         ) : (
           <StatsScreen
@@ -280,7 +294,7 @@ function AppContent() {
             onToggleBucketList={toggleBucketList}
             favoriteTeam={favoriteTeam}
             onToggleFavoriteTeam={toggleFavoriteTeam}
-            onSelectTeam={(league, team) => { setBoxScoreEvent(null); setSelectedTeam({ league, team }); }}
+            onSelectTeam={(league, team) => { setBoxScoreEvent(null); setShowFullTeamStats(false); setSelectedTeam({ league, team }); }}
           />
         )}
       </View>

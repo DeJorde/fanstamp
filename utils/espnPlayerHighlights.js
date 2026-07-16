@@ -47,3 +47,40 @@ export function getEspnPlayerHighlights(events, league, team) {
     .sort((a, b) => b.gamesAttended - a.gamesAttended)
     .slice(0, MAX_PLAYERS);
 }
+
+// "Full Team Stats" for ESPN-backed leagues — same espnLeaders data as above,
+// but pivoted by category instead of by player: for every stat category
+// ESPN reported across attended games, whoever led it most often (ties
+// broken by most recent) is the team's cumulative leader in that category.
+export function getEspnCumulativeTeamLeaders(events, league, team) {
+  const attendedGames = sortByDateAsc(
+    events.filter((e) =>
+      e.category === league &&
+      (e.homeTeam === team || e.awayTeam === team) &&
+      e.gameStats?.status === 'found' &&
+      e.gameStats?.espnLeaders
+    )
+  );
+
+  const byCategory = new Map(); // category -> Map<playerName, { timesLed, lastDisplayValue }>
+
+  attendedGames.forEach((event) => {
+    const side = event.homeTeam === team ? 'home' : 'away';
+    const teamLeaders = event.gameStats.espnLeaders.find((tl) => tl.team === side);
+    if (!teamLeaders) return;
+
+    teamLeaders.leaders.forEach((l) => {
+      if (!byCategory.has(l.category)) byCategory.set(l.category, new Map());
+      const players = byCategory.get(l.category);
+      if (!players.has(l.playerName)) players.set(l.playerName, { timesLed: 0, lastDisplayValue: l.displayValue });
+      const entry = players.get(l.playerName);
+      entry.timesLed += 1;
+      entry.lastDisplayValue = l.displayValue;
+    });
+  });
+
+  return Array.from(byCategory.entries()).map(([category, players]) => {
+    const [name, best] = Array.from(players.entries()).sort((a, b) => b[1].timesLed - a[1].timesLed)[0];
+    return { category, name, gamesLed: best.timesLed, displayValue: best.lastDisplayValue };
+  });
+}

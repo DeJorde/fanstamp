@@ -766,6 +766,39 @@ function buildStyles(c) {
       letterSpacing: 1.5, textTransform: 'uppercase',
     },
 
+    // ── Full Team Stats screen (cumulative, sticky-header box-score-reference
+    // style table) — reached via the button atop Team Game Log ─────────────────
+    fullTeamStatsBtn: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+      backgroundColor: c.bg2, borderRadius: 14,
+      borderWidth: 1, borderColor: c.border,
+      paddingVertical: 12,
+    },
+    fullTeamStatsBtnText: { fontSize: 15, fontWeight: '700', color: c.accent },
+    statTableCard: {
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      overflow: 'hidden', marginBottom: 16,
+    },
+    statHeaderRowWrap: { backgroundColor: c.bg3, borderBottomWidth: 1, borderBottomColor: c.border },
+    statHeaderRow: { flexDirection: 'row' },
+    statHeaderText: {
+      fontSize: 10, fontWeight: '700', color: c.textDim,
+      textTransform: 'uppercase', letterSpacing: 0.4,
+    },
+    statRow: {
+      flexDirection: 'row', alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.borderFaint,
+    },
+    statRowAlt: { backgroundColor: c.bg3 },
+    // Fixed gold highlight (not theme-adaptive) — same convention as trophyCardGold.
+    statRowGold: { backgroundColor: 'rgba(255, 215, 0, 0.18)' },
+    statColCell: { width: 44, textAlign: 'center', fontSize: 11, paddingVertical: 6 },
+    statCellText: { color: c.textSecondary, fontWeight: '600' },
+    statNameCell: { width: 148, paddingLeft: 10, paddingRight: 6, justifyContent: 'center' },
+    statNameText: { fontSize: 12, fontWeight: '700', color: c.text },
+    statSubtext: { fontSize: 10, color: c.textDim },
+
     // ── Box Score screen (Team Game Log → tap a game) ──────────────────────────
     boxScoreTableCard: {
       backgroundColor: c.bg2, borderRadius: 16,

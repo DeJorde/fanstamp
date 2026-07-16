@@ -309,6 +309,94 @@ export function getMlbCumulativePlayerStats(events, team) {
     .sort((a, b) => b.gamesAttended - a.gamesAttended);
 }
 
+// Full-roster batting line for the "Full Team Stats" screen — every batter
+// who appeared in any attended game (not just the top-5 sample), sorted by
+// plate appearances, with the extended box-score-reference column set.
+export function getMlbCumulativeTeamBattingStats(events, team) {
+  const byPlayer = collectMlbPlayerGames(events, team);
+  const luckyId = getMlbPlayerAttendanceStats(events, team).find((p) => p.isLuckyPlayer)?.personId ?? null;
+
+  return Array.from(byPlayer.values())
+    .map((entry) => {
+      const t = { games: 0, ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, hbp: 0, sf: 0, tb: 0, pa: 0 };
+      entry.games.forEach((g) => {
+        if (!g.batting) return;
+        t.games += 1;
+        t.ab += g.batting.atBats || 0;
+        t.r += g.batting.runs || 0;
+        t.h += g.batting.hits || 0;
+        t.doubles += g.batting.doubles || 0;
+        t.triples += g.batting.triples || 0;
+        t.hr += g.batting.homeRuns || 0;
+        t.rbi += g.batting.rbi || 0;
+        t.bb += g.batting.baseOnBalls || 0;
+        t.so += g.batting.strikeOuts || 0;
+        t.hbp += g.batting.hitByPitch || 0;
+        t.sf += g.batting.sacFlies || 0;
+        t.tb += g.batting.totalBases || 0;
+        t.pa += g.batting.plateAppearances || 0;
+      });
+      if (t.pa === 0) return null;
+
+      const avg = t.ab > 0 ? t.h / t.ab : 0;
+      const obpDenom = t.ab + t.bb + t.hbp + t.sf;
+      const obp = obpDenom > 0 ? (t.h + t.bb + t.hbp) / obpDenom : 0;
+      const slg = t.ab > 0 ? t.tb / t.ab : 0;
+
+      return {
+        personId: entry.personId,
+        name: entry.name,
+        position: entry.position,
+        isLucky: entry.personId === luckyId,
+        pa: t.pa,
+        games: t.games, ab: t.ab, r: t.r, h: t.h, doubles: t.doubles, triples: t.triples, hr: t.hr,
+        rbi: t.rbi, bb: t.bb, so: t.so,
+        avg: formatRate(avg), obp: formatRate(obp), slg: formatRate(slg),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.pa - a.pa);
+}
+
+// Full pitching staff line for the "Full Team Stats" screen — every pitcher
+// who appeared (starts and relief), sorted by innings pitched.
+export function getMlbCumulativeTeamPitchingStats(events, team) {
+  const byPlayer = collectMlbPlayerGames(events, team);
+
+  return Array.from(byPlayer.values())
+    .map((entry) => {
+      const t = { games: 0, gs: 0, outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0 };
+      entry.games.forEach((g) => {
+        if (!g.pitching) return;
+        t.games += 1;
+        if (g.isStarter) t.gs += 1;
+        t.outs += inningsPitchedToOuts(g.pitching.inningsPitched);
+        t.h += g.pitching.hits || 0;
+        t.r += g.pitching.runs || 0;
+        t.er += g.pitching.earnedRuns || 0;
+        t.bb += g.pitching.baseOnBalls || 0;
+        t.so += g.pitching.strikeOuts || 0;
+      });
+      if (t.games === 0) return null;
+
+      const trueInnings = t.outs / 3;
+      const era = trueInnings > 0 ? (t.er * 9) / trueInnings : 0;
+      const whip = trueInnings > 0 ? (t.bb + t.h) / trueInnings : 0;
+
+      return {
+        personId: entry.personId,
+        name: entry.name,
+        position: entry.position,
+        outsSort: t.outs,
+        games: t.games, gs: t.gs, ip: outsToInningsPitched(t.outs),
+        h: t.h, r: t.r, er: t.er, bb: t.bb, so: t.so,
+        era: formatRate(era, 2, false), whip: formatRate(whip, 2, false),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.outsSort - a.outsSort);
+}
+
 // Batting average conventionally drops the leading zero (".286"); ERA/WHIP
 // do not (e.g. "0.69", not ".69").
 function formatRate(n, decimals = 3, stripLeadingZero = true) {
