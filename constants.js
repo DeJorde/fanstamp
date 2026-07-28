@@ -1,6 +1,9 @@
-export const STORAGE_KEY = '@stadiumlog_events';
-export const BUCKET_LIST_STORAGE_KEY = '@stadiumlog_bucket_list';
-export const FAVORITE_TEAM_STORAGE_KEY = '@stadiumlog_favorite_team';
+export const STORAGE_KEY = '@fanstamp_events';
+export const BUCKET_LIST_STORAGE_KEY = '@fanstamp_bucket_list';
+export const FAVORITE_TEAM_STORAGE_KEY = '@fanstamp_favorite_team';
+export const LEGACY_STORAGE_KEY = '@stadiumlog_events';
+export const LEGACY_BUCKET_LIST_STORAGE_KEY = '@stadiumlog_bucket_list';
+export const LEGACY_FAVORITE_TEAM_STORAGE_KEY = '@stadiumlog_favorite_team';
 
 // Categories with a team roster in LEAGUE_STADIUMS — these get the Home/Away
 // Team + Game Result fields on the event form and feed the My Teams section.

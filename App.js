@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, EMPTY_FORM } from './constants';
+import {
+  STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, EMPTY_FORM,
+  LEGACY_STORAGE_KEY, LEGACY_BUCKET_LIST_STORAGE_KEY, LEGACY_FAVORITE_TEAM_STORAGE_KEY,
+} from './constants';
 import { eventToForm, geocodeVenue } from './utils/geo';
+import { getItemWithMigration } from './utils/storage';
 import { canFetchGameStats, fetchGameStats, needsGameStatsRefresh } from './utils/gameStatsApi';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
@@ -47,7 +51,11 @@ function AppContent() {
   const [formPrefill, setFormPrefill] = useState(null);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
+    AsyncStorage.getAllKeys().then(async (keys) => {
+      const entries = await AsyncStorage.multiGet(keys);
+      console.log('[FanStamp] AsyncStorage keys on startup:', entries.map(([k, v]) => `${k} = ${v?.slice(0, 80)}`));
+    });
+    getItemWithMigration(STORAGE_KEY, LEGACY_STORAGE_KEY).then((raw) => {
       const loaded = (raw ? JSON.parse(raw) : []).map((e) => ({
         ...e,
         category: e.category === 'Sport' ? 'Other Sport' : e.category,
@@ -73,10 +81,10 @@ function AppContent() {
           });
         });
     });
-    AsyncStorage.getItem(BUCKET_LIST_STORAGE_KEY).then((raw) => {
+    getItemWithMigration(BUCKET_LIST_STORAGE_KEY, LEGACY_BUCKET_LIST_STORAGE_KEY).then((raw) => {
       if (raw) setBucketList(JSON.parse(raw));
     });
-    AsyncStorage.getItem(FAVORITE_TEAM_STORAGE_KEY).then((raw) => {
+    getItemWithMigration(FAVORITE_TEAM_STORAGE_KEY, LEGACY_FAVORITE_TEAM_STORAGE_KEY).then((raw) => {
       if (raw) setFavoriteTeam(JSON.parse(raw));
     });
   }, []);
@@ -243,8 +251,8 @@ function AppContent() {
             </TouchableOpacity>
           ) : (
             <View style={styles.logoRow}>
-              <Text style={styles.headerLogo}>Stadium</Text>
-              <Text style={styles.headerLogoAccent}>Log</Text>
+              <Text style={styles.headerLogo}>Fan</Text>
+              <Text style={styles.headerLogoAccent}>Stamp</Text>
             </View>
           )}
           <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>

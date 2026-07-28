@@ -44,7 +44,7 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
       '',
       ...(stadiumLines.length > 0 ? stadiumLines : ['No stadiums visited yet — time to start!']),
       '',
-      'Tracked with StadiumLog',
+      'Tracked with FanStamp',
     ].join('\n');
 
     try {

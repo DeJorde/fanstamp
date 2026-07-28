@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "stadiumlog",
-    "slug": "stadiumlog",
+    "name": "fanstamp",
+    "slug": "fanstamp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,7 +28,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "StadiumLog uses your photo library to attach photos to events."
+          "photosPermission": "FanStamp uses your photo library to attach photos to events."
         }
       ]
     ]

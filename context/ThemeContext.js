@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createStyles, getPalette } from '../styles';
+import { getItemWithMigration } from '../utils/storage';
 
-const RETRO_MODE_STORAGE_KEY = '@stadiumlog_retro_mode';
+const RETRO_MODE_STORAGE_KEY = '@fanstamp_retro_mode';
+const LEGACY_RETRO_MODE_STORAGE_KEY = '@stadiumlog_retro_mode';
 
 const ThemeContext = createContext(null);
 
@@ -10,7 +12,7 @@ export function ThemeProvider({ children }) {
   const [retro, setRetro] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(RETRO_MODE_STORAGE_KEY).then((raw) => {
+    getItemWithMigration(RETRO_MODE_STORAGE_KEY, LEGACY_RETRO_MODE_STORAGE_KEY).then((raw) => {
       if (raw != null) setRetro(raw === 'true');
     });
   }, []);

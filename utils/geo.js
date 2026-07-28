@@ -19,8 +19,8 @@ export function eventToForm(event) {
 // is not stripped and satisfies the same policy requirement.
 // https://operations.osmfoundation.org/policies/nominatim/
 const NOMINATIM_HEADERS = {
-  Referer:      'https://stadiumlog.app',
-  'User-Agent': 'StadiumLog/1.0',
+  Referer:      'https://fanstamp.app',
+  'User-Agent': 'FanStamp/1.0',
 };
 const NOMINATIM_TIMEOUT_MS = 10000;
 
