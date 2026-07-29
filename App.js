@@ -250,15 +250,11 @@ function AppContent() {
               <Text style={styles.backBtnText}>‹ {backLabel}</Text>
             </TouchableOpacity>
           ) : (
-            <View style={styles.logoStampSlot}>
-              <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
-                <View style={[styles.logoStampInnerRing, retro && styles.logoStampInnerRingRetro]} />
-                <Text style={[styles.logoStampArcText, retro && styles.logoStampArcTextRetro]}>Fanstamp</Text>
-                <Text style={[styles.logoStampStarTop, retro && styles.logoStampStarTopRetro]}>★</Text>
-                <View style={[styles.logoStampBanner, retro && styles.logoStampBannerRetro]}>
-                  <Text style={styles.logoStampBannerText}>FanStamp</Text>
-                </View>
-                <Text style={[styles.logoStampStarBottom, retro && styles.logoStampStarBottomRetro]}>★</Text>
+            <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
+              <View style={styles.logoStampInnerRect}>
+                <Text style={styles.logoStampText} numberOfLines={1}>
+                  FANSTAMP
+                </Text>
               </View>
             </View>
           )}

@@ -42,41 +42,28 @@ function buildStyles(c) {
     },
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
 
-    // ── Circular ink-stamp wordmark — outer + inner ring, an arced "FANSTAMP"
-    // hugging the top, a center banner carrying the actual logotype, and a
-    // star above/below the banner, all in stamp-red. logoStamp*Retro swaps
-    // every red for the theme's sepia ink (#8B6914) so it fits the parchment
-    // palette instead of clashing with it. ─────────────────────────────────
-    logoStampSlot: { flex: 1, alignItems: 'center' },
+    // ── Rectangular ink-stamp wordmark — outer + inner rounded-rect border,
+    // tilted like it was pressed on at an angle, with "FANSTAMP" set inside.
+    // Border and text are always brand red (#CC0000) in both themes — only
+    // the faint background fill tint adapts, shifting to sepia in retro so
+    // the wash still fits the parchment palette. ───────────────────────────
     logoStamp: {
-      width: 120, height: 120, borderRadius: 60,
-      borderWidth: 2, borderColor: '#CC0000',
-      backgroundColor: 'rgba(204, 0, 0, 0.04)',
+      width: 160, height: 52, borderRadius: 6,
+      borderWidth: 2.5, borderColor: '#CC0000',
+      backgroundColor: 'rgba(204, 0, 0, 0.08)',
+      alignItems: 'center', justifyContent: 'center',
+      transform: [{ rotate: '-8deg' }],
+    },
+    logoStampRetro: { backgroundColor: 'rgba(139, 105, 20, 0.08)' },
+    logoStampInnerRect: {
+      position: 'absolute', top: 5, left: 5, right: 5, bottom: 5,
+      borderRadius: 3, borderWidth: 1.5, borderColor: '#CC0000',
       alignItems: 'center', justifyContent: 'center',
     },
-    logoStampRetro: { borderColor: '#8B6914', backgroundColor: 'rgba(139, 105, 20, 0.06)' },
-    logoStampInnerRing: {
-      position: 'absolute', top: 6, left: 6, right: 6, bottom: 6,
-      borderRadius: 54, borderWidth: 1, borderColor: '#CC0000',
+    logoStampText: {
+      fontSize: 18, fontWeight: '800', color: '#CC0000',
+      letterSpacing: 2, textTransform: 'uppercase',
     },
-    logoStampInnerRingRetro: { borderColor: '#8B6914' },
-    logoStampArcText: {
-      position: 'absolute', top: 15, width: 96, textAlign: 'center',
-      fontSize: 9, fontWeight: '700', color: '#CC0000',
-      letterSpacing: 3, textTransform: 'uppercase',
-    },
-    logoStampArcTextRetro: { color: '#8B6914' },
-    logoStampStarTop: { position: 'absolute', top: 33, fontSize: 11, color: '#CC0000' },
-    logoStampStarTopRetro: { color: '#8B6914' },
-    logoStampStarBottom: { position: 'absolute', bottom: 27, fontSize: 11, color: '#CC0000' },
-    logoStampStarBottomRetro: { color: '#8B6914' },
-    logoStampBanner: {
-      position: 'absolute', top: 49, left: 8, right: 8, height: 22,
-      backgroundColor: '#CC0000', borderRadius: 2,
-      alignItems: 'center', justifyContent: 'center',
-    },
-    logoStampBannerRetro: { backgroundColor: '#8B6914' },
-    logoStampBannerText: { fontSize: 13, fontWeight: '800', color: '#ffffff', letterSpacing: 0.3 },
 
     backBtn: { alignSelf: 'flex-start' },
     backBtnText: { fontSize: 17, color: c.accent, fontWeight: '500' },
