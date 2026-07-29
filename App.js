@@ -250,9 +250,16 @@ function AppContent() {
               <Text style={styles.backBtnText}>‹ {backLabel}</Text>
             </TouchableOpacity>
           ) : (
-            <View style={styles.logoRow}>
-              <Text style={styles.headerLogo}>Fan</Text>
-              <Text style={styles.headerLogoAccent}>Stamp</Text>
+            <View style={styles.logoStampSlot}>
+              <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
+                <View style={[styles.logoStampInnerRing, retro && styles.logoStampInnerRingRetro]} />
+                <Text style={[styles.logoStampArcText, retro && styles.logoStampArcTextRetro]}>Fanstamp</Text>
+                <Text style={[styles.logoStampStarTop, retro && styles.logoStampStarTopRetro]}>★</Text>
+                <View style={[styles.logoStampBanner, retro && styles.logoStampBannerRetro]}>
+                  <Text style={styles.logoStampBannerText}>FanStamp</Text>
+                </View>
+                <Text style={[styles.logoStampStarBottom, retro && styles.logoStampStarBottomRetro]}>★</Text>
+              </View>
             </View>
           )}
           <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
