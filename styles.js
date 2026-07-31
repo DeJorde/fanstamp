@@ -32,7 +32,10 @@ export function getPalette(retroMode) {
 
 function buildStyles(c, retroMode) {
   return {
-    root: { flex: 1, backgroundColor: c.bg0 },
+    // Transparent in retro mode — root is the parchment ImageBackground's
+    // sibling/backdrop (see App.js); if it kept an opaque fill, any gap or
+    // timing lag in the image would show this solid color through instead.
+    root: { flex: 1, backgroundColor: retroMode ? 'transparent' : c.bg0 },
 
     // Absolutely-positioned full-bleed layer for the retro parchment
     // ImageBackground (see App.js) — sized independent of flex/measurement

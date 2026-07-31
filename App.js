@@ -274,11 +274,11 @@ function AppContent() {
   if (!onboarded) return <OnboardingScreen onComplete={completeOnboarding} />;
 
   return (
-    <View style={styles.root}>
-      {/* Without this, the native status bar keeps its own opaque background
-          on Android regardless of anything rendered in the JS tree below —
-          no amount of ImageBackground/View nesting reaches it. */}
-      <StatusBar style={retro ? 'dark' : 'light'} translucent backgroundColor="transparent" />
+    <>
+      {/* True top-level sibling, not nested inside the root View — so
+          there's no parent container (with its own background or layout
+          constraints) between this and the native screen bounds it's
+          absolutely positioned against. */}
       {retro && (
         <ImageBackground
           source={PARCHMENT_BG}
@@ -287,95 +287,102 @@ function AppContent() {
         />
       )}
       {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          {inDetail ? (
-            <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-              <Text style={styles.backBtnText}>‹ {backLabel}</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
-              <View style={styles.logoStampInnerRect}>
-                <Text style={styles.logoStampText} numberOfLines={1}>
-                  FANSTAMP
-                </Text>
-              </View>
-            </View>
-          )}
-          <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
-            <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      <View style={styles.screen}>
-        {activeTab === 'events' ? (
-          inEventDetail ? (
-            <DetailScreen event={detailEvent} onEdit={openEdit} onDelete={handleDelete} onRetryStats={retryGameStats} />
+      <View style={styles.root}>
+        {/* Without this, the native status bar keeps its own opaque background
+            on Android regardless of anything rendered in the JS tree below —
+            no amount of ImageBackground/View nesting reaches it. */}
+        <StatusBar style={retro ? 'dark' : 'light'} translucent backgroundColor="transparent" />
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            {inDetail ? (
+              <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+                <Text style={styles.backBtnText}>‹ {backLabel}</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
+                <View style={styles.logoStampInnerRect}>
+                  <Text style={styles.logoStampText} numberOfLines={1}>
+                    FANSTAMP
+                  </Text>
+                </View>
+              </View>
+            )}
+            <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
+              <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.screen}>
+          {activeTab === 'events' ? (
+            inEventDetail ? (
+              <DetailScreen event={detailEvent} onEdit={openEdit} onDelete={handleDelete} onRetryStats={retryGameStats} />
+            ) : (
+              <EventsScreen events={events} onCardPress={setDetailEvent} onAddPress={openAdd} onPlaceSelect={handlePlaceSelect} />
+            )
+          ) : activeTab === 'map' ? (
+            <MapScreen events={events} />
+          ) : activeTab === 'leagues' ? (
+            inLeagueDetail ? (
+              <LeagueDetailScreen
+                league={selectedLeague}
+                events={events}
+                bucketList={bucketList}
+                onToggleBucketList={toggleBucketList}
+              />
+            ) : (
+              <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
+            )
+          ) : inTeamDetail ? (
+            inBoxScore ? (
+              <BoxScoreScreen event={boxScoreEvent} onRetryStats={retryGameStats} />
+            ) : inFullTeamStats ? (
+              <CumulativeTeamStatsScreen league={selectedTeam.league} team={selectedTeam.team} events={events} />
+            ) : (
+              <TeamGameLogScreen
+                league={selectedTeam.league}
+                team={selectedTeam.team}
+                events={events}
+                onSelectGame={setBoxScoreEvent}
+                onSelectFullStats={() => setShowFullTeamStats(true)}
+              />
+            )
           ) : (
-            <EventsScreen events={events} onCardPress={setDetailEvent} onAddPress={openAdd} onPlaceSelect={handlePlaceSelect} />
-          )
-        ) : activeTab === 'map' ? (
-          <MapScreen events={events} />
-        ) : activeTab === 'leagues' ? (
-          inLeagueDetail ? (
-            <LeagueDetailScreen
-              league={selectedLeague}
+            <StatsScreen
               events={events}
               bucketList={bucketList}
               onToggleBucketList={toggleBucketList}
+              favoriteTeam={favoriteTeam}
+              onToggleFavoriteTeam={toggleFavoriteTeam}
+              onSelectTeam={(league, team) => { setBoxScoreEvent(null); setShowFullTeamStats(false); setSelectedTeam({ league, team }); }}
             />
-          ) : (
-            <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
-          )
-        ) : inTeamDetail ? (
-          inBoxScore ? (
-            <BoxScoreScreen event={boxScoreEvent} onRetryStats={retryGameStats} />
-          ) : inFullTeamStats ? (
-            <CumulativeTeamStatsScreen league={selectedTeam.league} team={selectedTeam.team} events={events} />
-          ) : (
-            <TeamGameLogScreen
-              league={selectedTeam.league}
-              team={selectedTeam.team}
-              events={events}
-              onSelectGame={setBoxScoreEvent}
-              onSelectFullStats={() => setShowFullTeamStats(true)}
-            />
-          )
-        ) : (
-          <StatsScreen
-            events={events}
-            bucketList={bucketList}
-            onToggleBucketList={toggleBucketList}
-            favoriteTeam={favoriteTeam}
-            onToggleFavoriteTeam={toggleFavoriteTeam}
-            onSelectTeam={(league, team) => { setBoxScoreEvent(null); setShowFullTeamStats(false); setSelectedTeam({ league, team }); }}
-          />
-        )}
-      </View>
-
-      {!inDetail && (
-        <View style={styles.tabBar}>
-          {TABS.map((tab) => {
-            const active = tab.key === activeTab;
-            return (
-              <TouchableOpacity key={tab.key} style={styles.tabItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
-                <Text style={styles.tabIcon}>{tab.icon}</Text>
-                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-                {active && <View style={styles.tabIndicator} />}
-              </TouchableOpacity>
-            );
-          })}
+          )}
         </View>
-      )}
 
-      <EventFormModal
-        visible={formConfig.visible}
-        editMode={!!formConfig.editingId}
-        initialValues={formInitialValues}
-        onClose={closeForm}
-        onSave={handleSave}
-      />
-    </View>
+        {!inDetail && (
+          <View style={styles.tabBar}>
+            {TABS.map((tab) => {
+              const active = tab.key === activeTab;
+              return (
+                <TouchableOpacity key={tab.key} style={styles.tabItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
+                  <Text style={styles.tabIcon}>{tab.icon}</Text>
+                  <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
+                  {active && <View style={styles.tabIndicator} />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        <EventFormModal
+          visible={formConfig.visible}
+          editMode={!!formConfig.editingId}
+          initialValues={formInitialValues}
+          onClose={closeForm}
+          onSave={handleSave}
+        />
+      </View>
+    </>
   );
 }
