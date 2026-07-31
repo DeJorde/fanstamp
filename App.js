@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SplashScreen from 'expo-splash-screen';
 import {
-  STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, EMPTY_FORM,
+  STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, ONBOARDED_STORAGE_KEY, EMPTY_FORM,
   LEGACY_STORAGE_KEY, LEGACY_BUCKET_LIST_STORAGE_KEY, LEGACY_FAVORITE_TEAM_STORAGE_KEY,
 } from './constants';
 import { eventToForm, geocodeVenue } from './utils/geo';
@@ -18,7 +19,13 @@ import { LeagueDetailScreen } from './components/LeagueDetailScreen';
 import { TeamGameLogScreen } from './components/TeamGameLogScreen';
 import { BoxScoreScreen } from './components/BoxScoreScreen';
 import { CumulativeTeamStatsScreen } from './components/CumulativeTeamStatsScreen';
+import { OnboardingScreen } from './components/OnboardingScreen';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+
+// Keep the native splash screen up until the first-launch check below
+// resolves, so the app never flashes empty content before the onboarding
+// decision is made. Must run at module scope, not inside the component.
+SplashScreen.preventAutoHideAsync();
 
 const TABS = [
   { key: 'events',  label: 'Events',  icon: '🎟' },
@@ -37,6 +44,7 @@ export default function App() {
 
 function AppContent() {
   const { styles, retro, toggleRetro } = useTheme();
+  const [onboarded, setOnboarded]     = useState(null); // null = still checking (splash stays up)
   const [activeTab, setActiveTab]     = useState('events');
   const [events, setEvents]           = useState([]);
   const [bucketList, setBucketList]   = useState([]);
@@ -49,6 +57,19 @@ function AppContent() {
   const [favoriteTeam, setFavoriteTeam] = useState(null);
   const [formConfig, setFormConfig]   = useState({ visible: false, editingId: null });
   const [formPrefill, setFormPrefill] = useState(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDED_STORAGE_KEY).then((raw) => {
+      setOnboarded(raw === 'true');
+      SplashScreen.setOptions({ fade: true, duration: 400 });
+      SplashScreen.hideAsync();
+    });
+  }, []);
+
+  function completeOnboarding() {
+    setOnboarded(true);
+    AsyncStorage.setItem(ONBOARDED_STORAGE_KEY, 'true');
+  }
 
   useEffect(() => {
     AsyncStorage.getAllKeys().then(async (keys) => {
@@ -240,6 +261,11 @@ function AppContent() {
   const backLabel = inLeagueDetail ? 'Leagues'
     : (inBoxScore || inFullTeamStats) ? selectedTeam.team
     : inTeamDetail ? 'Stats' : 'Events';
+
+  // Still checking AsyncStorage for the onboarding flag — native splash
+  // screen is still showing, so render nothing rather than a content flash.
+  if (onboarded === null) return null;
+  if (!onboarded) return <OnboardingScreen onComplete={completeOnboarding} />;
 
   return (
     <View style={styles.root}>

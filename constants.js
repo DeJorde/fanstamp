@@ -1,6 +1,7 @@
 export const STORAGE_KEY = '@fanstamp_events';
 export const BUCKET_LIST_STORAGE_KEY = '@fanstamp_bucket_list';
 export const FAVORITE_TEAM_STORAGE_KEY = '@fanstamp_favorite_team';
+export const ONBOARDED_STORAGE_KEY = '@fanstamp_onboarded';
 export const LEGACY_STORAGE_KEY = '@stadiumlog_events';
 export const LEGACY_BUCKET_LIST_STORAGE_KEY = '@stadiumlog_bucket_list';
 export const LEGACY_FAVORITE_TEAM_STORAGE_KEY = '@stadiumlog_favorite_team';

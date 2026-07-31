@@ -969,6 +969,78 @@ function buildStyles(c) {
     searchDropRowBody:  { flex: 1 },
     searchDropRowLabel: { fontSize: 14, fontWeight: '600', color: c.textTertiary },
     searchDropRowSub:   { fontSize: 12, color: c.textDim, marginTop: 2 },
+
+    // ── Onboarding (first-launch welcome flow) ────────────────────────────────
+    onboardingRoot: { flex: 1, backgroundColor: c.bg0 },
+    onboardingSkipBtn: {
+      position: 'absolute', top: 60, right: 20, zIndex: 10,
+      paddingHorizontal: 12, paddingVertical: 8,
+    },
+    onboardingSkipText: { fontSize: 15, fontWeight: '600', color: c.textMuted },
+    onboardingSlide: { alignItems: 'center', paddingHorizontal: 32, paddingTop: 130 },
+    onboardingVisualWrap: {
+      height: 220, width: '100%',
+      alignItems: 'center', justifyContent: 'center',
+      marginBottom: 36,
+    },
+    onboardingTitle: {
+      fontSize: 24, fontWeight: '800', color: c.text,
+      textAlign: 'center', lineHeight: 30, marginBottom: 12,
+    },
+    onboardingDescription: {
+      fontSize: 15, color: c.textSecondary,
+      textAlign: 'center', lineHeight: 22, paddingHorizontal: 8,
+    },
+    onboardingFooter: {
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      paddingHorizontal: 24, paddingTop: 20, paddingBottom: 48,
+      alignItems: 'center', gap: 20,
+    },
+    onboardingDotsRow: { flexDirection: 'row', gap: 8 },
+    onboardingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: c.trackBg },
+    onboardingDotActive: { width: 22, backgroundColor: c.accent },
+    onboardingPrimaryBtn: {
+      width: '100%', backgroundColor: c.accent,
+      borderRadius: 16, paddingVertical: 16, alignItems: 'center',
+    },
+    onboardingPrimaryBtnText: { fontSize: 17, fontWeight: '700', color: '#ffffff' },
+
+    // Slide 1 — large stamp mark (same double-border tilted rect as the header
+    // logo, just bigger; red ink stays fixed across themes like logoStamp).
+    onboardingStampLarge: {
+      width: 240, height: 82, borderRadius: 10,
+      borderWidth: 3.5, borderColor: '#CC0000',
+      backgroundColor: 'rgba(204, 0, 0, 0.08)',
+      alignItems: 'center', justifyContent: 'center',
+      transform: [{ rotate: '-8deg' }],
+    },
+    onboardingStampLargeRetro: { backgroundColor: 'rgba(139, 105, 20, 0.08)' },
+    onboardingStampLargeInner: {
+      position: 'absolute', top: 7, left: 7, right: 7, bottom: 7,
+      borderRadius: 5, borderWidth: 2, borderColor: '#CC0000',
+      alignItems: 'center', justifyContent: 'center',
+    },
+    onboardingStampLargeText: {
+      fontSize: 27, fontWeight: '800', color: '#CC0000',
+      letterSpacing: 3, textTransform: 'uppercase',
+    },
+
+    // Slide 3 — mock explorer-map panel (compass rose + a couple of pins,
+    // standing in for the real MapView so onboarding stays lightweight).
+    onboardingMapPanel: {
+      width: '100%', height: 200, borderRadius: 20,
+      backgroundColor: c.bg2, borderWidth: 1, borderColor: c.border,
+      overflow: 'hidden',
+    },
+    onboardingMapPin: { position: 'absolute' },
+
+    // Slide 4 — trio of progress rings standing in for the stadium passport.
+    onboardingRingsRow: {
+      flexDirection: 'row', gap: 22,
+      justifyContent: 'center', alignItems: 'flex-start',
+    },
+    onboardingRingCol: { alignItems: 'center', gap: 8 },
+    onboardingRingLabel: { fontSize: 12, fontWeight: '700', color: c.textSecondary },
   };
 }
 
