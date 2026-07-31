@@ -30,12 +30,22 @@ export function getPalette(retroMode) {
   return retroMode ? retro : dark;
 }
 
-function buildStyles(c) {
+function buildStyles(c, retroMode) {
   return {
     root: { flex: 1, backgroundColor: c.bg0 },
 
+    // Absolutely-positioned full-bleed layer for the retro parchment
+    // ImageBackground (see App.js) — sized independent of flex/measurement
+    // timing so the texture always covers edge-to-edge behind everything,
+    // including the header and tab bar above it.
+    parchmentBgLayer: {
+      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    },
+
+    // Transparent in retro mode so the parchment texture shows through
+    // behind the header instead of a flat tan fill.
     header: {
-      backgroundColor: c.bg0,
+      backgroundColor: retroMode ? 'transparent' : c.bg0,
       paddingTop: 64, paddingBottom: 16, paddingHorizontal: 20,
       borderBottomWidth: 1, borderBottomColor: c.borderSubtle,
       justifyContent: 'flex-end',
@@ -75,7 +85,16 @@ function buildStyles(c) {
     },
     retroToggleIcon: { fontSize: 17 },
 
-    screen: { flex: 1, backgroundColor: c.bg1 },
+    // Transparent in retro mode so the parchment ImageBackground behind the
+    // whole app (see App.js) shows through instead of a flat tan fill.
+    screen: { flex: 1, backgroundColor: retroMode ? 'transparent' : c.bg1 },
+
+    // Aged-paper darkening around the screen edges, layered over the
+    // parchment ImageBackground in retro mode only — see App.js.
+    parchmentVignette: {
+      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+      borderWidth: 50, borderColor: 'rgba(0, 0, 0, 0.15)',
+    },
 
     // ── Filter bar (used by MapTab's FilterBar component) ────────────────────────
     filterBarWrap: {
@@ -322,9 +341,10 @@ function buildStyles(c) {
     deleteBtn: { backgroundColor: '#2d0f0f', borderRadius: 14, borderWidth: 1, borderColor: '#5c1a1a', padding: 16, alignItems: 'center' },
     deleteBtnText: { fontSize: 16, fontWeight: '600', color: '#ff4d4d' },
 
-    // Tab bar
+    // Tab bar — transparent in retro mode so the parchment texture shows
+    // through behind it instead of a flat tan fill.
     tabBar: {
-      flexDirection: 'row', backgroundColor: c.bg0,
+      flexDirection: 'row', backgroundColor: retroMode ? 'transparent' : c.bg0,
       borderTopWidth: 1, borderTopColor: c.borderSubtle,
       paddingBottom: 32, paddingTop: 10,
     },
@@ -1045,7 +1065,7 @@ function buildStyles(c) {
 }
 
 export function createStyles(retroMode) {
-  const raw = buildStyles(getPalette(retroMode));
+  const raw = buildStyles(getPalette(retroMode), retroMode);
   if (!retroMode) return StyleSheet.create(raw);
   const withFont = Object.fromEntries(
     Object.entries(raw).map(([key, style]) => [key, { ...style, fontFamily: RETRO_FONT_FAMILY }])

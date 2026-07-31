@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import {
   STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, ONBOARDED_STORAGE_KEY, EMPTY_FORM,
   LEGACY_STORAGE_KEY, LEGACY_BUCKET_LIST_STORAGE_KEY, LEGACY_FAVORITE_TEAM_STORAGE_KEY,
@@ -26,6 +27,11 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 // resolves, so the app never flashes empty content before the onboarding
 // decision is made. Must run at module scope, not inside the component.
 SplashScreen.preventAutoHideAsync();
+
+// Aged-paper texture behind the whole app in retro mode — see the
+// parchmentVignette style in styles.js for the darkened-edge overlay
+// layered on top of it.
+const PARCHMENT_BG = require('./assets/parchment.png');
 
 const TABS = [
   { key: 'events',  label: 'Events',  icon: '🎟' },
@@ -269,6 +275,18 @@ function AppContent() {
 
   return (
     <View style={styles.root}>
+      {/* Without this, the native status bar keeps its own opaque background
+          on Android regardless of anything rendered in the JS tree below —
+          no amount of ImageBackground/View nesting reaches it. */}
+      <StatusBar style={retro ? 'dark' : 'light'} translucent backgroundColor="transparent" />
+      {retro && (
+        <ImageBackground
+          source={PARCHMENT_BG}
+          resizeMode="cover"
+          style={styles.parchmentBgLayer}
+        />
+      )}
+      {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}
       <View style={styles.header}>
         <View style={styles.headerRow}>
           {inDetail ? (
