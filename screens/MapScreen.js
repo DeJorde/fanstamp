@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
@@ -42,6 +42,25 @@ export function MapScreen({ events }) {
 
   const initialRegion = useMemo(() => computeRegion(venueMarkers), [venueMarkers]);
 
+  // `initialRegion` only positions the camera on the MapView's first mount —
+  // react-native-maps does not re-read it on prop changes. A pin geocoded
+  // after that first render (which is *every* newly saved event, since
+  // geocoding is an async network call) still gets added to the map, but
+  // the camera never moves to show it, so it can render entirely off-screen
+  // and look like it "didn't appear." Explicitly animate to the new region
+  // whenever a marker is added.
+  const mapRef = useRef(null);
+  const prevMarkerCount = useRef(venueMarkers.length);
+  useEffect(() => {
+    console.log('[MapScreen] venueMarkers changed:', prevMarkerCount.current, '->', venueMarkers.length);
+    if (venueMarkers.length > prevMarkerCount.current && mapRef.current) {
+      const region = computeRegion(venueMarkers);
+      console.log('[MapScreen] new marker detected, animating camera to', region);
+      mapRef.current.animateToRegion(region, 600);
+    }
+    prevMarkerCount.current = venueMarkers.length;
+  }, [venueMarkers]);
+
   const activeStyle = MAP_STYLES[styleKey];
 
   function cycleStyle() {
@@ -55,6 +74,7 @@ export function MapScreen({ events }) {
     // The outer View is the full content area; MapView fills it absolutely
     <View style={{ flex: 1 }}>
       <MapView
+        ref={mapRef}
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
         initialRegion={initialRegion}

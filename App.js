@@ -216,8 +216,15 @@ function AppContent() {
       };
       setEvents((prev) => [newEvent, ...prev]);
       closeForm();
+      console.log('[handleSave] new event saved, geocoding venue:', newEvent.venue, newEvent.location);
       geocodeVenue(newEvent.venue, newEvent.location).then((coords) => {
-        if (coords) setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? { ...e, coordinates: coords } : e)));
+        console.log('[handleSave] geocode result for', newEvent.venue, ':', coords);
+        if (coords) {
+          setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? { ...e, coordinates: coords } : e)));
+          console.log('[handleSave] event', newEvent.id, 'updated with coordinates — should now render as a map pin');
+        } else {
+          console.log('[handleSave] no coordinates found — event', newEvent.id, 'will not get a map pin');
+        }
       });
       if (canFetchGameStats(newEvent)) {
         setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? { ...e, gameStats: { status: 'loading' } } : e)));

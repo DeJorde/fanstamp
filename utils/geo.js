@@ -40,15 +40,23 @@ async function nominatimGet(url, signal) {
 }
 
 export async function geocodeVenue(venueName, locationStr) {
+  const query = locationStr && locationStr !== '—'
+    ? `${venueName}, ${locationStr}`
+    : venueName;
   try {
-    const query = locationStr && locationStr !== '—'
-      ? `${venueName}, ${locationStr}`
-      : venueName;
     const data = await nominatimGet(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
     );
-    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch (_) {}
+    console.log('[geocodeVenue] query:', query, '-> hits:', data.length, data[0]?.display_name ?? null);
+    if (data.length > 0) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      console.log('[geocodeVenue] resolved coordinates:', coords);
+      return coords;
+    }
+  } catch (err) {
+    console.log('[geocodeVenue] failed for query:', query, err.message);
+  }
+  console.log('[geocodeVenue] no match for query:', query);
   return null;
 }
 
@@ -117,6 +125,26 @@ const VENUE_CLASSES = new Set(['amenity', 'leisure', 'tourism', 'man_made', 'bui
 // used only to trim the last-resort fallback below.
 const NEVER_VENUE_CLASSES = new Set(['place', 'boundary', 'highway', 'waterway', 'railway']);
 
+function venueSearchUrl(q) {
+  return `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=20&addressdetails=1`;
+}
+
+// Nominatim matches whole words only — it has no "starts with" support for an
+// in-progress final word, so a query ending in a partial word (e.g. "Wrigley
+// Fi" mid-keystroke toward "Wrigley Field") often returns zero raw results
+// even though the complete name matches fine. Dropping that trailing partial
+// word and re-querying recovers distinctive single-word venue names (e.g.
+// "Lambeau" alone correctly ranks Lambeau Field). It does NOT help venue
+// names whose first word is common elsewhere too — "Wrigley" alone doesn't
+// rank the Chicago stadium in Nominatim's top results at all, so "Wrigley
+// Field" only appears once the complete word "Field" is typed. That specific
+// gap is an inherent Nominatim ranking/matching limitation, not something
+// fixable from query formatting alone.
+function dropLastWord(q) {
+  const i = q.lastIndexOf(' ');
+  return i === -1 ? null : q.slice(0, i).trim();
+}
+
 // Venue search via Nominatim. NOTE: unlike city search, this filter is NOT the
 // main source of empty results — Nominatim's own ranking is. For a short/partial
 // query (e.g. "Wrigley" before the user finishes typing "Wrigley Field"),
@@ -126,16 +154,31 @@ const NEVER_VENUE_CLASSES = new Set(['place', 'boundary', 'highway', 'waterway',
 // filter and raising the raw result limit both help surface it sooner, but
 // can't manufacture a match Nominatim didn't return.
 export async function fetchVenueSuggestions(query, signal) {
-  const url =
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}` +
-    `&format=json&limit=20&addressdetails=1`;
   try {
-    const data = await nominatimGet(url, signal);
-    const venues = data.filter((item) => VENUE_CLASSES.has(item.class));
+    let data = await nominatimGet(venueSearchUrl(query), signal);
+    console.log('[fetchVenueSuggestions] query:', JSON.stringify(query), '-> raw hits:', data.length,
+      data.slice(0, 5).map((d) => `${d.class}/${d.type}`));
+    let venues = data.filter((item) => VENUE_CLASSES.has(item.class));
+
+    if (venues.length === 0) {
+      const fallbackQuery = dropLastWord(query.trim());
+      if (fallbackQuery && fallbackQuery.length >= 2) {
+        const fallbackData = await nominatimGet(venueSearchUrl(fallbackQuery), signal);
+        const fallbackVenues = fallbackData.filter((item) => VENUE_CLASSES.has(item.class));
+        console.log('[fetchVenueSuggestions] fallback query (last word dropped):', JSON.stringify(fallbackQuery),
+          '-> raw hits:', fallbackData.length, 'venue hits:', fallbackVenues.length);
+        if (fallbackVenues.length > 0) {
+          data = fallbackData;
+          venues = fallbackVenues;
+        }
+      }
+    }
+
     // Fallback: if OSM has no venue-class hits, show any non-administrative result
     const hits = venues.length > 0
       ? venues
       : data.filter((item) => !NEVER_VENUE_CLASSES.has(item.class));
+    console.log('[fetchVenueSuggestions] final hits:', hits.length);
 
     return hits.slice(0, 6).map((item) => {
       const addr = item.address || {};
