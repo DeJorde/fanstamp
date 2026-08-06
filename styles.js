@@ -32,21 +32,11 @@ export function getPalette(retroMode) {
 
 function buildStyles(c, retroMode) {
   return {
-    // Transparent in retro mode — root is the parchment ImageBackground's
-    // sibling/backdrop (see App.js); if it kept an opaque fill, any gap or
-    // timing lag in the image would show this solid color through instead.
     root: { flex: 1, backgroundColor: retroMode ? 'transparent' : c.bg0 },
 
-    // Absolutely-positioned full-bleed layer for the retro parchment
-    // ImageBackground (see App.js) — sized independent of flex/measurement
-    // timing so the texture always covers edge-to-edge behind everything,
-    // including the header and tab bar above it.
-    parchmentBgLayer: {
-      position: 'absolute', top: 0, left: 0,
-    },
-
-    // Transparent in retro mode so the parchment texture shows through
-    // behind the header instead of a flat tan fill.
+    // In retro mode this is rendered as an ImageBackground (see App.js), so
+    // this backgroundColor only applies in normal mode — the ImageBackground
+    // supplies its own texture fill directly, not a passthrough.
     header: {
       backgroundColor: retroMode ? 'transparent' : c.bg0,
       paddingTop: 64, paddingBottom: 16, paddingHorizontal: 20,
@@ -88,12 +78,14 @@ function buildStyles(c, retroMode) {
     },
     retroToggleIcon: { fontSize: 17 },
 
-    // Transparent in retro mode so the parchment ImageBackground behind the
-    // whole app (see App.js) shows through instead of a flat tan fill.
+    // Left transparent so each screen's own retro ImageBackground (see the
+    // individual screen components) isn't masked by a flat fill here.
     screen: { flex: 1, backgroundColor: retroMode ? 'transparent' : c.bg1 },
 
-    // Aged-paper darkening around the screen edges, layered over the
-    // parchment ImageBackground in retro mode only — see App.js.
+    // Aged-paper darkening around the screen edges. Rendered as the last
+    // child of the root View (see App.js) so it sits on top of the header,
+    // active screen, and tab bar — each of which paints its own opaque
+    // retro texture and would otherwise hide a vignette layered underneath.
     parchmentVignette: {
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
       borderWidth: 50, borderColor: 'rgba(0, 0, 0, 0.15)',

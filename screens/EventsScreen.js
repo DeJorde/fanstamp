@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, ImageBackground, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, FILTERS, CATEGORY_GROUP_MAP } from '../constants';
 import { matchesFilter } from '../utils/dates';
 import { fetchNominatimPlaces } from '../utils/geo';
 import { EventCard } from '../components/EventCard';
 import { useTheme } from '../context/ThemeContext';
 
+const PARCHMENT_BG = require('../assets/parchment.png');
+
 export function EventsScreen({ events, onCardPress, onAddPress, onPlaceSelect }) {
-  const { styles, colors } = useTheme();
+  const { styles, colors, retro } = useTheme();
   const [timeFilter, setTimeFilter]   = useState('all');
   const [groupFilter, setGroupFilter] = useState('all');
   const [catFilter, setCatFilter]     = useState('all');
@@ -117,8 +119,11 @@ export function EventsScreen({ events, onCardPress, onAddPress, onPlaceSelect })
 
   const isDefault = timeFilter === 'all' && groupFilter === 'all' && !searchCommit;
 
+  const Root = retro ? ImageBackground : View;
+  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
+
   return (
-    <View style={{ flex: 1 }}>
+    <Root {...rootProps}>
 
       {/* ─── Search bar ──────────────────────────────────────────────────── */}
       <View
@@ -321,6 +326,6 @@ export function EventsScreen({ events, onCardPress, onAddPress, onPlaceSelect })
       <TouchableOpacity style={styles.fab} onPress={onAddPress} activeOpacity={0.85}>
         <Text style={styles.fabText}>＋</Text>
       </TouchableOpacity>
-    </View>
+    </Root>
   );
 }

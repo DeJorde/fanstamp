@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Image, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -273,53 +273,46 @@ function AppContent() {
   if (onboarded === null) return null;
   if (!onboarded) return <OnboardingScreen onComplete={completeOnboarding} />;
 
-  // Exact pixel dimensions rather than top/left/right/bottom insets — those
-  // depend on Yoga resolving against a positioned parent's size, which was
-  // silently failing here (edges/header fell back to a flat color instead
-  // of the texture). A plain Image sized to the literal window box sidesteps
-  // that resolution step entirely.
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+  // No more app-wide background layer — retro texture is now painted by
+  // each screen (and the header) individually via its own ImageBackground,
+  // so no shared root-level container's sizing quirks can leave a gap.
+  const headerContent = (
+    <View style={styles.headerRow}>
+      {inDetail ? (
+        <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>‹ {backLabel}</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
+          <View style={styles.logoStampInnerRect}>
+            <Text style={styles.logoStampText} numberOfLines={1}>
+              FANSTAMP
+            </Text>
+          </View>
+        </View>
+      )}
+      <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
+        <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <>
-      {/* True top-level sibling, not nested inside the root View — so
-          there's no parent container (with its own background or layout
-          constraints) between this and the native screen bounds it's
-          absolutely positioned against. */}
-      {retro && (
-        <Image
-          source={PARCHMENT_BG}
-          resizeMode="cover"
-          style={[styles.parchmentBgLayer, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
-        />
-      )}
-      {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}
-
       <View style={styles.root}>
         {/* Without this, the native status bar keeps its own opaque background
             on Android regardless of anything rendered in the JS tree below —
             no amount of ImageBackground/View nesting reaches it. */}
         <StatusBar style={retro ? 'dark' : 'light'} translucent backgroundColor="transparent" />
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            {inDetail ? (
-              <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-                <Text style={styles.backBtnText}>‹ {backLabel}</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.logoStamp, retro && styles.logoStampRetro]}>
-                <View style={styles.logoStampInnerRect}>
-                  <Text style={styles.logoStampText} numberOfLines={1}>
-                    FANSTAMP
-                  </Text>
-                </View>
-              </View>
-            )}
-            <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
-              <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
-            </TouchableOpacity>
+        {retro ? (
+          <ImageBackground source={PARCHMENT_BG} resizeMode="cover" style={styles.header}>
+            {headerContent}
+          </ImageBackground>
+        ) : (
+          <View style={styles.header}>
+            {headerContent}
           </View>
-        </View>
+        )}
 
         <View style={styles.screen}>
           {activeTab === 'events' ? (
@@ -389,6 +382,11 @@ function AppContent() {
           onClose={closeForm}
           onSave={handleSave}
         />
+
+        {/* Painted last so it sits on top of the header/screen/tab bar,
+            each of which now carries its own opaque retro texture and
+            would otherwise hide a vignette layered underneath them. */}
+        {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}
       </View>
     </>
   );

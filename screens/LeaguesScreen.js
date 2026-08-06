@@ -1,17 +1,22 @@
 import { useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { computeBadges } from '../utils/badges';
 import { useTheme } from '../context/ThemeContext';
 import { ProgressRing } from '../components/ProgressRing';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+const PARCHMENT_BG = require('../assets/parchment.png');
 
 export function LeaguesScreen({ events, onSelectLeague }) {
   const { styles, colors, retro } = useTheme();
   const badges = useMemo(() => computeBadges(events), [events]);
 
+  const Root = retro ? ImageBackground : View;
+  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
+
   return (
+    <Root {...rootProps}>
     <ScrollView style={styles.leaguesScroll} contentContainerStyle={styles.leaguesContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.leaguesIntro}>
         {retro
@@ -47,5 +52,6 @@ export function LeaguesScreen({ events, onSelectLeague }) {
         </TouchableOpacity>
       ))}
     </ScrollView>
+    </Root>
   );
 }
