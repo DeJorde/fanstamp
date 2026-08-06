@@ -86,9 +86,12 @@ function buildStyles(c, retroMode) {
     // child of the root View (see App.js) so it sits on top of the header,
     // active screen, and tab bar — each of which paints its own opaque
     // retro texture and would otherwise hide a vignette layered underneath.
+    // Kept faint on purpose — a flat border reads as a hard bar well before
+    // it reads as a soft vignette, so opacity stays low rather than the
+    // width growing to compensate.
     parchmentVignette: {
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-      borderWidth: 50, borderColor: 'rgba(0, 0, 0, 0.15)',
+      borderWidth: 50, borderColor: 'rgba(0, 0, 0, 0.08)',
     },
 
     // ── Filter bar (used by MapTab's FilterBar component) ────────────────────────
