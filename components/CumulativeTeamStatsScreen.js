@@ -1,9 +1,11 @@
-import { ScrollView, Text, View } from 'react-native';
+import { ImageBackground, ScrollView, Text, View } from 'react-native';
 import { getMlbCumulativeTeamBattingStats, getMlbCumulativeTeamPitchingStats } from '../utils/mlbPlayerStats';
 import { getEspnCumulativeTeamLeaders } from '../utils/espnPlayerHighlights';
 import { getTeamGameLog } from '../utils/teamStats';
 import { useTheme } from '../context/ThemeContext';
 import { StickyStatTable } from './StickyStatTable';
+
+const PARCHMENT_BG = require('../assets/parchment.png');
 
 const BATTING_LABELS  = ['G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 'BB', 'K', 'AVG', 'OBP', 'SLG'];
 const PITCHING_LABELS = ['G', 'GS', 'IP', 'H', 'R', 'ER', 'BB', 'K', 'ERA', 'WHIP'];
@@ -25,7 +27,7 @@ function pitchingRow(p) {
 // "top performer per category" view, same treatment split as
 // PlayerAttendanceStats.js.
 export function CumulativeTeamStatsScreen({ league, team, events }) {
-  const { styles } = useTheme();
+  const { styles, retro } = useTheme();
   const isMlb = league === 'MLB';
   const gamesAttended = getTeamGameLog(events, league, team).length;
 
@@ -34,7 +36,11 @@ export function CumulativeTeamStatsScreen({ league, team, events }) {
   const luckyId = battingStats.find((p) => p.isLucky)?.personId ?? null;
   const leaders = isMlb ? [] : getEspnCumulativeTeamLeaders(events, league, team);
 
+  const Root = retro ? ImageBackground : View;
+  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
+
   return (
+    <Root {...rootProps}>
     <ScrollView style={styles.leaguesScroll} contentContainerStyle={styles.leaguesContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.detailName}>Full Team Stats</Text>
       <Text style={styles.leagueDetailSubtitle}>
@@ -63,5 +69,6 @@ export function CumulativeTeamStatsScreen({ league, team, events }) {
         </View>
       )}
     </ScrollView>
+    </Root>
   );
 }

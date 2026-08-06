@@ -1,10 +1,12 @@
-import { ScrollView, TouchableOpacity, View, Text, Image } from 'react-native';
+import { ScrollView, TouchableOpacity, View, Text, Image, ImageBackground } from 'react-native';
 import { useState } from 'react';
 import { CategoryBadge } from './CategoryBadge';
 import { FullScreenPhotoModal } from './FullScreenPhotoModal';
 import { GameStatsCard } from './GameStatsCard';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
+
+const PARCHMENT_BG = require('../assets/parchment.png');
 
 function DetailRow({ icon, label, value }) {
   const { styles } = useTheme();
@@ -20,12 +22,15 @@ function DetailRow({ icon, label, value }) {
 }
 
 export function DetailScreen({ event, onEdit, onDelete, onRetryStats }) {
-  const { styles, colors } = useTheme();
+  const { styles, colors, retro } = useTheme();
   const [fullPhotoUri, setFullPhotoUri] = useState(null);
   const hasPhotos = event.photos && event.photos.length > 0;
 
+  const Root = retro ? ImageBackground : View;
+  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
+
   return (
-    <>
+    <Root {...rootProps}>
       <ScrollView style={styles.detailScroll} contentContainerStyle={styles.detailContent} showsVerticalScrollIndicator={false}>
 
         {hasPhotos && (
@@ -72,6 +77,6 @@ export function DetailScreen({ event, onEdit, onDelete, onRetryStats }) {
       </ScrollView>
 
       <FullScreenPhotoModal uri={fullPhotoUri} onClose={() => setFullPhotoUri(null)} />
-    </>
+    </Root>
   );
 }

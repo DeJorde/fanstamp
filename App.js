@@ -360,20 +360,27 @@ function AppContent() {
           )}
         </View>
 
-        {!inDetail && (
-          <View style={styles.tabBar}>
-            {TABS.map((tab) => {
-              const active = tab.key === activeTab;
-              return (
-                <TouchableOpacity key={tab.key} style={styles.tabItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
-                  <Text style={styles.tabIcon}>{tab.icon}</Text>
-                  <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-                  {active && <View style={styles.tabIndicator} />}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
+        {!inDetail && (() => {
+          const tabItems = TABS.map((tab) => {
+            const active = tab.key === activeTab;
+            return (
+              <TouchableOpacity key={tab.key} style={styles.tabItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
+                <Text style={styles.tabIcon}>{tab.icon}</Text>
+                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
+                {active && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          });
+          return retro ? (
+            <ImageBackground source={PARCHMENT_BG} resizeMode="cover" style={styles.tabBar}>
+              {tabItems}
+            </ImageBackground>
+          ) : (
+            <View style={styles.tabBar}>
+              {tabItems}
+            </View>
+          );
+        })()}
 
         <EventFormModal
           visible={formConfig.visible}
