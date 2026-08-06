@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
@@ -7,6 +7,8 @@ import { computeRegion } from '../utils/geo';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
 import { useTheme } from '../context/ThemeContext';
+
+const PARCHMENT_BG = require('../assets/parchment.png');
 
 export function MapScreen({ events }) {
   const { styles, retro } = useTheme();
@@ -122,6 +124,17 @@ export function MapScreen({ events }) {
           );
         })}
       </MapView>
+
+      {/* Faint aged-paper wash tying the map into the retro theme — sits
+          directly over the MapView, below all the touchable overlays below. */}
+      {retro && (
+        <Image
+          source={PARCHMENT_BG}
+          resizeMode="cover"
+          style={styles.mapParchmentOverlay}
+          pointerEvents="none"
+        />
+      )}
 
       {/* Filter bar floats over the map at the top */}
       <View style={[styles.mapFilterOverlay, isRetro && styles.mapFilterOverlayRetro]}>

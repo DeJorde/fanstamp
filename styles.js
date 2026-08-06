@@ -182,6 +182,13 @@ function buildStyles(c, retroMode) {
       borderBottomColor: 'rgba(139,105,20,0.4)',
     },
 
+    // Faint aged-paper wash over the map itself in retro mode — low enough
+    // opacity to tie the map into the theme without obscuring pins/roads.
+    mapParchmentOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      opacity: 0.12,
+    },
+
     // Style toggle and pin-mode toggle — both top-right
     mapToggle: {
       position: 'absolute', top: 60, right: 12,
