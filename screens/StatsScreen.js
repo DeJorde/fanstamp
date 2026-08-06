@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
 import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
@@ -12,8 +12,6 @@ import { USStatesMap } from '../components/USStatesMap';
 import { useTheme } from '../context/ThemeContext';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-const PARCHMENT_BG = require('../assets/parchment.png');
 
 function StatsSectionHeader({ title }) {
   const { styles } = useTheme();
@@ -39,7 +37,7 @@ export function StatsScreen({
   onToggleFavoriteTeam,
   onSelectTeam,
 }) {
-  const { styles, colors, retro } = useTheme();
+  const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
 
   const bucketByLeague = useMemo(() => {
@@ -144,11 +142,8 @@ export function StatsScreen({
     };
   }, [filtered]);
 
-  const Root = retro ? ImageBackground : View;
-  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
-
   return (
-    <Root {...rootProps}>
+    <View style={{ flex: 1 }}>
       <FilterBar value={filter} onChange={setFilter} />
 
       <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
@@ -441,6 +436,6 @@ export function StatsScreen({
         <MilestonesSection events={events} />
 
       </ScrollView>
-    </Root>
+    </View>
   );
 }

@@ -1,9 +1,7 @@
-import { ActivityIndicator, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 import { BoxScoreTable } from './BoxScoreTable';
-
-const PARCHMENT_BG = require('../assets/parchment.png');
 
 const EMPTY_TEXT = {
   scheduled: "Game hasn't been played yet",
@@ -49,17 +47,13 @@ function zipTeamStats(home, away) {
 }
 
 export function BoxScoreScreen({ event, onRetryStats }) {
-  const { styles, colors, retro } = useTheme();
+  const { styles, colors } = useTheme();
   const gameStats = event.gameStats;
   const isMlb = event.category === 'MLB';
   const status = gameStats?.status;
   const hasBoxData = status === 'found' && (isMlb ? !!gameStats.mlbBoxscore : !!gameStats.espnBoxscore);
 
-  const Root = retro ? ImageBackground : View;
-  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
-
   return (
-    <Root {...rootProps}>
     <ScrollView style={styles.detailScroll} contentContainerStyle={styles.detailContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.detailName}>{event.awayTeam || 'Away'} @ {event.homeTeam || 'Home'}</Text>
       <Text style={styles.gameLogVenue}>{event.venue}</Text>
@@ -130,6 +124,5 @@ export function BoxScoreScreen({ event, onRetryStats }) {
         </>
       )}
     </ScrollView>
-    </Root>
   );
 }

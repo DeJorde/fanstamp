@@ -1,13 +1,11 @@
 import { useMemo } from 'react';
-import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getTeamGameLog } from '../utils/teamStats';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 import { VerifiedBadge } from './VerifiedBadge';
 import { PlayerAttendanceStats } from './PlayerAttendanceStats';
-
-const PARCHMENT_BG = require('../assets/parchment.png');
 
 const OUTCOME_META = {
   win:  { label: 'W', styleKey: 'gameLogBadgeWin' },
@@ -20,14 +18,10 @@ function outcomeMeta(outcome) {
 }
 
 export function TeamGameLogScreen({ league, team, events, onSelectGame, onSelectFullStats }) {
-  const { styles, retro } = useTheme();
+  const { styles } = useTheme();
   const games = useMemo(() => getTeamGameLog(events, league, team), [events, league, team]);
 
-  const Root = retro ? ImageBackground : View;
-  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
-
   return (
-    <Root {...rootProps}>
     <ScrollView style={styles.leaguesScroll} contentContainerStyle={styles.leaguesContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.detailName}>{LEAGUE_ICONS[league]} {team}</Text>
       <Text style={styles.leagueDetailSubtitle}>{games.length} game{games.length === 1 ? '' : 's'} attended</Text>
@@ -63,6 +57,5 @@ export function TeamGameLogScreen({ league, team, events, onSelectGame, onSelect
         );
       })}
     </ScrollView>
-    </Root>
   );
 }

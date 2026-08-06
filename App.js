@@ -273,9 +273,19 @@ function AppContent() {
   if (onboarded === null) return null;
   if (!onboarded) return <OnboardingScreen onComplete={completeOnboarding} />;
 
-  // No more app-wide background layer — retro texture is now painted by
-  // each screen (and the header) individually via its own ImageBackground,
-  // so no shared root-level container's sizing quirks can leave a gap.
+  // Exactly one texture layer for the whole app — wrapping the root
+  // container itself, with header/screen/tab bar all left transparent so
+  // this single image shows through everywhere. Per-component
+  // ImageBackgrounds (one on the header, one per screen, one on the tab
+  // bar) each independently resized/cropped the same source image to fit
+  // their own container, so the grain scaled differently in each strip —
+  // visible seams and a washed-out look at the boundaries. A single layer
+  // sized to the whole screen removes that mismatch entirely.
+  const RootContainer = retro ? ImageBackground : View;
+  const rootContainerProps = retro
+    ? { source: PARCHMENT_BG, resizeMode: 'cover', style: styles.root }
+    : { style: styles.root };
+
   const headerContent = (
     <View style={styles.headerRow}>
       {inDetail ? (
@@ -299,20 +309,14 @@ function AppContent() {
 
   return (
     <>
-      <View style={styles.root}>
+      <RootContainer {...rootContainerProps}>
         {/* Without this, the native status bar keeps its own opaque background
             on Android regardless of anything rendered in the JS tree below —
             no amount of ImageBackground/View nesting reaches it. */}
         <StatusBar style={retro ? 'dark' : 'light'} translucent backgroundColor="transparent" />
-        {retro ? (
-          <ImageBackground source={PARCHMENT_BG} resizeMode="cover" style={styles.header}>
-            {headerContent}
-          </ImageBackground>
-        ) : (
-          <View style={styles.header}>
-            {headerContent}
-          </View>
-        )}
+        <View style={styles.header}>
+          {headerContent}
+        </View>
 
         <View style={styles.screen}>
           {activeTab === 'events' ? (
@@ -360,27 +364,20 @@ function AppContent() {
           )}
         </View>
 
-        {!inDetail && (() => {
-          const tabItems = TABS.map((tab) => {
-            const active = tab.key === activeTab;
-            return (
-              <TouchableOpacity key={tab.key} style={styles.tabItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
-                <Text style={styles.tabIcon}>{tab.icon}</Text>
-                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-                {active && <View style={styles.tabIndicator} />}
-              </TouchableOpacity>
-            );
-          });
-          return retro ? (
-            <ImageBackground source={PARCHMENT_BG} resizeMode="cover" style={styles.tabBar}>
-              {tabItems}
-            </ImageBackground>
-          ) : (
-            <View style={styles.tabBar}>
-              {tabItems}
-            </View>
-          );
-        })()}
+        {!inDetail && (
+          <View style={styles.tabBar}>
+            {TABS.map((tab) => {
+              const active = tab.key === activeTab;
+              return (
+                <TouchableOpacity key={tab.key} style={styles.tabItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
+                  <Text style={styles.tabIcon}>{tab.icon}</Text>
+                  <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
+                  {active && <View style={styles.tabIndicator} />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         <EventFormModal
           visible={formConfig.visible}
@@ -390,11 +387,11 @@ function AppContent() {
           onSave={handleSave}
         />
 
-        {/* Painted last so it sits on top of the header/screen/tab bar,
-            each of which now carries its own opaque retro texture and
-            would otherwise hide a vignette layered underneath them. */}
+        {/* Painted last so it sits on top of the header, screen, and tab
+            bar — all transparent now that the single texture layer above
+            them supplies the parchment background. */}
         {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}
-      </View>
+      </RootContainer>
     </>
   );
 }

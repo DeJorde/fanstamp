@@ -1,15 +1,13 @@
 import { useMemo } from 'react';
-import { Alert, Image, ImageBackground, ScrollView, Share, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, Share, Text, TouchableOpacity, View } from 'react-native';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getLeagueDetail } from '../utils/badges';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 import { VerifiedBadge } from './VerifiedBadge';
 
-const PARCHMENT_BG = require('../assets/parchment.png');
-
 export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketList }) {
-  const { styles, retro } = useTheme();
+  const { styles } = useTheme();
   const teams = useMemo(() => getLeagueDetail(events, league), [events, league]);
   const visited = useMemo(
     () => teams.filter((t) => t.visited).sort((a, b) => a.team.localeCompare(b.team)),
@@ -56,11 +54,7 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
     }
   }
 
-  const Root = retro ? ImageBackground : View;
-  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
-
   return (
-    <Root {...rootProps}>
     <ScrollView style={styles.leaguesScroll} contentContainerStyle={styles.leaguesContent} showsVerticalScrollIndicator={false}>
       <View style={styles.leagueDetailHeaderRow}>
         <Text style={styles.detailName}>{LEAGUE_ICONS[league]} {league}</Text>
@@ -131,6 +125,5 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
         </TouchableOpacity>
       ))}
     </ScrollView>
-    </Root>
   );
 }

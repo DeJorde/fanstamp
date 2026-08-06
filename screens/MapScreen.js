@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
@@ -7,8 +7,6 @@ import { computeRegion } from '../utils/geo';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
 import { useTheme } from '../context/ThemeContext';
-
-const PARCHMENT_BG = require('../assets/parchment.png');
 
 export function MapScreen({ events }) {
   const { styles, retro } = useTheme();
@@ -52,12 +50,10 @@ export function MapScreen({ events }) {
   }
 
   const isRetro = styleKey === 'retro';
-  const Root = retro ? ImageBackground : View;
-  const rootProps = retro ? { source: PARCHMENT_BG, resizeMode: 'cover', style: { flex: 1 } } : { style: { flex: 1 } };
 
   return (
-    // The outer container is the full content area; MapView fills it absolutely
-    <Root {...rootProps}>
+    // The outer View is the full content area; MapView fills it absolutely
+    <View style={{ flex: 1 }}>
       <MapView
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
@@ -155,6 +151,6 @@ export function MapScreen({ events }) {
           </Text>
         </View>
       )}
-    </Root>
+    </View>
   );
 }
