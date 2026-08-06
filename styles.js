@@ -82,17 +82,15 @@ function buildStyles(c, retroMode) {
     // individual screen components) isn't masked by a flat fill here.
     screen: { flex: 1, backgroundColor: retroMode ? 'transparent' : c.bg1 },
 
-    // Aged-paper darkening around the screen edges. Rendered as the last
-    // child of the root View (see App.js) so it sits on top of the header,
-    // active screen, and tab bar — each of which paints its own opaque
-    // retro texture and would otherwise hide a vignette layered underneath.
-    // Kept faint on purpose — a flat border reads as a hard bar well before
-    // it reads as a soft vignette, so opacity stays low rather than the
-    // width growing to compensate.
-    parchmentVignette: {
-      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-      borderWidth: 50, borderColor: 'rgba(0, 0, 0, 0.08)',
-    },
+    // Aged-paper darkening around the screen edges — four LinearGradient
+    // strips (see App.js), each fading from the edge color at the true
+    // screen edge to fully transparent toward the center. A flat border
+    // color always reads as a hard bar no matter how low its opacity goes;
+    // an actual gradient is what makes it read as a soft vignette instead.
+    vignetteEdgeTop:    { position: 'absolute', top: 0, left: 0, right: 0, height: 60 },
+    vignetteEdgeBottom: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 60 },
+    vignetteEdgeLeft:   { position: 'absolute', top: 0, bottom: 0, left: 0, width: 60 },
+    vignetteEdgeRight:  { position: 'absolute', top: 0, bottom: 0, right: 0, width: 60 },
 
     // ── Filter bar (used by MapTab's FilterBar component) ────────────────────────
     filterBarWrap: {

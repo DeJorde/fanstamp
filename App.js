@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-nati
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   STORAGE_KEY, BUCKET_LIST_STORAGE_KEY, FAVORITE_TEAM_STORAGE_KEY, ONBOARDED_STORAGE_KEY, EMPTY_FORM,
   LEGACY_STORAGE_KEY, LEGACY_BUCKET_LIST_STORAGE_KEY, LEGACY_FAVORITE_TEAM_STORAGE_KEY,
@@ -29,9 +30,13 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 SplashScreen.preventAutoHideAsync();
 
 // Aged-paper texture behind the whole app in retro mode — see the
-// parchmentVignette style in styles.js for the darkened-edge overlay
+// vignetteEdge* styles in styles.js for the darkened-edge gradients
 // layered on top of it.
 const PARCHMENT_BG = require('./assets/parchment.png');
+
+// Ink-aged-paper edge tint, fading to fully transparent toward the center.
+const VIGNETTE_EDGE_COLOR = 'rgba(101, 67, 33, 0.25)';
+const VIGNETTE_TRANSPARENT = 'rgba(101, 67, 33, 0)';
 
 const TABS = [
   { key: 'events',  label: 'Events',  icon: '🎟' },
@@ -387,10 +392,39 @@ function AppContent() {
           onSave={handleSave}
         />
 
-        {/* Painted last so it sits on top of the header, screen, and tab
+        {/* Painted last so they sit on top of the header, screen, and tab
             bar — all transparent now that the single texture layer above
-            them supplies the parchment background. */}
-        {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}
+            them supplies the parchment background. Four separate strips
+            rather than one bordered box, since each needs its own fade
+            direction (edge → transparent) pointing inward. */}
+        {retro && (
+          <>
+            <LinearGradient
+              pointerEvents="none"
+              colors={[VIGNETTE_EDGE_COLOR, VIGNETTE_TRANSPARENT]}
+              style={styles.vignetteEdgeTop}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              colors={[VIGNETTE_TRANSPARENT, VIGNETTE_EDGE_COLOR]}
+              style={styles.vignetteEdgeBottom}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              colors={[VIGNETTE_EDGE_COLOR, VIGNETTE_TRANSPARENT]}
+              style={styles.vignetteEdgeLeft}
+            />
+            <LinearGradient
+              pointerEvents="none"
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              colors={[VIGNETTE_TRANSPARENT, VIGNETTE_EDGE_COLOR]}
+              style={styles.vignetteEdgeRight}
+            />
+          </>
+        )}
       </RootContainer>
     </>
   );
