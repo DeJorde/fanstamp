@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Image, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -273,6 +273,13 @@ function AppContent() {
   if (onboarded === null) return null;
   if (!onboarded) return <OnboardingScreen onComplete={completeOnboarding} />;
 
+  // Exact pixel dimensions rather than top/left/right/bottom insets — those
+  // depend on Yoga resolving against a positioned parent's size, which was
+  // silently failing here (edges/header fell back to a flat color instead
+  // of the texture). A plain Image sized to the literal window box sidesteps
+  // that resolution step entirely.
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
   return (
     <>
       {/* True top-level sibling, not nested inside the root View — so
@@ -280,10 +287,10 @@ function AppContent() {
           constraints) between this and the native screen bounds it's
           absolutely positioned against. */}
       {retro && (
-        <ImageBackground
+        <Image
           source={PARCHMENT_BG}
           resizeMode="cover"
-          style={styles.parchmentBgLayer}
+          style={[styles.parchmentBgLayer, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
         />
       )}
       {retro && <View style={styles.parchmentVignette} pointerEvents="none" />}

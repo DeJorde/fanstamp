@@ -42,7 +42,7 @@ function buildStyles(c, retroMode) {
     // timing so the texture always covers edge-to-edge behind everything,
     // including the header and tab bar above it.
     parchmentBgLayer: {
-      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+      position: 'absolute', top: 0, left: 0,
     },
 
     // Transparent in retro mode so the parchment texture shows through
