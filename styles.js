@@ -186,7 +186,7 @@ function buildStyles(c, retroMode) {
     // opacity to tie the map into the theme without obscuring pins/roads.
     mapParchmentOverlay: {
       ...StyleSheet.absoluteFillObject,
-      opacity: 0.12,
+      opacity: 0.20,
     },
 
     // Style toggle and pin-mode toggle — both top-right

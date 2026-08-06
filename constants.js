@@ -187,8 +187,9 @@ export const MAP_STYLES = {
       // ── Transit: hide everything ──
       { featureType: 'transit',                                                               stylers: [{ visibility: 'off' }] },
 
-      // ── Water: muted slate-blue/grey — the cartographic sea ──
-      { featureType: 'water',                     elementType: 'geometry',                    stylers: [{ color: '#6B8FA8' }] },
+      // ── Water: dusty muted tone rather than a solid blue-grey, so it
+      // doesn't read as jarring/modern against the parchment land ──
+      { featureType: 'water',                     elementType: 'geometry',                    stylers: [{ color: '#8B9E9E' }] },
       { featureType: 'water',                     elementType: 'labels.text.fill',            stylers: [{ color: '#3E2000' }] },
       { featureType: 'water',                     elementType: 'labels.text.stroke',          stylers: [{ color: '#B8955A' }, { weight: 2 }] },
     ],
