@@ -182,6 +182,15 @@ function buildStyles(c, retroMode) {
       borderBottomColor: 'rgba(139,105,20,0.4)',
     },
 
+    // Flat color-correction over the retro terrain map — shifts Google's
+    // default green relief tones toward amber/brown while staying light
+    // enough for the elevation shading to read through clearly.
+    mapAmberOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: '#8B6000',
+      opacity: 0.25,
+    },
+
     // Style toggle and pin-mode toggle — both top-right
     mapToggle: {
       position: 'absolute', top: 60, right: 12,
