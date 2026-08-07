@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
@@ -7,8 +7,6 @@ import { computeRegion } from '../utils/geo';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
 import { useTheme } from '../context/ThemeContext';
-
-const PARCHMENT_BG = require('../assets/parchment.png');
 
 export function MapScreen({ events }) {
   const { styles, retro } = useTheme();
@@ -80,13 +78,7 @@ export function MapScreen({ events }) {
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
         initialRegion={initialRegion}
-        // Google's Maps SDK only supports customMapStyle JSON on the
-        // 'standard' map type — TERRAIN/SATELLITE/HYBRID silently ignore it.
-        // Retro mode trades the styled JSON for real elevation shading via
-        // mapType='terrain'; the parchment + sepia overlays below carry the
-        // warm palette instead.
-        mapType={isRetro ? 'terrain' : 'standard'}
-        customMapStyle={isRetro ? [] : activeStyle.json}
+        customMapStyle={activeStyle.json}
         // Push camera down so filter overlay doesn't obscure pins
         mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
       >
@@ -130,22 +122,6 @@ export function MapScreen({ events }) {
           );
         })}
       </MapView>
-
-      {/* Aged-paper wash tying the map into the retro theme — sits directly
-          over the MapView, below all the touchable overlays below. Two
-          stacked layers (texture + solid sepia tint) fake a "multiply"
-          blend, which React Native has no reliable cross-platform support for. */}
-      {retro && (
-        <>
-          <Image
-            source={PARCHMENT_BG}
-            resizeMode="cover"
-            style={styles.mapParchmentOverlay}
-            pointerEvents="none"
-          />
-          <View style={styles.mapSepiaOverlay} pointerEvents="none" />
-        </>
-      )}
 
       {/* Filter bar floats over the map at the top */}
       <View style={[styles.mapFilterOverlay, isRetro && styles.mapFilterOverlayRetro]}>

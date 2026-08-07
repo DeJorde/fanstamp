@@ -141,20 +141,20 @@ export const MAP_STYLES = {
       { featureType: 'landscape',                 elementType: 'geometry',                    stylers: [{ color: '#B8955A' }] },
       { featureType: 'landscape.man_made',        elementType: 'geometry',                    stylers: [{ color: '#AD8A4A' }] },
       { featureType: 'landscape.natural',         elementType: 'geometry',                    stylers: [{ color: '#9C8548' }] },
-      // Landcover: darker, more varied tone so vegetation/ground cover reads distinctly from bare land
-      { featureType: 'landscape.natural.landcover', elementType: 'geometry',                  stylers: [{ color: '#8A7838' }] },
-      // Terrain: darkest, most saturated earth tone to imply elevation/mountains/contour
-      { featureType: 'landscape.natural.terrain', elementType: 'geometry',                    stylers: [{ color: '#6E5A28' }, { visibility: 'on' }] },
+      // Landcover: warm brown, distinct from bare land but with zero green hue
+      { featureType: 'landscape.natural.landcover', elementType: 'geometry',                  stylers: [{ color: '#9A7845' }] },
+      // Terrain: darker brown to imply elevation/mountains/contour
+      { featureType: 'landscape.natural.terrain', elementType: 'geometry',                    stylers: [{ color: '#7A5C30' }, { visibility: 'on' }] },
 
       // ── Points of interest: hide all icons & business labels ──
       { featureType: 'poi',                       elementType: 'geometry',                    stylers: [{ color: '#C0A058' }] },
       { featureType: 'poi',                       elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
-      // Parks & natural areas: darker sage green to read as forest, the only POI that shows on a cartographic map
-      { featureType: 'poi.park',                  elementType: 'geometry.fill',               stylers: [{ color: '#7A8C5A' }, { visibility: 'on' }] },
-      { featureType: 'poi.park',                  elementType: 'geometry.stroke',             stylers: [{ color: '#5E6E42' }, { weight: 0.8 }] },
+      // Parks & natural areas: warm tan/brown so forests blend with the land
+      // instead of standing out green — the only POI that shows on a cartographic map
+      { featureType: 'poi.park',                  elementType: 'geometry.fill',               stylers: [{ color: '#A89060' }, { visibility: 'on' }] },
+      { featureType: 'poi.park',                  elementType: 'geometry.stroke',             stylers: [{ color: '#8A6E3A' }, { weight: 0.8 }] },
       { featureType: 'poi.park',                  elementType: 'labels.text.fill',            stylers: [{ color: '#3E2000' }, { visibility: 'on' }] },
       { featureType: 'poi.park',                  elementType: 'labels.icon',                 stylers: [{ visibility: 'off' }] },
-      // Natural features: forests, reserves — slightly greener parchment
       { featureType: 'poi.attraction',            elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
       { featureType: 'poi.business',              elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
       { featureType: 'poi.government',            elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
