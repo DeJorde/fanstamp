@@ -132,9 +132,11 @@ export function MapScreen({ events }) {
       </MapView>
 
       {/* Aged-paper wash tying the map into the retro theme — sits directly
-          over the MapView, below all the touchable overlays below. Two
-          stacked layers (texture + solid sepia tint) fake a "multiply"
-          blend, which React Native has no reliable cross-platform support for. */}
+          over the MapView, below all the touchable overlays below. Three
+          stacked layers (texture + sienna tint + dark brown tint) fake a
+          "multiply" blend, which React Native has no reliable cross-platform
+          support for, and together overpower the terrain map's green relief
+          colors. */}
       {retro && (
         <>
           <Image
@@ -144,6 +146,7 @@ export function MapScreen({ events }) {
             pointerEvents="none"
           />
           <View style={styles.mapSepiaOverlay} pointerEvents="none" />
+          <View style={styles.mapDeepBrownOverlay} pointerEvents="none" />
         </>
       )}
 
