@@ -182,13 +182,19 @@ function buildStyles(c, retroMode) {
       borderBottomColor: 'rgba(139,105,20,0.4)',
     },
 
-    // Flat color-correction over the retro terrain map — shifts Google's
-    // default green relief tones toward amber/brown while staying light
-    // enough for the elevation shading to read through clearly.
+    // Flat color-correction over the retro terrain map — two stacked tints
+    // (golden amber, then dark brown) shift Google's default green relief
+    // tones toward warm amber/brown while the elevation shading still
+    // reads through as lighter/darker variation underneath.
     mapAmberOverlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: '#7B4F00',
-      opacity: 0.35,
+      backgroundColor: '#C8860A',
+      opacity: 0.55,
+    },
+    mapDeepBrownOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: '#5C3A00',
+      opacity: 0.20,
     },
 
     // Style toggle and pin-mode toggle — both top-right

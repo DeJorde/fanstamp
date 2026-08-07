@@ -129,10 +129,16 @@ export function MapScreen({ events }) {
         })}
       </MapView>
 
-      {/* Single flat amber color-correction over the terrain map — shifts
-          its default green relief tones toward brown while keeping the
-          elevation shading clearly visible underneath. */}
-      {isRetro && <View style={styles.mapAmberOverlay} pointerEvents="none" />}
+      {/* Two stacked flat color-correction layers over the terrain map —
+          golden amber, then dark brown on top — shift its default green
+          relief tones to warm amber/brown while keeping the elevation
+          shading clearly visible underneath. */}
+      {isRetro && (
+        <>
+          <View style={styles.mapAmberOverlay} pointerEvents="none" />
+          <View style={styles.mapDeepBrownOverlay} pointerEvents="none" />
+        </>
+      )}
 
       {/* Filter bar floats over the map at the top */}
       <View style={[styles.mapFilterOverlay, isRetro && styles.mapFilterOverlayRetro]}>
