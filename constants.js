@@ -140,17 +140,18 @@ export const MAP_STYLES = {
       // ── Landscape: layered earth tones for terrain depth ──
       { featureType: 'landscape',                 elementType: 'geometry',                    stylers: [{ color: '#B8955A' }] },
       { featureType: 'landscape.man_made',        elementType: 'geometry',                    stylers: [{ color: '#AD8A4A' }] },
-      { featureType: 'landscape.natural',         elementType: 'geometry',                    stylers: [{ color: '#B09050' }] },
-      { featureType: 'landscape.natural.landcover', elementType: 'geometry',                  stylers: [{ color: '#A88540' }] },
-      // Terrain: darkest parchment tone to imply elevation/contour
-      { featureType: 'landscape.natural.terrain', elementType: 'geometry',                    stylers: [{ color: '#9A7830' }] },
+      { featureType: 'landscape.natural',         elementType: 'geometry',                    stylers: [{ color: '#9C8548' }] },
+      // Landcover: darker, more varied tone so vegetation/ground cover reads distinctly from bare land
+      { featureType: 'landscape.natural.landcover', elementType: 'geometry',                  stylers: [{ color: '#8A7838' }] },
+      // Terrain: darkest, most saturated earth tone to imply elevation/mountains/contour
+      { featureType: 'landscape.natural.terrain', elementType: 'geometry',                    stylers: [{ color: '#6E5A28' }, { visibility: 'on' }] },
 
       // ── Points of interest: hide all icons & business labels ──
       { featureType: 'poi',                       elementType: 'geometry',                    stylers: [{ color: '#C0A058' }] },
       { featureType: 'poi',                       elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
-      // Parks: muted sage-green, the only POI that shows on a cartographic map
-      { featureType: 'poi.park',                  elementType: 'geometry.fill',               stylers: [{ color: '#8A9E62' }] },
-      { featureType: 'poi.park',                  elementType: 'geometry.stroke',             stylers: [{ color: '#7A8E52' }, { weight: 0.8 }] },
+      // Parks & natural areas: darker sage green to read as forest, the only POI that shows on a cartographic map
+      { featureType: 'poi.park',                  elementType: 'geometry.fill',               stylers: [{ color: '#7A8C5A' }, { visibility: 'on' }] },
+      { featureType: 'poi.park',                  elementType: 'geometry.stroke',             stylers: [{ color: '#5E6E42' }, { weight: 0.8 }] },
       { featureType: 'poi.park',                  elementType: 'labels.text.fill',            stylers: [{ color: '#3E2000' }, { visibility: 'on' }] },
       { featureType: 'poi.park',                  elementType: 'labels.icon',                 stylers: [{ visibility: 'off' }] },
       // Natural features: forests, reserves — slightly greener parchment
@@ -166,11 +167,10 @@ export const MAP_STYLES = {
       // First suppress everything
       { featureType: 'road',                      elementType: 'geometry',                    stylers: [{ visibility: 'off' }] },
       { featureType: 'road',                      elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
-      // Arterials: thin sepia ink
+      // Arterials: thin sepia ink, no text labels — reduces clutter while keeping the route lines
       { featureType: 'road.arterial',             elementType: 'geometry',                    stylers: [{ color: '#8B6914' }, { visibility: 'on' }] },
-      { featureType: 'road.arterial',             elementType: 'geometry.stroke',             stylers: [{ color: '#6B4F10' }, { weight: 0.6 }] },
-      { featureType: 'road.arterial',             elementType: 'labels.text.fill',            stylers: [{ color: '#3E2000' }, { visibility: 'on' }] },
-      { featureType: 'road.arterial',             elementType: 'labels.text.stroke',          stylers: [{ color: '#C8AA78' }] },
+      { featureType: 'road.arterial',             elementType: 'geometry.stroke',             stylers: [{ color: '#6B4F10' }, { weight: 0.35 }] },
+      { featureType: 'road.arterial',             elementType: 'labels',                      stylers: [{ visibility: 'off' }] },
       // Highways: slightly darker, bolder sepia — the primary map routes
       { featureType: 'road.highway',              elementType: 'geometry',                    stylers: [{ color: '#7A5810' }, { visibility: 'on' }] },
       { featureType: 'road.highway',              elementType: 'geometry.stroke',             stylers: [{ color: '#3E2000' }, { weight: 1 }] },
@@ -187,9 +187,9 @@ export const MAP_STYLES = {
       // ── Transit: hide everything ──
       { featureType: 'transit',                                                               stylers: [{ visibility: 'off' }] },
 
-      // ── Water: dusty muted tone rather than a solid blue-grey, so it
-      // doesn't read as jarring/modern against the parchment land ──
-      { featureType: 'water',                     elementType: 'geometry',                    stylers: [{ color: '#8B9E9E' }] },
+      // ── Water: deeper muted slate for coastline/depth, dusty enough to
+      // avoid reading as jarring/modern against the parchment land ──
+      { featureType: 'water',                     elementType: 'geometry',                    stylers: [{ color: '#5C7A8C' }] },
       { featureType: 'water',                     elementType: 'labels.text.fill',            stylers: [{ color: '#3E2000' }] },
       { featureType: 'water',                     elementType: 'labels.text.stroke',          stylers: [{ color: '#B8955A' }, { weight: 2 }] },
     ],

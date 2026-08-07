@@ -125,15 +125,20 @@ export function MapScreen({ events }) {
         })}
       </MapView>
 
-      {/* Faint aged-paper wash tying the map into the retro theme — sits
-          directly over the MapView, below all the touchable overlays below. */}
+      {/* Aged-paper wash tying the map into the retro theme — sits directly
+          over the MapView, below all the touchable overlays below. Two
+          stacked layers (texture + solid sepia tint) fake a "multiply"
+          blend, which React Native has no reliable cross-platform support for. */}
       {retro && (
-        <Image
-          source={PARCHMENT_BG}
-          resizeMode="cover"
-          style={styles.mapParchmentOverlay}
-          pointerEvents="none"
-        />
+        <>
+          <Image
+            source={PARCHMENT_BG}
+            resizeMode="cover"
+            style={styles.mapParchmentOverlay}
+            pointerEvents="none"
+          />
+          <View style={styles.mapSepiaOverlay} pointerEvents="none" />
+        </>
       )}
 
       {/* Filter bar floats over the map at the top */}

@@ -182,11 +182,19 @@ function buildStyles(c, retroMode) {
       borderBottomColor: 'rgba(139,105,20,0.4)',
     },
 
-    // Faint aged-paper wash over the map itself in retro mode — low enough
-    // opacity to tie the map into the theme without obscuring pins/roads.
+    // Aged-paper wash over the map itself in retro mode. React Native has no
+    // reliable cross-platform "multiply" blend for an Image, so the effect is
+    // faked with two stacked layers: the parchment texture, then a solid
+    // warm sepia tint on top — together they read as aged/tinted paper
+    // without a real blend mode.
     mapParchmentOverlay: {
       ...StyleSheet.absoluteFillObject,
       opacity: 0.20,
+    },
+    mapSepiaOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: '#8B6914',
+      opacity: 0.08,
     },
 
     // Style toggle and pin-mode toggle — both top-right
