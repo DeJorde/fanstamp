@@ -187,8 +187,8 @@ function buildStyles(c, retroMode) {
     // enough for the elevation shading to read through clearly.
     mapAmberOverlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: '#8B6000',
-      opacity: 0.25,
+      backgroundColor: '#7B4F00',
+      opacity: 0.35,
     },
 
     // Style toggle and pin-mode toggle — both top-right
