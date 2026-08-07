@@ -184,26 +184,19 @@ function buildStyles(c, retroMode) {
 
     // Aged-paper wash over the map itself in retro mode. React Native has no
     // reliable cross-platform "multiply" blend for an Image, so the effect is
-    // faked with three stacked layers: the parchment texture, a sienna tint,
-    // then a dark brown tint on top — together they read as aged/tinted
-    // paper without a real blend mode. Retro mode runs on mapType='terrain'
-    // (real elevation shading, but Google ignores customMapStyle JSON
-    // there), so these overlays carry the entire warm palette on their own —
-    // opacities run high enough to fully overpower Google's green terrain
-    // relief colors, leaving only the light/dark elevation contrast visible.
+    // faked with two stacked layers: the parchment texture, then a solid
+    // warm sepia tint on top — together they read as aged/tinted paper
+    // without a real blend mode. Retro mode runs on mapType='terrain' (real
+    // elevation shading, but Google ignores customMapStyle JSON there), so
+    // these overlays carry the warm palette on their own.
     mapParchmentOverlay: {
       ...StyleSheet.absoluteFillObject,
-      opacity: 0.45,
+      opacity: 0.35,
     },
     mapSepiaOverlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: '#8B5E2A',
-      opacity: 0.65,
-    },
-    mapDeepBrownOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: '#3D1F00',
-      opacity: 0.15,
+      backgroundColor: '#8B6914',
+      opacity: 0.45,
     },
 
     // Style toggle and pin-mode toggle — both top-right
