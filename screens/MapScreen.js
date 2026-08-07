@@ -80,7 +80,13 @@ export function MapScreen({ events }) {
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
         initialRegion={initialRegion}
-        customMapStyle={activeStyle.json}
+        // Google's Maps SDK only supports customMapStyle JSON on the
+        // 'standard' map type — TERRAIN/SATELLITE/HYBRID silently ignore it.
+        // Retro mode trades the styled JSON for real elevation shading via
+        // mapType='terrain'; the parchment + sepia overlays below carry the
+        // warm palette instead.
+        mapType={isRetro ? 'terrain' : 'standard'}
+        customMapStyle={isRetro ? [] : activeStyle.json}
         // Push camera down so filter overlay doesn't obscure pins
         mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
       >
