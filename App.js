@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,10 +11,15 @@ import {
 import { eventToForm, geocodeVenue } from './utils/geo';
 import { getItemWithMigration } from './utils/storage';
 import { canFetchGameStats, fetchGameStats, needsGameStatsRefresh } from './utils/gameStatsApi';
+import {
+  subscribeToUserData, ensureMigrated, syncEventsToFirestore,
+  syncBucketListToFirestore, setUserFields,
+} from './utils/firestoreSync';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
 import { StatsScreen } from './screens/StatsScreen';
 import { LeaguesScreen } from './screens/LeaguesScreen';
+import { AuthScreen } from './screens/AuthScreen';
 import { EventFormModal } from './components/EventFormModal';
 import { DetailScreen } from './components/DetailScreen';
 import { LeagueDetailScreen } from './components/LeagueDetailScreen';
@@ -22,7 +27,9 @@ import { TeamGameLogScreen } from './components/TeamGameLogScreen';
 import { BoxScoreScreen } from './components/BoxScoreScreen';
 import { CumulativeTeamStatsScreen } from './components/CumulativeTeamStatsScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
+import { ProfileModal } from './components/ProfileModal';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Keep the native splash screen up until the first-launch check below
 // resolves, so the app never flashes empty content before the onboarding
@@ -47,14 +54,17 @@ const TABS = [
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
 function AppContent() {
-  const { styles, retro, toggleRetro } = useTheme();
+  const { styles, retro, toggleRetro, applyRemoteRetro } = useTheme();
+  const { user } = useAuth();
   const [onboarded, setOnboarded]     = useState(null); // null = still checking (splash stays up)
   const [activeTab, setActiveTab]     = useState('events');
   const [events, setEvents]           = useState([]);
@@ -68,6 +78,10 @@ function AppContent() {
   const [favoriteTeam, setFavoriteTeam] = useState(null);
   const [formConfig, setFormConfig]   = useState({ visible: false, editingId: null });
   const [formPrefill, setFormPrefill] = useState(null);
+  const [showAuthScreen, setShowAuthScreen] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const lastSyncedEventsRef = useRef(null);
+  const lastSyncedBucketRef = useRef(null);
 
   useEffect(() => {
     AsyncStorage.getItem(ONBOARDED_STORAGE_KEY).then((raw) => {
@@ -135,6 +149,68 @@ function AppContent() {
     if (!hasLoaded) return;
     AsyncStorage.setItem(FAVORITE_TEAM_STORAGE_KEY, JSON.stringify(favoriteTeam));
   }, [favoriteTeam, hasLoaded]);
+
+  // ── Cloud sync (guest mode when signed out — nothing below runs) ──────────
+  // Runs once per sign-in: uploads whatever's in local storage at that
+  // moment (guarded by a flag on the user doc, so it only ever happens once
+  // per account — a second device won't stomp cloud data with stale local
+  // data), then subscribes to Firestore for real-time updates from other
+  // devices. Deps intentionally exclude events/bucketList/favoriteTeam/retro
+  // — this should only re-run when the signed-in user changes, using
+  // whatever local data exists at that moment, not on every later edit.
+  useEffect(() => {
+    if (!hasLoaded || !user) return;
+    let unsubscribe = null;
+    let cancelled = false;
+    ensureMigrated(user.uid, { events, bucketList, favoriteTeam, retroMode: retro })
+      .catch((err) => console.log('[FanStamp] cloud migration failed:', err))
+      .finally(() => {
+        if (cancelled) return;
+        unsubscribe = subscribeToUserData(user.uid, {
+          onEvents: setEvents,
+          onBucketList: setBucketList,
+          onUserDoc: (data) => {
+            if (!data) return;
+            if ('favoriteTeam' in data) setFavoriteTeam(data.favoriteTeam ?? null);
+            if (typeof data.retroMode === 'boolean') applyRemoteRetro(data.retroMode);
+          },
+        });
+      });
+    return () => { cancelled = true; if (unsubscribe) unsubscribe(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, hasLoaded]);
+
+  // A different account signing in next shouldn't diff against the previous
+  // account's synced snapshot.
+  useEffect(() => {
+    if (!user) { lastSyncedEventsRef.current = null; lastSyncedBucketRef.current = null; }
+  }, [user]);
+
+  // Debounced local → cloud sync for events/bucketList — diffs against the
+  // last-synced snapshot, which also picks up the async geocode/game-stats
+  // backfills below for free, without a sync call at each of those sites.
+  useEffect(() => {
+    if (!hasLoaded || !user) return;
+    const t = setTimeout(() => {
+      syncEventsToFirestore(user.uid, events, lastSyncedEventsRef)
+        .catch((err) => console.log('[FanStamp] event sync failed:', err));
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [events, hasLoaded, user?.uid]);
+
+  useEffect(() => {
+    if (!hasLoaded || !user) return;
+    const t = setTimeout(() => {
+      syncBucketListToFirestore(user.uid, bucketList, lastSyncedBucketRef)
+        .catch((err) => console.log('[FanStamp] bucket list sync failed:', err));
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [bucketList, hasLoaded, user?.uid]);
+
+  useEffect(() => {
+    if (!hasLoaded || !user) return;
+    setUserFields(user.uid, { favoriteTeam }).catch((err) => console.log('[FanStamp] favorite team sync failed:', err));
+  }, [favoriteTeam, hasLoaded, user?.uid]);
 
   function toggleBucketList(league, team, stadium, city) {
     setBucketList((prev) => {
@@ -313,9 +389,24 @@ function AppContent() {
           </View>
         </View>
       )}
-      <TouchableOpacity onPress={toggleRetro} style={styles.retroToggleBtn} activeOpacity={0.7}>
-        <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
-      </TouchableOpacity>
+      <View style={styles.headerRightGroup}>
+        <TouchableOpacity
+          onPress={() => (user ? setShowProfile(true) : setShowAuthScreen(true))}
+          style={[styles.profileBtn, user && styles.profileBtnSignedIn]}
+          activeOpacity={0.7}
+        >
+          {user ? (
+            <Text style={styles.profileBtnText}>
+              {(user.displayName || user.email || '?').trim().charAt(0).toUpperCase()}
+            </Text>
+          ) : (
+            <Text style={styles.profileBtnIcon}>👤</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => toggleRetro(user?.uid)} style={styles.retroToggleBtn} activeOpacity={0.7}>
+          <Text style={styles.retroToggleIcon}>{retro ? '🌙' : '📜'}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -398,6 +489,9 @@ function AppContent() {
           onClose={closeForm}
           onSave={handleSave}
         />
+
+        <AuthScreen visible={showAuthScreen} onClose={() => setShowAuthScreen(false)} />
+        <ProfileModal visible={showProfile} onClose={() => setShowProfile(false)} />
 
         {/* Painted last so they sit on top of the header, screen, and tab
             bar — all transparent now that the single texture layer above

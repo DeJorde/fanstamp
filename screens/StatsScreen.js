@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Alert, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
 import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
 import { computeTeamStats } from '../utils/teamStats';
 import { computeStatesVisited } from '../utils/statesVisited';
+import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
 import { TeamCard } from '../components/TeamCard';
@@ -39,6 +40,19 @@ export function StatsScreen({
 }) {
   const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
+  const overviewCardRef = useRef(null);
+
+  async function handleShareOverview() {
+    if (!overviewCardRef.current) {
+      Alert.alert('Nothing to Share', 'Add events to see your stats overview.');
+      return;
+    }
+    try {
+      await shareViewAsImage(overviewCardRef, 'My FanStamp stats 📊 #FanStamp');
+    } catch {
+      Alert.alert('Share Failed', 'Could not create the image to share. Please try again.');
+    }
+  }
 
   const bucketByLeague = useMemo(() => {
     return LEAGUE_KEYS
@@ -144,6 +158,11 @@ export function StatsScreen({
 
   return (
     <View style={{ flex: 1 }}>
+      <View style={styles.statsHeaderRow}>
+        <TouchableOpacity onPress={handleShareOverview} style={styles.shareBtn} activeOpacity={0.7}>
+          <Text style={styles.shareBtnIcon}>📤</Text>
+        </TouchableOpacity>
+      </View>
       <FilterBar value={filter} onChange={setFilter} />
 
       <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
@@ -168,7 +187,7 @@ export function StatsScreen({
           <>
           {/* ─ OVERVIEW ─ */}
           <StatsSectionHeader title="OVERVIEW" />
-          <View style={styles.statsGrid}>
+          <View ref={overviewCardRef} collapsable={false} style={styles.statsGrid}>
             <MetricCard label="Total Events"   value={stats.totalEvents}   icon="🎟" />
             <MetricCard label="Unique Venues"  value={stats.uniqueVenues}  icon="🏟" />
             <MetricCard label="Cities Visited" value={stats.citiesVisited} icon="🏙" />

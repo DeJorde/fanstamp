@@ -8,11 +8,16 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.seventhstreet378.fanstamp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
       "config": {
         "googleMapsApiKey": "AIzaSyCQPsXimsCknE1AjLf_eW11Vb53xeSE2Cs"
       }
     },
     "android": {
+      "package": "com.seventhstreet378.fanstamp",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -39,6 +44,12 @@
           "backgroundColor": "#1a1a2e"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b301f918-3a10-4e66-a1ab-9d2f994a2a6f"
+      }
+    },
+    "owner": "seventhstreet378"
   }
 }

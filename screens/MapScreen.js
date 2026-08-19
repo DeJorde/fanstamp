@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Alert, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
 import { computeRegion } from '../utils/geo';
+import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
 import { useTheme } from '../context/ThemeContext';
@@ -50,6 +51,7 @@ export function MapScreen({ events }) {
   // and look like it "didn't appear." Explicitly animate to the new region
   // whenever a marker is added.
   const mapRef = useRef(null);
+  const mapCaptureRef = useRef(null);
   const prevMarkerCount = useRef(venueMarkers.length);
   useEffect(() => {
     console.log('[MapScreen] venueMarkers changed:', prevMarkerCount.current, '->', venueMarkers.length);
@@ -70,80 +72,94 @@ export function MapScreen({ events }) {
 
   const isRetro = styleKey === 'retro';
 
+  async function handleShareMap() {
+    try {
+      await shareViewAsImage(mapCaptureRef, 'My FanStamp explorer map 🗺 #FanStamp');
+    } catch {
+      Alert.alert('Share Failed', 'Could not create the image to share. Please try again.');
+    }
+  }
+
   return (
     // The outer View is the full content area; MapView fills it absolutely
     <View style={{ flex: 1 }}>
-      <MapView
-        ref={mapRef}
-        style={StyleSheet.absoluteFill}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={initialRegion}
-        // Google's Maps SDK only supports customMapStyle JSON on the
-        // 'standard' map type — TERRAIN/SATELLITE/HYBRID silently ignore it.
-        // Retro mode trades the styled JSON for real elevation shading via
-        // mapType='terrain'; the amber overlay below shifts its green tones
-        // toward brown without hiding the contour detail.
-        mapType={isRetro ? 'terrain' : 'standard'}
-        customMapStyle={isRetro ? [] : activeStyle.json}
-        // Push camera down so filter overlay doesn't obscure pins
-        mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
-      >
-        {venueMarkers.map((marker) => {
-          const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
-          const callout = (
-            <Callout tooltip={false}>
-              <View style={styles.callout}>
-                <Text style={styles.calloutVenue}>{marker.venue}</Text>
-                <Text style={styles.calloutLocation}>{marker.location}</Text>
-                <Text style={[styles.calloutCategory, { color: colors.text }]}>
-                  {CATEGORY_ICONS[marker.category]} {marker.category}
-                </Text>
-                <Text style={styles.calloutCount}>
-                  {marker.count} event{marker.count !== 1 ? 's' : ''}
-                </Text>
-              </View>
-            </Callout>
-          );
-          if (pinMode === 'classic') {
+      {/* Captured subtree for sharing — map + pins + retro overlay + compass
+          rose only, so the shared image excludes the filter bar and toggles. */}
+      <View ref={mapCaptureRef} collapsable={false} style={{ flex: 1 }}>
+        <MapView
+          ref={mapRef}
+          style={StyleSheet.absoluteFill}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={initialRegion}
+          // Google's Maps SDK only supports customMapStyle JSON on the
+          // 'standard' map type — TERRAIN/SATELLITE/HYBRID silently ignore it.
+          // Retro mode trades the styled JSON for real elevation shading via
+          // mapType='terrain'; the amber overlay below shifts its green tones
+          // toward brown without hiding the contour detail.
+          mapType={isRetro ? 'terrain' : 'standard'}
+          customMapStyle={isRetro ? [] : activeStyle.json}
+          // Push camera down so filter overlay doesn't obscure pins
+          mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
+        >
+          {venueMarkers.map((marker) => {
+            const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
+            const callout = (
+              <Callout tooltip={false}>
+                <View style={styles.callout}>
+                  <Text style={styles.calloutVenue}>{marker.venue}</Text>
+                  <Text style={styles.calloutLocation}>{marker.location}</Text>
+                  <Text style={[styles.calloutCategory, { color: colors.text }]}>
+                    {CATEGORY_ICONS[marker.category]} {marker.category}
+                  </Text>
+                  <Text style={styles.calloutCount}>
+                    {marker.count} event{marker.count !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+              </Callout>
+            );
+            if (pinMode === 'classic') {
+              return (
+                <Marker
+                  key={`${marker.key}-classic`}
+                  coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
+                  pinColor="#e63946"
+                >
+                  {callout}
+                </Marker>
+              );
+            }
             return (
               <Marker
-                key={`${marker.key}-classic`}
+                key={`${marker.key}-emoji`}
                 coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
-                pinColor="#e63946"
               >
+                <View style={[styles.mapPin, { backgroundColor: colors.bg, borderColor: colors.text }]}>
+                  <Text style={styles.mapPinIcon}>{CATEGORY_ICONS[marker.category] ?? '📌'}</Text>
+                </View>
                 {callout}
               </Marker>
             );
-          }
-          return (
-            <Marker
-              key={`${marker.key}-emoji`}
-              coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
-            >
-              <View style={[styles.mapPin, { backgroundColor: colors.bg, borderColor: colors.text }]}>
-                <Text style={styles.mapPinIcon}>{CATEGORY_ICONS[marker.category] ?? '📌'}</Text>
-              </View>
-              {callout}
-            </Marker>
-          );
-        })}
-      </MapView>
+          })}
+        </MapView>
 
-      {/* Two stacked flat color-correction layers over the terrain map —
-          golden amber, then dark brown on top — shift its default green
-          relief tones to warm amber/brown while keeping the elevation
-          shading clearly visible underneath. */}
-      {isRetro && (
-        <>
-          <View style={styles.mapAmberOverlay} pointerEvents="none" />
-          <View style={styles.mapDeepBrownOverlay} pointerEvents="none" />
-        </>
-      )}
+        {/* Recolors the terrain map's default green relief to warm amber —
+            see styles.mapColorizeOverlay for why Android and iOS need
+            different techniques here. */}
+        {isRetro && <View style={styles.mapColorizeOverlay} pointerEvents="none" />}
+
+        {/* Compass rose — only in retro mode */}
+        {isRetro && <CompassRose />}
+      </View>
 
       {/* Filter bar floats over the map at the top */}
       <View style={[styles.mapFilterOverlay, isRetro && styles.mapFilterOverlayRetro]}>
         <FilterBar value={filter} onChange={setFilter} />
       </View>
+
+      {/* Share button — top right, over the filter bar band */}
+      <TouchableOpacity style={styles.mapShareBtn} onPress={handleShareMap} activeOpacity={0.7}>
+        <Text style={styles.mapShareBtnIcon}>📤</Text>
+      </TouchableOpacity>
 
       {/* Compact 3-way style toggle — top right */}
       <TouchableOpacity style={styles.mapToggle} onPress={cycleStyle} activeOpacity={0.8}>
@@ -177,9 +193,6 @@ export function MapScreen({ events }) {
           );
         })}
       </TouchableOpacity>
-
-      {/* Compass rose — only in retro mode */}
-      {isRetro && <CompassRose />}
 
       {venueMarkers.length === 0 && (
         <View style={styles.mapEmptyOverlay} pointerEvents="none">

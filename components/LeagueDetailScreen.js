@@ -1,13 +1,15 @@
-import { useMemo } from 'react';
-import { Alert, Image, ScrollView, Share, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useRef } from 'react';
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { getLeagueDetail } from '../utils/badges';
 import { formatDisplayDate } from '../utils/dates';
+import { shareViewAsImage } from '../utils/shareImage';
 import { useTheme } from '../context/ThemeContext';
 import { VerifiedBadge } from './VerifiedBadge';
 
 export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketList }) {
   const { styles } = useTheme();
+  const progressCardRef = useRef(null);
   const teams = useMemo(() => getLeagueDetail(events, league), [events, league]);
   const visited = useMemo(
     () => teams.filter((t) => t.visited).sort((a, b) => a.team.localeCompare(b.team)),
@@ -17,6 +19,7 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
     () => teams.filter((t) => !t.visited).sort((a, b) => a.team.localeCompare(b.team)),
     [teams]
   );
+  const pct = teams.length > 0 ? Math.round((visited.length / teams.length) * 100) : 0;
 
   function isBucketListed(team) {
     return bucketList.some((b) => b.league === league && b.team === team);
@@ -34,23 +37,11 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
   }
 
   async function handleShare() {
-    const pct = teams.length > 0 ? Math.round((visited.length / teams.length) * 100) : 0;
-    const stadiumLines = visited.map(
-      (t) => `🏟 ${t.stadium} — ${t.dates.length > 0 ? t.dates.map(formatDisplayDate).join(', ') : 'date unknown'}`
-    );
-    const message = [
-      `${LEAGUE_ICONS[league]} ${league} Stadium Passport`,
-      `${visited.length}/${teams.length} stadiums visited (${pct}%)`,
-      '',
-      ...(stadiumLines.length > 0 ? stadiumLines : ['No stadiums visited yet — time to start!']),
-      '',
-      'Tracked with FanStamp',
-    ].join('\n');
-
+    const caption = `${league} Stadium Passport: ${visited.length}/${teams.length} visited (${pct}%) — tracked with FanStamp 🏟 #FanStamp`;
     try {
-      await Share.share({ message, title: `${league} Stadium Passport` });
+      await shareViewAsImage(progressCardRef, caption);
     } catch {
-      Alert.alert('Share Failed', 'Could not open the share sheet. Please try again.');
+      Alert.alert('Share Failed', 'Could not create the image to share. Please try again.');
     }
   }
 
@@ -63,6 +54,16 @@ export function LeagueDetailScreen({ league, events, bucketList, onToggleBucketL
         </TouchableOpacity>
       </View>
       <Text style={styles.leagueDetailSubtitle}>{league} — {visited.length} of {teams.length} stadiums</Text>
+
+      <View ref={progressCardRef} collapsable={false} style={styles.leagueProgressCard}>
+        <Text style={styles.leagueProgressCardTitle}>{LEAGUE_ICONS[league]} {league}</Text>
+        <Text style={styles.leagueProgressCardFraction}>{visited.length}/{teams.length}</Text>
+        <Text style={styles.leagueProgressCardLabel}>Stadiums Visited</Text>
+        <View style={styles.leagueProgressBarTrack}>
+          <View style={[styles.leagueProgressBarFill, { width: `${pct}%` }]} />
+        </View>
+        <Text style={styles.leagueProgressCardPct}>{pct}% complete</Text>
+      </View>
 
       <Text style={styles.badgeGroupLabel}>VISITED ({visited.length})</Text>
       {visited.length === 0 ? (

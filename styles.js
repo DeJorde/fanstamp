@@ -182,20 +182,36 @@ function buildStyles(c, retroMode) {
       borderBottomColor: 'rgba(139,105,20,0.4)',
     },
 
-    // Flat color-correction over the retro terrain map — two stacked tints
-    // (golden amber, then dark brown) shift Google's default green relief
-    // tones toward warm amber/brown while the elevation shading still
-    // reads through as lighter/darker variation underneath.
-    mapAmberOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: '#C8860A',
-      opacity: 0.55,
-    },
-    mapDeepBrownOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: '#5C3A00',
-      opacity: 0.20,
-    },
+    // Retro terrain map recoloring. The two platforms need genuinely
+    // different techniques because flat alpha-blended color overlays
+    // can't both erase the base map's green hue AND preserve its
+    // elevation shading — pushing opacity up to kill the green also
+    // flattens the light/dark relief contrast, and backing it off to
+    // keep contrast leaves the green showing through. There's no
+    // opacity value that solves both at once.
+    //
+    // Android (New Architecture) supports mixBlendMode: 'color', which
+    // replaces the base's hue+saturation with the overlay's while
+    // keeping the base's luminance untouched — exactly "recolor to
+    // amber, keep the shading." At opacity 1 it fully colorizes.
+    //
+    // iOS has no blend-mode support on View (RN: only brightness/opacity
+    // filters ship on iOS). A single flat tint at a middle-ground
+    // opacity is the ceiling there — tuned for the least-bad compromise
+    // between hue and contrast, not a full fix.
+    mapColorizeOverlay: Platform.select({
+      android: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#B8791A',
+        opacity: 1,
+        mixBlendMode: 'color',
+      },
+      default: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#9C6B1F',
+        opacity: 0.62,
+      },
+    }),
 
     // Style toggle and pin-mode toggle — both top-right
     mapToggle: {
@@ -230,6 +246,19 @@ function buildStyles(c, retroMode) {
       shadowOpacity: 0.45, shadowRadius: 4, elevation: 4,
       gap: 1,
     },
+
+    // Share button — floats over the filter bar's translucent band, top right,
+    // clear of the style/pin toggle stack that starts at top: 60.
+    mapShareBtn: {
+      position: 'absolute', top: 14, right: 12,
+      width: 32, height: 32, borderRadius: 16,
+      alignItems: 'center', justifyContent: 'center',
+      backgroundColor: 'rgba(10,10,10,0.88)',
+      borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.15)',
+      shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.45, shadowRadius: 4, elevation: 4,
+    },
+    mapShareBtnIcon: { fontSize: 15 },
 
     mapEmptyOverlay: { position: 'absolute', bottom: 48, left: 0, right: 0, alignItems: 'center' },
     mapEmptyText: {
@@ -444,6 +473,11 @@ function buildStyles(c, retroMode) {
     dateSpinner: { backgroundColor: c.bg2 },
 
     // ── Stats tab ──────────────────────────────────────────────────────────────
+    statsHeaderRow: {
+      flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center',
+      paddingHorizontal: 16, paddingTop: 10, paddingBottom: 6,
+      backgroundColor: c.bg0,
+    },
     statsScroll: { flex: 1 },
     statsContent: { padding: 16, paddingBottom: 56, gap: 10 },
     statsEmpty: { alignItems: 'center', paddingVertical: 60, gap: 8 },
@@ -680,6 +714,25 @@ function buildStyles(c, retroMode) {
       alignItems: 'center', justifyContent: 'center',
     },
     shareBtnIcon: { fontSize: 16 },
+
+    // Progress card — the capture target for the league share image
+    leagueProgressCard: {
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      padding: 20, gap: 8, alignItems: 'center',
+    },
+    leagueProgressCardTitle: { fontSize: 15, fontWeight: '700', color: c.textSecondary },
+    leagueProgressCardFraction: { fontSize: 36, fontWeight: '800', color: c.text, letterSpacing: -1 },
+    leagueProgressCardLabel: {
+      fontSize: 11, fontWeight: '600', color: c.textDim,
+      textTransform: 'uppercase', letterSpacing: 0.8, marginTop: -6,
+    },
+    leagueProgressBarTrack: {
+      alignSelf: 'stretch', height: 10, borderRadius: 5,
+      backgroundColor: c.trackBg, overflow: 'hidden', marginTop: 4,
+    },
+    leagueProgressBarFill: { height: 10, borderRadius: 5, backgroundColor: c.accent },
+    leagueProgressCardPct: { fontSize: 13, fontWeight: '700', color: c.accent },
 
     // ── My Teams (Stats tab) ───────────────────────────────────────────────────
     teamCard: {
@@ -1072,6 +1125,41 @@ function buildStyles(c, retroMode) {
     },
     onboardingRingCol: { alignItems: 'center', gap: 8 },
     onboardingRingLabel: { fontSize: 12, fontWeight: '700', color: c.textSecondary },
+
+    // ── Auth screen ────────────────────────────────────────────────────────────
+    authIntroText: { fontSize: 14, color: c.textSecondary, lineHeight: 20 },
+    authErrorText: { fontSize: 13, color: '#ff4d4d', fontWeight: '500' },
+    authLinkText: { fontSize: 14, fontWeight: '600', color: c.accent, textAlign: 'center' },
+    authGuestText: { fontSize: 14, color: c.textDim, textAlign: 'center', marginTop: 4 },
+
+    // ── Header profile entry point + Profile modal ───────────────────────────
+    headerRightGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    profileBtn: {
+      width: 36, height: 36, borderRadius: 18,
+      backgroundColor: c.bg2, borderWidth: 1, borderColor: c.border,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    profileBtnSignedIn: { backgroundColor: c.accentBgSoft, borderColor: c.accent },
+    profileBtnText: { fontSize: 15, fontWeight: '700', color: c.accent },
+    profileBtnIcon: { fontSize: 16 },
+
+    profileHeaderRow: { alignItems: 'center', gap: 10, paddingVertical: 12 },
+    profileAvatar: {
+      width: 64, height: 64, borderRadius: 32,
+      backgroundColor: c.accentBgSoft, borderWidth: 1, borderColor: c.accent,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    profileAvatarText: { fontSize: 24, fontWeight: '800', color: c.accent },
+    profileEmailText: { fontSize: 16, fontWeight: '600', color: c.text },
+    profileSyncRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    profileSyncDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#2ecc71' },
+    profileSyncText: { fontSize: 13, color: c.textDim, fontWeight: '500' },
+    profileSignOutBtn: {
+      backgroundColor: '#2d0f0f', borderRadius: 14,
+      borderWidth: 1, borderColor: '#5c1a1a',
+      padding: 16, alignItems: 'center',
+    },
+    profileSignOutText: { fontSize: 16, fontWeight: '600', color: '#ff4d4d' },
   };
 }
 
