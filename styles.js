@@ -182,37 +182,6 @@ function buildStyles(c, retroMode) {
       borderBottomColor: 'rgba(139,105,20,0.4)',
     },
 
-    // Retro terrain map recoloring. The two platforms need genuinely
-    // different techniques because flat alpha-blended color overlays
-    // can't both erase the base map's green hue AND preserve its
-    // elevation shading — pushing opacity up to kill the green also
-    // flattens the light/dark relief contrast, and backing it off to
-    // keep contrast leaves the green showing through. There's no
-    // opacity value that solves both at once.
-    //
-    // Android (New Architecture) supports mixBlendMode: 'color', which
-    // replaces the base's hue+saturation with the overlay's while
-    // keeping the base's luminance untouched — exactly "recolor to
-    // amber, keep the shading." At opacity 1 it fully colorizes.
-    //
-    // iOS has no blend-mode support on View (RN: only brightness/opacity
-    // filters ship on iOS). A single flat tint at a middle-ground
-    // opacity is the ceiling there — tuned for the least-bad compromise
-    // between hue and contrast, not a full fix.
-    mapColorizeOverlay: Platform.select({
-      android: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#B8791A',
-        opacity: 1,
-        mixBlendMode: 'color',
-      },
-      default: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#9C6B1F',
-        opacity: 0.62,
-      },
-    }),
-
     // Style toggle and pin-mode toggle — both top-right
     mapToggle: {
       position: 'absolute', top: 60, right: 12,

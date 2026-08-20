@@ -91,13 +91,8 @@ export function MapScreen({ events }) {
           style={StyleSheet.absoluteFill}
           provider={PROVIDER_GOOGLE}
           initialRegion={initialRegion}
-          // Google's Maps SDK only supports customMapStyle JSON on the
-          // 'standard' map type — TERRAIN/SATELLITE/HYBRID silently ignore it.
-          // Retro mode trades the styled JSON for real elevation shading via
-          // mapType='terrain'; the amber overlay below shifts its green tones
-          // toward brown without hiding the contour detail.
-          mapType={isRetro ? 'terrain' : 'standard'}
-          customMapStyle={isRetro ? [] : activeStyle.json}
+          mapType="standard"
+          customMapStyle={activeStyle.json}
           // Push camera down so filter overlay doesn't obscure pins
           mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
         >
@@ -141,11 +136,6 @@ export function MapScreen({ events }) {
             );
           })}
         </MapView>
-
-        {/* Recolors the terrain map's default green relief to warm amber —
-            see styles.mapColorizeOverlay for why Android and iOS need
-            different techniques here. */}
-        {isRetro && <View style={styles.mapColorizeOverlay} pointerEvents="none" />}
 
         {/* Compass rose — only in retro mode */}
         {isRetro && <CompassRose />}
