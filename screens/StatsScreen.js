@@ -8,6 +8,7 @@ import { computeStatesVisited } from '../utils/statesVisited';
 import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
+import { ShareStatsCard } from '../components/ShareStatsCard';
 import { TeamCard } from '../components/TeamCard';
 import { USStatesMap } from '../components/USStatesMap';
 import { useTheme } from '../context/ThemeContext';
@@ -158,6 +159,16 @@ export function StatsScreen({
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Rendered off-screen (not display:none — react-native-view-shot
+          needs the view actually laid out to capture it) so the shared
+          image is a fixed, branded layout independent of scroll position
+          or device width. See components/ShareStatsCard. */}
+      {stats && (
+        <View style={{ position: 'absolute', top: 0, left: -2000 }}>
+          <ShareStatsCard ref={overviewCardRef} stats={stats} />
+        </View>
+      )}
+
       <View style={styles.statsHeaderRow}>
         <TouchableOpacity onPress={handleShareOverview} style={styles.shareBtn} activeOpacity={0.7}>
           <Text style={styles.shareBtnIcon}>📤</Text>
@@ -187,7 +198,7 @@ export function StatsScreen({
           <>
           {/* ─ OVERVIEW ─ */}
           <StatsSectionHeader title="OVERVIEW" />
-          <View ref={overviewCardRef} collapsable={false} style={styles.statsGrid}>
+          <View style={styles.statsGrid}>
             <MetricCard label="Total Events"   value={stats.totalEvents}   icon="🎟" />
             <MetricCard label="Unique Venues"  value={stats.uniqueVenues}  icon="🏟" />
             <MetricCard label="Cities Visited" value={stats.citiesVisited} icon="🏙" />

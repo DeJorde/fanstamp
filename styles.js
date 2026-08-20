@@ -1129,6 +1129,66 @@ function buildStyles(c, retroMode) {
       padding: 16, alignItems: 'center',
     },
     profileSignOutText: { fontSize: 16, fontWeight: '600', color: '#ff4d4d' },
+
+    // ── Shareable stats card (captured off-screen for social sharing —
+    // see components/ShareStatsCard + StatsScreen's handleShareOverview).
+    // Fixed dark navy or parchment background regardless of the app's own
+    // theme shades, since this is meant to look right posted standalone
+    // on Instagram/Twitter, not blend into the app chrome. ──────────────
+    shareCard: {
+      width: 360,
+      paddingVertical: 32, paddingHorizontal: 24,
+      borderRadius: 28, alignItems: 'center',
+      backgroundColor: retroMode ? c.bg1 : '#1a1a2e',
+    },
+    shareCardStamp: {
+      width: 176, height: 58, borderRadius: 7,
+      borderWidth: 3, borderColor: '#CC0000',
+      backgroundColor: 'rgba(204, 0, 0, 0.08)',
+      alignItems: 'center', justifyContent: 'center',
+      transform: [{ rotate: '-8deg' }],
+      marginBottom: 22,
+    },
+    shareCardStampRetro: { backgroundColor: 'rgba(139, 105, 20, 0.08)' },
+    shareCardStampInner: {
+      position: 'absolute', top: 6, left: 6, right: 6, bottom: 6,
+      borderRadius: 4, borderWidth: 1.75, borderColor: '#CC0000',
+      alignItems: 'center', justifyContent: 'center',
+    },
+    shareCardStampText: {
+      fontSize: 20, fontWeight: '800', color: '#CC0000',
+      letterSpacing: 2, textTransform: 'uppercase',
+    },
+    shareCardTitle: {
+      fontSize: 24, fontWeight: '800', textAlign: 'center',
+      color: retroMode ? c.text : '#ffffff',
+      marginBottom: 24,
+    },
+    shareCardGrid: {
+      flexDirection: 'row', flexWrap: 'wrap',
+      gap: 12, width: '100%',
+    },
+    shareCardMetric: {
+      width: '47%',
+      backgroundColor: retroMode ? c.bg2 : '#242444',
+      borderRadius: 18,
+      borderWidth: 1, borderColor: retroMode ? c.border : '#34345c',
+      paddingVertical: 18, paddingHorizontal: 14,
+      alignItems: 'center', gap: 4,
+    },
+    shareCardMetricIcon:  { fontSize: 24, marginBottom: 4 },
+    shareCardMetricValue: {
+      fontSize: 30, fontWeight: '800', letterSpacing: -1,
+      color: retroMode ? c.text : '#ffffff',
+    },
+    shareCardMetricLabel: {
+      fontSize: 12, fontWeight: '600', textAlign: 'center',
+      color: retroMode ? c.textDim : '#9a9ac0',
+    },
+    shareCardTagline: {
+      marginTop: 26, fontSize: 13, fontWeight: '600', textAlign: 'center',
+      color: retroMode ? c.textMuted : '#7a7aae',
+    },
   };
 }
 
