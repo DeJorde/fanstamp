@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-map-clustering/lib/helpers.js b/node_modules/react-native-map-clustering/lib/helpers.js
+index 8961171..0005490 100644
+--- a/node_modules/react-native-map-clustering/lib/helpers.js
++++ b/node_modules/react-native-map-clustering/lib/helpers.js
+@@ -23,10 +23,15 @@ export const calculateBBox = (region) => {
+ };
+ 
+ export const returnMapZoom = (region, bBox, minZoom) => {
+-  const viewport =
+-    region.longitudeDelta >= 40
+-      ? { zoom: minZoom }
+-      : GeoViewport.viewport(bBox, [width, height]);
++  // Previously hardcoded `zoom: minZoom` for any region >= 40 degrees wide,
++  // which collapses every continent/world-scale view (whole-US, whole-world,
++  // etc.) to the exact same clustering zoom level regardless of how far
++  // zoomed out the map actually is. That made distant cities merge into one
++  // cluster at any sufficiently wide view, with no radius value able to fix
++  // both that case and normal same-city clustering at once. GeoViewport's
++  // viewport() already clamps zoom to [minzoom, maxzoom] and handles wide
++  // bounding boxes fine, so just always compute the real zoom.
++  const viewport = GeoViewport.viewport(bBox, [width, height], minZoom, 20);
+ 
+   return viewport.zoom;
+ };
