@@ -128,24 +128,38 @@ export function MapScreen({ events }) {
         >
           {clusters.map((cluster) => {
             if (cluster.markers.length > 1) {
+              // TEMP DEBUG: log the exact coordinate + validity being handed to
+              // the native Marker. NaN/undefined here (not visible in the JS
+              // console output as an error — react-native-maps just silently
+              // drops the annotation) is a classic cause of a Marker that
+              // "computes fine" in JS but never mounts on the native map.
+              const lat = cluster.coordinate.lat;
+              const lng = cluster.coordinate.lng;
+              const validCoord = Number.isFinite(lat) && Number.isFinite(lng);
+              console.log(
+                '[MapScreen] cluster render:', cluster.key,
+                '- venues:', cluster.markers.length,
+                '- coordinate:', lat, lng,
+                '- valid:', validCoord
+              );
+              if (!validCoord) {
+                console.warn('[MapScreen] cluster has invalid coordinate, skipping render:', cluster);
+                return null;
+              }
               return (
                 <Marker
                   key={`cluster-${cluster.key}`}
-                  coordinate={{ latitude: cluster.coordinate.lat, longitude: cluster.coordinate.lng }}
-                  tracksViewChanges={false}
+                  coordinate={{ latitude: lat, longitude: lng }}
                   onPress={() => {
                     console.log('[MapScreen] cluster marker pressed:', cluster.key, '- venues:', cluster.markers.length);
                     handleClusterPress(cluster);
                   }}
                 >
-                  {/* TEMP DEBUG: bright red box confirms the Marker is mounting at the
-                      right coordinate even if the styled navy pin below it isn't rendering.
-                      Remove once cluster pins are confirmed visible on device. */}
-                  <View style={{ backgroundColor: 'red', padding: 4 }}>
-                    <View style={styles.mapClusterPin}>
-                      <Text style={styles.mapClusterPinText}>{cluster.markers.length}</Text>
-                    </View>
-                  </View>
+                  {/* TEMP DEBUG: bare minimum — fixed-size plain red View, no
+                      nested styles/padding-based sizing, no tracksViewChanges
+                      override — to confirm a Marker mounts/renders at all at
+                      this coordinate before reintroducing the styled pin. */}
+                  <View style={{ width: 40, height: 40, backgroundColor: 'red' }} />
                 </Marker>
               );
             }
