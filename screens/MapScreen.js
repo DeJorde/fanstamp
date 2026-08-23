@@ -11,6 +11,30 @@ import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
 import { useTheme } from '../context/ThemeContext';
 
+// react-native-maps only redraws a custom (View-based) Marker's native bitmap
+// while tracksViewChanges is true; once it flips false, whatever was last
+// painted is frozen — including "nothing," if it was already false on the
+// very first render, before the child View had actually laid out. Every
+// clustering approach tried here (manual pixel-clustering, then
+// react-native-map-clustering) hit "pins disappear when zoomed in" for this
+// same underlying reason: as clusters dissolve on zoom, leaf markers mount
+// fresh, and a hardcoded tracksViewChanges={false} froze them blank before
+// they ever drew. Starting true and flipping false only after the content's
+// first onLayout fixes it regardless of which clustering strategy sits on
+// top. Defined at module scope (not inside MapScreen) so it isn't recreated
+// — and every marker remounted — on every MapScreen render.
+function VenueMarker({ pin, callout, ...markerProps }) {
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+  return (
+    <Marker {...markerProps} tracksViewChanges={tracksViewChanges}>
+      <View onLayout={() => tracksViewChanges && setTracksViewChanges(false)}>
+        {pin}
+      </View>
+      {callout}
+    </Marker>
+  );
+}
+
 export function MapScreen({ events }) {
   const { styles, retro } = useTheme();
   const [styleKey, setStyleKey] = useState('standard');
@@ -74,27 +98,6 @@ export function MapScreen({ events }) {
 
   const isRetro = styleKey === 'retro';
 
-  // react-native-map-clustering's default cluster-tap behavior (fitToCoordinates)
-  // skips when preserveClusterPressBehavior is set, so we zoom in ourselves —
-  // centered on the cluster's leaf markers, with enough margin that they
-  // visibly spread apart past the clustering radius once the region lands.
-  function handleClusterPress(cluster, clusterChildren) {
-    if (!mapRef.current || !clusterChildren?.length) return;
-    const lats = clusterChildren.map((c) => c.geometry.coordinates[1]);
-    const lngs = clusterChildren.map((c) => c.geometry.coordinates[0]);
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-    mapRef.current.animateToRegion(
-      {
-        latitude: (minLat + maxLat) / 2,
-        longitude: (minLng + maxLng) / 2,
-        latitudeDelta: Math.max((maxLat - minLat) * 2.5, 0.01),
-        longitudeDelta: Math.max((maxLng - minLng) * 2.5, 0.01),
-      },
-      400
-    );
-  }
-
   async function handleShareMap() {
     try {
       await shareViewAsImage(mapCaptureRef, 'My FanStamp explorer map 🗺 #FanStamp');
@@ -118,13 +121,19 @@ export function MapScreen({ events }) {
           customMapStyle={activeStyle.json}
           // Push camera down so filter overlay doesn't obscure pins
           mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
+          zoomEnabled={true}
+          scrollEnabled={true}
           clusterColor="#CC0000"
           clusterTextColor="#ffffff"
+          // Keeps the library's own default cluster-bubble tap/zoom behavior
+          // (fitToCoordinates) instead of a custom onClusterPress — but still
+          // overrides its tracksViewChanges default of false, since that
+          // default reproduces the exact invisible-marker race VenueMarker
+          // fixes below, just for the cluster bubble instead of a leaf pin.
+          tracksViewChanges={true}
           radius={40}
           maxZoom={20}
           animationEnabled={true}
-          preserveClusterPressBehavior={true}
-          onClusterPress={handleClusterPress}
         >
           {venueMarkers.map((marker) => {
             const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
@@ -144,49 +153,49 @@ export function MapScreen({ events }) {
             );
             if (pinMode === 'classic') {
               return (
-                <Marker
+                <VenueMarker
                   key={`${marker.key}-classic`}
                   identifier={`${marker.key}-classic`}
                   coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
                   anchor={{ x: 0.5, y: 1 }}
-                  tracksViewChanges={false}
-                >
-                  <View style={styles.mapClassicPinWrap}>
-                    <Svg width={30} height={40} viewBox="0 0 24 24">
-                      <Path
-                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-                        fill="#e63946"
-                        stroke="#8f0f1c"
-                        strokeWidth={0.5}
-                      />
-                    </Svg>
+                  callout={callout}
+                  pin={
+                    <View style={styles.mapClassicPinWrap}>
+                      <Svg width={30} height={40} viewBox="0 0 24 24">
+                        <Path
+                          d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                          fill="#e63946"
+                          stroke="#8f0f1c"
+                          strokeWidth={0.5}
+                        />
+                      </Svg>
+                      {marker.count > 1 && (
+                        <View style={[styles.mapPinBadge, styles.mapPinBadgeClassic]}>
+                          <Text style={styles.mapPinBadgeText}>{marker.count}</Text>
+                        </View>
+                      )}
+                    </View>
+                  }
+                />
+              );
+            }
+            return (
+              <VenueMarker
+                key={`${marker.key}-emoji`}
+                identifier={`${marker.key}-emoji`}
+                coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
+                callout={callout}
+                pin={
+                  <View style={[styles.mapPin, { backgroundColor: colors.bg, borderColor: colors.text }]}>
+                    <Text style={styles.mapPinIcon}>{CATEGORY_ICONS[marker.category] ?? '📌'}</Text>
                     {marker.count > 1 && (
-                      <View style={[styles.mapPinBadge, styles.mapPinBadgeClassic]}>
+                      <View style={styles.mapPinBadge}>
                         <Text style={styles.mapPinBadgeText}>{marker.count}</Text>
                       </View>
                     )}
                   </View>
-                  {callout}
-                </Marker>
-              );
-            }
-            return (
-              <Marker
-                key={`${marker.key}-emoji`}
-                identifier={`${marker.key}-emoji`}
-                coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
-                tracksViewChanges={false}
-              >
-                <View style={[styles.mapPin, { backgroundColor: colors.bg, borderColor: colors.text }]}>
-                  <Text style={styles.mapPinIcon}>{CATEGORY_ICONS[marker.category] ?? '📌'}</Text>
-                  {marker.count > 1 && (
-                    <View style={styles.mapPinBadge}>
-                      <Text style={styles.mapPinBadgeText}>{marker.count}</Text>
-                    </View>
-                  )}
-                </View>
-                {callout}
-              </Marker>
+                }
+              />
             );
           })}
         </MapView>

@@ -99,7 +99,11 @@ function buildStyles(c, retroMode) {
       borderBottomColor: c.borderSubtle,
       flexGrow: 0,
     },
-    filterBar: { flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 10, gap: 8 },
+    // paddingRight is wider than paddingLeft: the map's share button floats
+    // fixed at top-right (mapShareBtn, top:14/right:12) over this bar and
+    // doesn't scroll with it, so without extra clearance the last chip ends
+    // up permanently hidden underneath it even when scrolled fully into view.
+    filterBar: { flexDirection: 'row', paddingLeft: 14, paddingRight: 60, paddingVertical: 10, gap: 8 },
 
     // ── EventsTab filter area ─────────────────────────────────────────────────────
     eventsFilterArea: {
