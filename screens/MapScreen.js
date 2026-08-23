@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import Svg, { Path } from 'react-native-svg';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
-import { computeRegion } from '../utils/geo';
+import { computeRegion, clusterMarkers } from '../utils/geo';
 import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
@@ -43,6 +44,15 @@ export function MapScreen({ events }) {
 
   const initialRegion = useMemo(() => computeRegion(venueMarkers), [venueMarkers]);
 
+  // Live camera region + on-screen map size — both needed to convert lat/lng
+  // distances between pins into screen pixels for proximity clustering.
+  const [region, setRegion] = useState(initialRegion);
+  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
+  const clusters = useMemo(
+    () => clusterMarkers(venueMarkers, region, mapSize),
+    [venueMarkers, region, mapSize]
+  );
+
   // `initialRegion` only positions the camera on the MapView's first mount —
   // react-native-maps does not re-read it on prop changes. A pin geocoded
   // after that first render (which is *every* newly saved event, since
@@ -70,6 +80,21 @@ export function MapScreen({ events }) {
     setStyleKey(MAP_STYLE_KEYS[(idx + 1) % MAP_STYLE_KEYS.length]);
   }
 
+  // Tapping a cluster zooms in just far enough to spread its venues apart —
+  // the cluster itself then dissolves back into individual pins once the
+  // new region's pixel spacing clears the clustering threshold.
+  function handleClusterPress(cluster) {
+    if (!mapRef.current) return;
+    const lats = cluster.markers.map((m) => m.coordinates.lat);
+    const lngs = cluster.markers.map((m) => m.coordinates.lng);
+    const spanLat = Math.max((Math.max(...lats) - Math.min(...lats)) * 2.5, (region.latitudeDelta || 0.08) / 3, 0.01);
+    const spanLng = Math.max((Math.max(...lngs) - Math.min(...lngs)) * 2.5, (region.longitudeDelta || 0.08) / 3, 0.01);
+    mapRef.current.animateToRegion(
+      { latitude: cluster.coordinate.lat, longitude: cluster.coordinate.lng, latitudeDelta: spanLat, longitudeDelta: spanLng },
+      400
+    );
+  }
+
   const isRetro = styleKey === 'retro';
 
   async function handleShareMap() {
@@ -95,8 +120,27 @@ export function MapScreen({ events }) {
           customMapStyle={activeStyle.json}
           // Push camera down so filter overlay doesn't obscure pins
           mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
+          onLayout={(e) => {
+            const { width, height } = e.nativeEvent.layout;
+            setMapSize({ width, height });
+          }}
+          onRegionChangeComplete={setRegion}
         >
-          {venueMarkers.map((marker) => {
+          {clusters.map((cluster) => {
+            if (cluster.markers.length > 1) {
+              return (
+                <Marker
+                  key={`cluster-${cluster.key}`}
+                  coordinate={{ latitude: cluster.coordinate.lat, longitude: cluster.coordinate.lng }}
+                  onPress={() => handleClusterPress(cluster)}
+                >
+                  <View style={styles.mapClusterPin}>
+                    <Text style={styles.mapClusterPinText}>{cluster.markers.length}</Text>
+                  </View>
+                </Marker>
+              );
+            }
+            const marker = cluster.markers[0];
             const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
             const callout = (
               <Callout tooltip={false}>
@@ -117,8 +161,23 @@ export function MapScreen({ events }) {
                 <Marker
                   key={`${marker.key}-classic`}
                   coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
-                  pinColor="#e63946"
+                  anchor={{ x: 0.5, y: 1 }}
                 >
+                  <View style={styles.mapClassicPinWrap}>
+                    <Svg width={30} height={40} viewBox="0 0 24 24">
+                      <Path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                        fill="#e63946"
+                        stroke="#8f0f1c"
+                        strokeWidth={0.5}
+                      />
+                    </Svg>
+                    {marker.count > 1 && (
+                      <View style={[styles.mapPinBadge, styles.mapPinBadgeClassic]}>
+                        <Text style={styles.mapPinBadgeText}>{marker.count}</Text>
+                      </View>
+                    )}
+                  </View>
                   {callout}
                 </Marker>
               );
@@ -130,6 +189,11 @@ export function MapScreen({ events }) {
               >
                 <View style={[styles.mapPin, { backgroundColor: colors.bg, borderColor: colors.text }]}>
                   <Text style={styles.mapPinIcon}>{CATEGORY_ICONS[marker.category] ?? '📌'}</Text>
+                  {marker.count > 1 && (
+                    <View style={styles.mapPinBadge}>
+                      <Text style={styles.mapPinBadgeText}>{marker.count}</Text>
+                    </View>
+                  )}
                 </View>
                 {callout}
               </Marker>

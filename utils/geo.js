@@ -75,6 +75,45 @@ export function computeRegion(markers) {
   };
 }
 
+// Greedily groups venue markers that render within `pixelRadius` screen
+// pixels of each other at the map's *current* zoom/pan, so pins only merge
+// when they'd visually overlap — and split apart again as soon as zooming in
+// spreads them past that pixel distance. Needs the live region (for its
+// lat/lng deltas) and the MapView's on-screen size to convert degrees to
+// pixels; without either (e.g. before first layout) clustering is skipped
+// and every marker renders standalone.
+export function clusterMarkers(markers, region, mapSize, pixelRadius = 32) {
+  if (!region || !mapSize?.width || !mapSize?.height || markers.length === 0) {
+    return markers.map((m) => ({ key: m.key, coordinate: m.coordinates, markers: [m] }));
+  }
+  const degPerPxLat = region.latitudeDelta / mapSize.height;
+  const degPerPxLng = region.longitudeDelta / mapSize.width;
+  const remaining = markers.slice();
+  const clusters = [];
+  while (remaining.length > 0) {
+    const seed = remaining.shift();
+    const group = [seed];
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      const m = remaining[i];
+      const dxPx = (m.coordinates.lng - seed.coordinates.lng) / degPerPxLng;
+      const dyPx = (m.coordinates.lat - seed.coordinates.lat) / degPerPxLat;
+      if (Math.sqrt(dxPx * dxPx + dyPx * dyPx) < pixelRadius) {
+        group.push(m);
+        remaining.splice(i, 1);
+      }
+    }
+    clusters.push({
+      key: group.map((m) => m.key).join('|'),
+      coordinate: {
+        lat: group.reduce((s, m) => s + m.coordinates.lat, 0) / group.length,
+        lng: group.reduce((s, m) => s + m.coordinates.lng, 0) / group.length,
+      },
+      markers: group,
+    });
+  }
+  return clusters;
+}
+
 export const PLACE_TYPE_LABELS = {
   stadium:       '🏟 Stadium',
   arena:         '🏟 Arena',

@@ -415,6 +415,34 @@ function buildStyles(c, retroMode) {
     mapPinIcon: { fontSize: 16 },
     calloutCategory: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
 
+    // Event-count badge overlaid on a venue pin (2+ events only)
+    mapPinBadge: {
+      position: 'absolute', top: -6, right: -6,
+      minWidth: 18, height: 18, borderRadius: 9,
+      paddingHorizontal: 3,
+      backgroundColor: '#CC0000',
+      alignItems: 'center', justifyContent: 'center',
+      borderWidth: 1.5, borderColor: '#ffffff',
+      shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.4, shadowRadius: 2, elevation: 5,
+    },
+    mapPinBadgeClassic: { top: -2, right: -2 },
+    mapPinBadgeText: { fontSize: 10, fontWeight: '700', color: '#ffffff' },
+
+    // Classic pin wrapper (teardrop SVG + optional badge)
+    mapClassicPinWrap: { width: 30, height: 40, alignItems: 'center', justifyContent: 'flex-start' },
+
+    // Cluster pin — groups nearby venue pins at low zoom
+    mapClusterPin: {
+      width: 40, height: 40, borderRadius: 20,
+      backgroundColor: '#1a1a2e',
+      borderWidth: 2.5, borderColor: '#CC0000',
+      alignItems: 'center', justifyContent: 'center',
+      shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.5, shadowRadius: 3, elevation: 6,
+    },
+    mapClusterPinText: { fontSize: 15, fontWeight: '800', color: '#ffffff' },
+
     // Date picker
     dateButton: {
       flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
