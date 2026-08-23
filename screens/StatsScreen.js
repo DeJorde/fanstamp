@@ -5,10 +5,13 @@ import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
 import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
 import { computeTeamStats } from '../utils/teamStats';
 import { computeStatesVisited } from '../utils/statesVisited';
+import { computeVenueMarkers } from '../utils/geo';
+import { getOverallLuckyPlayer } from '../utils/mlbPlayerStats';
 import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
-import { ShareStatsCard } from '../components/ShareStatsCard';
+import { RichShareCard } from '../components/RichShareCard';
+import { YearInReviewModal } from '../components/YearInReviewModal';
 import { TeamCard } from '../components/TeamCard';
 import { USStatesMap } from '../components/USStatesMap';
 import { useTheme } from '../context/ThemeContext';
@@ -38,9 +41,11 @@ export function StatsScreen({
   favoriteTeam = null,
   onToggleFavoriteTeam,
   onSelectTeam,
+  user = null,
 }) {
   const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
+  const [showYearInReview, setShowYearInReview] = useState(false);
   const overviewCardRef = useRef(null);
 
   async function handleShareOverview() {
@@ -49,7 +54,7 @@ export function StatsScreen({
       return;
     }
     try {
-      await shareViewAsImage(overviewCardRef, 'My FanStamp stats 📊 #FanStamp');
+      await shareViewAsImage(overviewCardRef, 'My FanStamp journey 📊 #FanStamp');
     } catch {
       Alert.alert('Share Failed', 'Could not create the image to share. Please try again.');
     }
@@ -80,6 +85,9 @@ export function StatsScreen({
     [events, filter]
   );
 
+  const venueMarkers = useMemo(() => computeVenueMarkers(filtered), [filtered]);
+  const luckyPlayer  = useMemo(() => getOverallLuckyPlayer(filtered), [filtered]);
+
   const stats = useMemo(() => {
     if (filtered.length === 0) return null;
 
@@ -88,6 +96,12 @@ export function StatsScreen({
     const citiesVisited = new Set(
       filtered.filter((e) => e.location && e.location !== '—').map((e) => e.location)
     ).size;
+    // Scoped to the active filter, unlike the STATES VISITED section below
+    // (which intentionally always shows the full, unfiltered map) — this one
+    // feeds the metrics grid, where every other number already respects
+    // the filter chip. Named distinctly from the outer (unfiltered)
+    // `statesVisited` Map to avoid shadowing it.
+    const statesVisitedCount = computeStatesVisited(filtered).size;
 
     const validDated = filtered.filter((e) => e.date && e.date !== '—');
 
@@ -148,6 +162,7 @@ export function StatsScreen({
 
     return {
       totalEvents, uniqueVenues, citiesVisited, yearsActive,
+      statesVisited: statesVisitedCount,
       firstEvent, latestEvent, avgPerYear,
       groupCounts, groupTotal,
       categoriesSorted, maxCatCount,
@@ -162,19 +177,25 @@ export function StatsScreen({
       {/* Rendered off-screen (not display:none — react-native-view-shot
           needs the view actually laid out to capture it) so the shared
           image is a fixed, branded layout independent of scroll position
-          or device width. See components/ShareStatsCard. */}
+          or device width. See components/RichShareCard. */}
       {stats && (
         <View style={{ position: 'absolute', top: 0, left: -2000 }}>
-          <ShareStatsCard ref={overviewCardRef} stats={stats} />
+          <RichShareCard ref={overviewCardRef} user={user} stats={stats} venueMarkers={venueMarkers} luckyPlayer={luckyPlayer} />
         </View>
       )}
 
       <View style={styles.statsHeaderRow}>
+        <TouchableOpacity onPress={() => setShowYearInReview(true)} style={styles.yearInReviewBtn} activeOpacity={0.7}>
+          <Text style={styles.yearInReviewBtnIcon}>🎉</Text>
+          <Text style={styles.yearInReviewBtnText}>Year in Review</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleShareOverview} style={styles.shareBtn} activeOpacity={0.7}>
           <Text style={styles.shareBtnIcon}>📤</Text>
         </TouchableOpacity>
       </View>
       <FilterBar value={filter} onChange={setFilter} />
+
+      <YearInReviewModal visible={showYearInReview} onClose={() => setShowYearInReview(false)} events={events} />
 
       <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
 

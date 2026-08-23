@@ -397,6 +397,28 @@ export function getMlbCumulativeTeamPitchingStats(events, team) {
     .sort((a, b) => b.outsSort - a.outsSort);
 }
 
+// One global "Your Lucky Player" across every MLB team the user has
+// attended games for (getMlbPlayerAttendanceStats crowns a lucky player per
+// team already) — picks whichever team's lucky player has the best delta,
+// for the Rich Share Card, which isn't scoped to a single team.
+export function getOverallLuckyPlayer(events) {
+  const mlbTeams = Array.from(new Set(
+    events
+      .filter((e) => e.category === 'MLB')
+      .flatMap((e) => [e.homeTeam, e.awayTeam])
+      .filter(Boolean)
+  ));
+
+  let best = null;
+  mlbTeams.forEach((team) => {
+    const lucky = getMlbPlayerAttendanceStats(events, team).find((p) => p.isLuckyPlayer);
+    if (lucky && (best == null || lucky.delta > best.delta)) {
+      best = { ...lucky, team };
+    }
+  });
+  return best;
+}
+
 // Batting average conventionally drops the leading zero (".286"); ERA/WHIP
 // do not (e.g. "0.69", not ".69").
 function formatRate(n, decimals = 3, stripLeadingZero = true) {

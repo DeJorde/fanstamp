@@ -5,7 +5,7 @@ import MapView from 'react-native-map-clustering';
 import Svg, { Path } from 'react-native-svg';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
-import { computeRegion } from '../utils/geo';
+import { computeRegion, computeVenueMarkers } from '../utils/geo';
 import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
@@ -44,24 +44,7 @@ export function MapScreen({ events }) {
 
   const filtered = useMemo(() => events.filter((e) => matchesFilter(e, filter)), [events, filter]);
 
-  const venueMarkers = useMemo(() => {
-    const map = {};
-    filtered.forEach((e) => {
-      if (!e.coordinates) return;
-      if (!map[e.venue]) {
-        map[e.venue] = {
-          key: e.venue,
-          venue: e.venue,
-          location: e.location,
-          coordinates: e.coordinates,
-          category: e.category,   // most-recent event wins (events are newest-first)
-          count: 0,
-        };
-      }
-      map[e.venue].count++;
-    });
-    return Object.values(map);
-  }, [filtered]);
+  const venueMarkers = useMemo(() => computeVenueMarkers(filtered), [filtered]);
 
   const initialRegion = useMemo(() => computeRegion(venueMarkers), [venueMarkers]);
 

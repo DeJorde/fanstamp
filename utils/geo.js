@@ -60,6 +60,27 @@ export async function geocodeVenue(venueName, locationStr) {
   return null;
 }
 
+// One marker per unique venue among `events` — shared by the Map tab and
+// the Rich Share Card's mini map so both draw pins from identical logic.
+export function computeVenueMarkers(events) {
+  const map = {};
+  events.forEach((e) => {
+    if (!e.coordinates) return;
+    if (!map[e.venue]) {
+      map[e.venue] = {
+        key: e.venue,
+        venue: e.venue,
+        location: e.location,
+        coordinates: e.coordinates,
+        category: e.category,   // most-recent event wins (events are newest-first)
+        count: 0,
+      };
+    }
+    map[e.venue].count++;
+  });
+  return Object.values(map);
+}
+
 export function computeRegion(markers) {
   if (markers.length === 0) return { latitude: 37.5, longitude: -100, latitudeDelta: 30, longitudeDelta: 40 };
   if (markers.length === 1) return { latitude: markers[0].coordinates.lat, longitude: markers[0].coordinates.lng, latitudeDelta: 0.08, longitudeDelta: 0.08 };

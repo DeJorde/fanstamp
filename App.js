@@ -463,6 +463,7 @@ function AppContent() {
               favoriteTeam={favoriteTeam}
               onToggleFavoriteTeam={toggleFavoriteTeam}
               onSelectTeam={(league, team) => { setBoxScoreEvent(null); setShowFullTeamStats(false); setSelectedTeam({ league, team }); }}
+              user={user}
             />
           )}
         </View>

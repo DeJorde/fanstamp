@@ -464,10 +464,17 @@ function buildStyles(c, retroMode) {
 
     // ── Stats tab ──────────────────────────────────────────────────────────────
     statsHeaderRow: {
-      flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center',
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
       paddingHorizontal: 16, paddingTop: 10, paddingBottom: 6,
       backgroundColor: c.bg0,
     },
+    yearInReviewBtn: {
+      flexDirection: 'row', alignItems: 'center', gap: 6,
+      paddingVertical: 8, paddingHorizontal: 14, borderRadius: 18,
+      backgroundColor: c.accentBgSoft, borderWidth: 1, borderColor: c.accent,
+    },
+    yearInReviewBtnIcon: { fontSize: 14 },
+    yearInReviewBtnText: { fontSize: 13, fontWeight: '700', color: c.accent },
     statsScroll: { flex: 1 },
     statsContent: { padding: 16, paddingBottom: 56, gap: 10 },
     statsEmpty: { alignItems: 'center', paddingVertical: 60, gap: 8 },
@@ -1152,7 +1159,7 @@ function buildStyles(c, retroMode) {
     profileSignOutText: { fontSize: 16, fontWeight: '600', color: '#ff4d4d' },
 
     // ── Shareable stats card (captured off-screen for social sharing —
-    // see components/ShareStatsCard + StatsScreen's handleShareOverview).
+    // see components/RichShareCard + StatsScreen's handleShareOverview).
     // Fixed dark navy or parchment background regardless of the app's own
     // theme shades, since this is meant to look right posted standalone
     // on Instagram/Twitter, not blend into the app chrome. ──────────────
@@ -1210,6 +1217,126 @@ function buildStyles(c, retroMode) {
       marginTop: 26, fontSize: 13, fontWeight: '600', textAlign: 'center',
       color: retroMode ? c.textMuted : '#7a7aae',
     },
+
+    // ── Rich Share Card additions (components/RichShareCard) ─────────────────────
+    richShareUserName: {
+      fontSize: 14, fontWeight: '600', textAlign: 'center',
+      color: retroMode ? c.textSecondary : '#b8b8dc',
+      marginTop: -14, marginBottom: 20,
+    },
+    richShareMapWrap: {
+      width: '100%', height: 140, borderRadius: 18, overflow: 'hidden',
+      marginBottom: 18,
+      borderWidth: 1, borderColor: retroMode ? c.border : '#34345c',
+    },
+    richShareMapInner: { flex: 1 },
+    richShareBlock: { width: '100%', marginTop: 18, gap: 8 },
+    richShareSectionLabel: {
+      fontSize: 11, fontWeight: '700', letterSpacing: 1,
+      color: retroMode ? c.textDim : '#8a8ac0',
+    },
+    richShareVenueRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    richShareVenueRank: {
+      fontSize: 13, fontWeight: '800', width: 18, textAlign: 'center',
+      color: retroMode ? c.accent : '#7a7aff',
+    },
+    richShareVenueName: {
+      flex: 1, fontSize: 14, fontWeight: '600',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    richShareVenueCount: {
+      fontSize: 13, fontWeight: '700',
+      color: retroMode ? c.textDim : '#9a9ac0',
+    },
+    richShareLuckyBlock: {
+      backgroundColor: retroMode ? c.bg2 : '#242444',
+      borderRadius: 16, borderWidth: 1, borderColor: retroMode ? c.border : '#34345c',
+      padding: 14, gap: 4,
+    },
+    richShareLuckyName: {
+      fontSize: 15, fontWeight: '700',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    richShareLuckyLine: {
+      fontSize: 12, fontWeight: '500',
+      color: retroMode ? c.textMuted : '#9a9ac0',
+    },
+
+    // ── Year in Review (components/YearInReviewCard + YearInReviewModal) ─────────
+    // Fixed bold gradient card, theme-independent by design (see the card's
+    // own comment) — only the surrounding modal chrome below follows c.*.
+    yrCard: {
+      width: 340, borderRadius: 28, overflow: 'hidden', alignSelf: 'center',
+    },
+    yrContent: { padding: 26, alignItems: 'center' },
+    yrEyebrow: {
+      fontSize: 12, fontWeight: '800', letterSpacing: 3,
+      color: 'rgba(255,255,255,0.65)', marginBottom: 4,
+    },
+    yrYear: {
+      fontSize: 56, fontWeight: '900', color: '#ffffff',
+      letterSpacing: -1, marginBottom: 18,
+    },
+    yrStatRow: {
+      flexDirection: 'row', width: '100%', justifyContent: 'space-around',
+      marginBottom: 16,
+    },
+    yrStatBlock: { alignItems: 'center', gap: 2 },
+    yrStatValue: { fontSize: 30, fontWeight: '800', color: '#ffffff' },
+    yrStatLabel: {
+      fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.7)',
+      textTransform: 'uppercase', letterSpacing: 0.5,
+    },
+    yrPill: {
+      backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20,
+      paddingVertical: 8, paddingHorizontal: 16, marginBottom: 4,
+    },
+    yrPillText: { fontSize: 13, fontWeight: '700', color: '#ffffff' },
+    yrBiggestBlock: { width: '100%', marginTop: 20, gap: 8 },
+    yrSectionLabel: {
+      fontSize: 11, fontWeight: '800', letterSpacing: 1.5,
+      color: 'rgba(255,255,255,0.6)',
+    },
+    yrBiggestName: { fontSize: 17, fontWeight: '800', color: '#ffffff' },
+    yrBiggestSub: { fontSize: 13, fontWeight: '500', color: 'rgba(255,255,255,0.75)' },
+    yrMonthGrid: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
+    yrMonthCell: { flex: 1, alignItems: 'center', gap: 4 },
+    yrMonthBarWrap: { height: 56, width: '70%', justifyContent: 'flex-end', alignItems: 'center' },
+    yrMonthBar: { width: '100%', borderRadius: 3, backgroundColor: '#ff4fa3' },
+    yrMonthLabel: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.55)' },
+    yrMilestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    yrMilestoneChip: {
+      flexDirection: 'row', alignItems: 'center', gap: 6,
+      backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 14,
+      paddingVertical: 6, paddingHorizontal: 10, maxWidth: '100%',
+    },
+    yrMilestoneIcon: { fontSize: 14 },
+    yrMilestoneLabel: { fontSize: 12, fontWeight: '700', color: '#ffffff' },
+    yrTagline: {
+      marginTop: 24, fontSize: 12, fontWeight: '600', textAlign: 'center',
+      color: 'rgba(255,255,255,0.6)',
+    },
+
+    // Modal chrome around the Year in Review card — follows the app's own
+    // theme (unlike the card itself), same as any other modal.
+    yrPickerWrap: {
+      flexGrow: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.borderSubtle,
+    },
+    yrPickerRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+    yrPickerChip: {
+      borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7,
+      backgroundColor: c.bg2, borderWidth: 1, borderColor: c.border,
+    },
+    yrPickerChipActive: { backgroundColor: c.accentBgSoft, borderColor: c.accent },
+    yrPickerChipText: { fontSize: 14, fontWeight: '600', color: c.textMuted },
+    yrPickerChipTextActive: { color: c.accent, fontWeight: '800' },
+    yrModalScroll: { alignItems: 'center', padding: 20, paddingBottom: 12 },
+    yrShareBtn: {
+      marginHorizontal: 20, marginBottom: 20, marginTop: 4,
+      paddingVertical: 15, borderRadius: 16,
+      backgroundColor: c.accent, alignItems: 'center',
+    },
+    yrShareBtnText: { fontSize: 16, fontWeight: '800', color: '#ffffff' },
   };
 }
 
