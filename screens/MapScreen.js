@@ -146,21 +146,20 @@ export function MapScreen({ events }) {
                 console.warn('[MapScreen] cluster has invalid coordinate, skipping render:', cluster);
                 return null;
               }
+              // TEMP DEBUG: bare native pinColor Marker, no custom child view at
+              // all — confirms react-native-maps accepts this coordinate and
+              // mounts a marker there before reintroducing any custom content.
               return (
                 <Marker
                   key={`cluster-${cluster.key}`}
+                  identifier={`cluster-${cluster.key}`}
                   coordinate={{ latitude: lat, longitude: lng }}
+                  pinColor="blue"
                   onPress={() => {
                     console.log('[MapScreen] cluster marker pressed:', cluster.key, '- venues:', cluster.markers.length);
                     handleClusterPress(cluster);
                   }}
-                >
-                  {/* TEMP DEBUG: bare minimum — fixed-size plain red View, no
-                      nested styles/padding-based sizing, no tracksViewChanges
-                      override — to confirm a Marker mounts/renders at all at
-                      this coordinate before reintroducing the styled pin. */}
-                  <View style={{ width: 40, height: 40, backgroundColor: 'red' }} />
-                </Marker>
+                />
               );
             }
             const marker = cluster.markers[0];
