@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView from 'react-native-map-clustering';
 import Svg, { Path } from 'react-native-svg';
 import { CATEGORY_COLORS, CATEGORY_ICONS, MAP_STYLES, MAP_STYLE_KEYS, FILTERS } from '../constants';
 import { matchesFilter } from '../utils/dates';
-import { computeRegion, clusterMarkers } from '../utils/geo';
+import { computeRegion } from '../utils/geo';
 import { shareViewAsImage } from '../utils/shareImage';
 import { FilterBar } from '../components/FilterBar';
 import { CompassRose } from '../components/CompassRose';
@@ -44,15 +45,6 @@ export function MapScreen({ events }) {
 
   const initialRegion = useMemo(() => computeRegion(venueMarkers), [venueMarkers]);
 
-  // Live camera region + on-screen map size — both needed to convert lat/lng
-  // distances between pins into screen pixels for proximity clustering.
-  const [region, setRegion] = useState(initialRegion);
-  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
-  const clusters = useMemo(
-    () => clusterMarkers(venueMarkers, region, mapSize),
-    [venueMarkers, region, mapSize]
-  );
-
   // `initialRegion` only positions the camera on the MapView's first mount —
   // react-native-maps does not re-read it on prop changes. A pin geocoded
   // after that first render (which is *every* newly saved event, since
@@ -80,21 +72,6 @@ export function MapScreen({ events }) {
     setStyleKey(MAP_STYLE_KEYS[(idx + 1) % MAP_STYLE_KEYS.length]);
   }
 
-  // Tapping a cluster zooms in just far enough to spread its venues apart —
-  // the cluster itself then dissolves back into individual pins once the
-  // new region's pixel spacing clears the clustering threshold.
-  function handleClusterPress(cluster) {
-    if (!mapRef.current) return;
-    const lats = cluster.markers.map((m) => m.coordinates.lat);
-    const lngs = cluster.markers.map((m) => m.coordinates.lng);
-    const spanLat = Math.max((Math.max(...lats) - Math.min(...lats)) * 2.5, (region.latitudeDelta || 0.08) / 3, 0.01);
-    const spanLng = Math.max((Math.max(...lngs) - Math.min(...lngs)) * 2.5, (region.longitudeDelta || 0.08) / 3, 0.01);
-    mapRef.current.animateToRegion(
-      { latitude: cluster.coordinate.lat, longitude: cluster.coordinate.lng, latitudeDelta: spanLat, longitudeDelta: spanLng },
-      400
-    );
-  }
-
   const isRetro = styleKey === 'retro';
 
   async function handleShareMap() {
@@ -120,49 +97,10 @@ export function MapScreen({ events }) {
           customMapStyle={activeStyle.json}
           // Push camera down so filter overlay doesn't obscure pins
           mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
-          onLayout={(e) => {
-            const { width, height } = e.nativeEvent.layout;
-            setMapSize({ width, height });
-          }}
-          onRegionChangeComplete={setRegion}
+          clusterColor="#CC0000"
+          clusterTextColor="#ffffff"
         >
-          {clusters.map((cluster) => {
-            if (cluster.markers.length > 1) {
-              // TEMP DEBUG: log the exact coordinate + validity being handed to
-              // the native Marker. NaN/undefined here (not visible in the JS
-              // console output as an error — react-native-maps just silently
-              // drops the annotation) is a classic cause of a Marker that
-              // "computes fine" in JS but never mounts on the native map.
-              const lat = cluster.coordinate.lat;
-              const lng = cluster.coordinate.lng;
-              const validCoord = Number.isFinite(lat) && Number.isFinite(lng);
-              console.log(
-                '[MapScreen] cluster render:', cluster.key,
-                '- venues:', cluster.markers.length,
-                '- coordinate:', lat, lng,
-                '- valid:', validCoord
-              );
-              if (!validCoord) {
-                console.warn('[MapScreen] cluster has invalid coordinate, skipping render:', cluster);
-                return null;
-              }
-              // TEMP DEBUG: bare native pinColor Marker, no custom child view at
-              // all — confirms react-native-maps accepts this coordinate and
-              // mounts a marker there before reintroducing any custom content.
-              return (
-                <Marker
-                  key={`cluster-${cluster.key}`}
-                  identifier={`cluster-${cluster.key}`}
-                  coordinate={{ latitude: lat, longitude: lng }}
-                  pinColor="blue"
-                  onPress={() => {
-                    console.log('[MapScreen] cluster marker pressed:', cluster.key, '- venues:', cluster.markers.length);
-                    handleClusterPress(cluster);
-                  }}
-                />
-              );
-            }
-            const marker = cluster.markers[0];
+          {venueMarkers.map((marker) => {
             const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
             const callout = (
               <Callout tooltip={false}>

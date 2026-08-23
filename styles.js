@@ -432,17 +432,6 @@ function buildStyles(c, retroMode) {
     // Classic pin wrapper (teardrop SVG + optional badge)
     mapClassicPinWrap: { width: 30, height: 40, alignItems: 'center', justifyContent: 'flex-start' },
 
-    // Cluster pin — groups nearby venue pins at low zoom
-    mapClusterPin: {
-      width: 40, height: 40, borderRadius: 20,
-      backgroundColor: '#1a1a2e',
-      borderWidth: 2.5, borderColor: '#CC0000',
-      alignItems: 'center', justifyContent: 'center',
-      shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.5, shadowRadius: 3, elevation: 6,
-    },
-    mapClusterPinText: { fontSize: 15, fontWeight: '800', color: '#ffffff' },
-
     // Date picker
     dateButton: {
       flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
