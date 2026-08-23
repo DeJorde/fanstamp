@@ -84,24 +84,36 @@ export function computeRegion(markers) {
 // and every marker renders standalone.
 export function clusterMarkers(markers, region, mapSize, pixelRadius = 32) {
   if (!region || !mapSize?.width || !mapSize?.height || markers.length === 0) {
+    console.log('[clusterMarkers] no region/mapSize yet — skipping, input:', markers.length, 'output:', markers.length, 'individual pin(s)');
     return markers.map((m) => ({ key: m.key, coordinate: m.coordinates, markers: [m] }));
   }
+
   const degPerPxLat = region.latitudeDelta / mapSize.height;
   const degPerPxLng = region.longitudeDelta / mapSize.width;
-  const remaining = markers.slice();
+
+  // Indexed `used` flags (rather than shrinking/splicing the input array) so
+  // every marker is visited exactly once — each index is either the seed of
+  // a new group or gets absorbed into one, never both, never neither.
+  const used = new Array(markers.length).fill(false);
   const clusters = [];
-  while (remaining.length > 0) {
-    const seed = remaining.shift();
+
+  for (let i = 0; i < markers.length; i++) {
+    if (used[i]) continue;
+    const seed = markers[i];
+    used[i] = true;
     const group = [seed];
-    for (let i = remaining.length - 1; i >= 0; i--) {
-      const m = remaining[i];
+
+    for (let j = i + 1; j < markers.length; j++) {
+      if (used[j]) continue;
+      const m = markers[j];
       const dxPx = (m.coordinates.lng - seed.coordinates.lng) / degPerPxLng;
       const dyPx = (m.coordinates.lat - seed.coordinates.lat) / degPerPxLat;
       if (Math.sqrt(dxPx * dxPx + dyPx * dyPx) < pixelRadius) {
+        used[j] = true;
         group.push(m);
-        remaining.splice(i, 1);
       }
     }
+
     clusters.push({
       key: group.map((m) => m.key).join('|'),
       coordinate: {
@@ -111,6 +123,20 @@ export function clusterMarkers(markers, region, mapSize, pixelRadius = 32) {
       markers: group,
     });
   }
+
+  const outputCount = clusters.reduce((s, c) => s + c.markers.length, 0);
+  const clusterCount = clusters.filter((c) => c.markers.length > 1).length;
+  const soloCount = clusters.length - clusterCount;
+  console.log(
+    `[clusterMarkers] input: ${markers.length} markers -> output: ${clusters.length} pin(s) rendered ` +
+    `(${clusterCount} cluster(s), ${soloCount} solo) accounting for ${outputCount} markers`
+  );
+  if (outputCount !== markers.length) {
+    console.warn('[clusterMarkers] MARKER COUNT MISMATCH — markers lost or duplicated!', {
+      input: markers.length, accountedFor: outputCount,
+    });
+  }
+
   return clusters;
 }
 
