@@ -74,6 +74,27 @@ export function MapScreen({ events }) {
 
   const isRetro = styleKey === 'retro';
 
+  // react-native-map-clustering's default cluster-tap behavior (fitToCoordinates)
+  // skips when preserveClusterPressBehavior is set, so we zoom in ourselves —
+  // centered on the cluster's leaf markers, with enough margin that they
+  // visibly spread apart past the clustering radius once the region lands.
+  function handleClusterPress(cluster, clusterChildren) {
+    if (!mapRef.current || !clusterChildren?.length) return;
+    const lats = clusterChildren.map((c) => c.geometry.coordinates[1]);
+    const lngs = clusterChildren.map((c) => c.geometry.coordinates[0]);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    mapRef.current.animateToRegion(
+      {
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        latitudeDelta: Math.max((maxLat - minLat) * 2.5, 0.01),
+        longitudeDelta: Math.max((maxLng - minLng) * 2.5, 0.01),
+      },
+      400
+    );
+  }
+
   async function handleShareMap() {
     try {
       await shareViewAsImage(mapCaptureRef, 'My FanStamp explorer map 🗺 #FanStamp');
@@ -99,6 +120,11 @@ export function MapScreen({ events }) {
           mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
           clusterColor="#CC0000"
           clusterTextColor="#ffffff"
+          radius={40}
+          maxZoom={20}
+          animationEnabled={true}
+          preserveClusterPressBehavior={true}
+          onClusterPress={handleClusterPress}
         >
           {venueMarkers.map((marker) => {
             const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
@@ -120,6 +146,7 @@ export function MapScreen({ events }) {
               return (
                 <Marker
                   key={`${marker.key}-classic`}
+                  identifier={`${marker.key}-classic`}
                   coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
                   anchor={{ x: 0.5, y: 1 }}
                   tracksViewChanges={false}
@@ -146,6 +173,7 @@ export function MapScreen({ events }) {
             return (
               <Marker
                 key={`${marker.key}-emoji`}
+                identifier={`${marker.key}-emoji`}
                 coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
                 tracksViewChanges={false}
               >
