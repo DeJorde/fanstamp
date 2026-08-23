@@ -132,10 +132,19 @@ export function MapScreen({ events }) {
                 <Marker
                   key={`cluster-${cluster.key}`}
                   coordinate={{ latitude: cluster.coordinate.lat, longitude: cluster.coordinate.lng }}
-                  onPress={() => handleClusterPress(cluster)}
+                  tracksViewChanges={false}
+                  onPress={() => {
+                    console.log('[MapScreen] cluster marker pressed:', cluster.key, '- venues:', cluster.markers.length);
+                    handleClusterPress(cluster);
+                  }}
                 >
-                  <View style={styles.mapClusterPin}>
-                    <Text style={styles.mapClusterPinText}>{cluster.markers.length}</Text>
+                  {/* TEMP DEBUG: bright red box confirms the Marker is mounting at the
+                      right coordinate even if the styled navy pin below it isn't rendering.
+                      Remove once cluster pins are confirmed visible on device. */}
+                  <View style={{ backgroundColor: 'red', padding: 4 }}>
+                    <View style={styles.mapClusterPin}>
+                      <Text style={styles.mapClusterPinText}>{cluster.markers.length}</Text>
+                    </View>
                   </View>
                 </Marker>
               );
@@ -162,6 +171,7 @@ export function MapScreen({ events }) {
                   key={`${marker.key}-classic`}
                   coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
                   anchor={{ x: 0.5, y: 1 }}
+                  tracksViewChanges={false}
                 >
                   <View style={styles.mapClassicPinWrap}>
                     <Svg width={30} height={40} viewBox="0 0 24 24">
@@ -186,6 +196,7 @@ export function MapScreen({ events }) {
               <Marker
                 key={`${marker.key}-emoji`}
                 coordinate={{ latitude: marker.coordinates.lat, longitude: marker.coordinates.lng }}
+                tracksViewChanges={false}
               >
                 <View style={[styles.mapPin, { backgroundColor: colors.bg, borderColor: colors.text }]}>
                   <Text style={styles.mapPinIcon}>{CATEGORY_ICONS[marker.category] ?? '📌'}</Text>

@@ -115,7 +115,11 @@ export function clusterMarkers(markers, region, mapSize, pixelRadius = 32) {
     }
 
     clusters.push({
-      key: group.map((m) => m.key).join('|'),
+      // Sorted so identical membership always yields the identical key string
+      // regardless of scan order — keeps the rendered Marker's React `key`
+      // stable across re-renders (so it updates in place instead of fully
+      // unmounting/remounting) whenever the same set of venues re-clusters.
+      key: group.map((m) => m.key).sort().join('|'),
       coordinate: {
         lat: group.reduce((s, m) => s + m.coordinates.lat, 0) / group.length,
         lng: group.reduce((s, m) => s + m.coordinates.lng, 0) / group.length,
