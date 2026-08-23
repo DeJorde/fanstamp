@@ -12,24 +12,20 @@ import { CompassRose } from '../components/CompassRose';
 import { useTheme } from '../context/ThemeContext';
 
 // react-native-maps only redraws a custom (View-based) Marker's native bitmap
-// while tracksViewChanges is true; once it flips false, whatever was last
-// painted is frozen — including "nothing," if it was already false on the
-// very first render, before the child View had actually laid out. Every
-// clustering approach tried here (manual pixel-clustering, then
-// react-native-map-clustering) hit "pins disappear when zoomed in" for this
-// same underlying reason: as clusters dissolve on zoom, leaf markers mount
-// fresh, and a hardcoded tracksViewChanges={false} froze them blank before
-// they ever drew. Starting true and flipping false only after the content's
-// first onLayout fixes it regardless of which clustering strategy sits on
-// top. Defined at module scope (not inside MapScreen) so it isn't recreated
-// — and every marker remounted — on every MapScreen render.
+// while tracksViewChanges is true. An onLayout-triggered "true until first
+// paint, then false" was tried here, but leaf markers could still go blank
+// after a cluster dissolved on zoom — the flip can race the map's own
+// camera/relayout timing in ways onLayout doesn't reliably observe. Hardcoding
+// tracksViewChanges permanently true costs redraw performance (every marker
+// re-snapshots on every map change instead of once) but removes the race
+// entirely: the native bitmap can never freeze on an unpainted frame, because
+// it's never allowed to stop redrawing. Defined at module scope (not inside
+// MapScreen) so it isn't recreated — and every marker remounted — on every
+// MapScreen render.
 function VenueMarker({ pin, callout, ...markerProps }) {
-  const [tracksViewChanges, setTracksViewChanges] = useState(true);
   return (
-    <Marker {...markerProps} tracksViewChanges={tracksViewChanges}>
-      <View onLayout={() => tracksViewChanges && setTracksViewChanges(false)}>
-        {pin}
-      </View>
+    <Marker {...markerProps} tracksViewChanges={true}>
+      {pin}
       {callout}
     </Marker>
   );
@@ -123,6 +119,11 @@ export function MapScreen({ events }) {
           mapPadding={{ top: 52, right: 0, bottom: 0, left: 0 }}
           zoomEnabled={true}
           scrollEnabled={true}
+          // Native camera zoom bounds (how far the user can pinch in/out) —
+          // distinct from the clustering-library `maxZoom` prop below, which
+          // instead controls the zoom level supercluster stops clustering at.
+          minZoomLevel={2}
+          maxZoomLevel={20}
           clusterColor="#CC0000"
           clusterTextColor="#ffffff"
           // Keeps the library's own default cluster-bubble tap/zoom behavior
@@ -133,7 +134,16 @@ export function MapScreen({ events }) {
           tracksViewChanges={true}
           radius={40}
           maxZoom={20}
-          animationEnabled={true}
+          // false, not true: on iOS this drives the clustering library's own
+          // LayoutAnimation.configureNext() whenever the cluster set changes.
+          // A leaf marker mounting mid-animation can have its native bitmap
+          // captured mid-fade/scale — tracksViewChanges={true} above doesn't
+          // save it, because a LayoutAnimation-driven transition isn't
+          // reliably detected as a trackable "view change." Disabling it
+          // makes cluster/pin swaps an instant cut instead of an animated
+          // spring, trading that visual smoothness for not being able to get
+          // stuck on a blank frame.
+          animationEnabled={false}
         >
           {venueMarkers.map((marker) => {
             const colors = CATEGORY_COLORS[marker.category] ?? CATEGORY_COLORS.Other;
