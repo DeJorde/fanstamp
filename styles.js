@@ -1263,58 +1263,86 @@ function buildStyles(c, retroMode) {
     },
 
     // ── Year in Review (components/YearInReviewCard + YearInReviewModal) ─────────
-    // Fixed bold gradient card, theme-independent by design (see the card's
-    // own comment) — only the surrounding modal chrome below follows c.*.
+    // In standard mode this is a fixed bold gradient card, independent of the
+    // app's own dark theme — a Spotify-Wrapped-style keepsake with its own
+    // signature look. Retro mode instead uses the same parchment texture +
+    // sepia ink the rest of the app's retro chrome uses (see YearInReviewCard
+    // for which background layer — LinearGradient vs. the parchment
+    // ImageBackground — actually renders), so every color below branches on
+    // retroMode instead of being fixed like the standard-mode design is.
     yrCard: {
       width: 340, borderRadius: 28, overflow: 'hidden', alignSelf: 'center',
+      backgroundColor: retroMode ? c.bg1 : undefined,
+      borderWidth: retroMode ? 3 : 0, borderColor: retroMode ? c.border : 'transparent',
     },
     yrContent: { padding: 26, alignItems: 'center' },
     yrEyebrow: {
       fontSize: 12, fontWeight: '800', letterSpacing: 3,
-      color: 'rgba(255,255,255,0.65)', marginBottom: 4,
+      color: retroMode ? c.textDim : 'rgba(255,255,255,0.65)', marginBottom: 4,
     },
     yrYear: {
-      fontSize: 56, fontWeight: '900', color: '#ffffff',
-      letterSpacing: -1, marginBottom: 18,
+      fontSize: 56, fontWeight: '900', letterSpacing: -1, marginBottom: 18,
+      color: retroMode ? c.text : '#ffffff',
     },
     yrStatRow: {
       flexDirection: 'row', width: '100%', justifyContent: 'space-around',
       marginBottom: 16,
     },
     yrStatBlock: { alignItems: 'center', gap: 2 },
-    yrStatValue: { fontSize: 30, fontWeight: '800', color: '#ffffff' },
+    yrStatValue: {
+      fontSize: 30, fontWeight: '800',
+      color: retroMode ? c.text : '#ffffff',
+    },
     yrStatLabel: {
-      fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.7)',
-      textTransform: 'uppercase', letterSpacing: 0.5,
+      fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5,
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.7)',
     },
     yrPill: {
-      backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20,
-      paddingVertical: 8, paddingHorizontal: 16, marginBottom: 4,
+      borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16, marginBottom: 4,
+      backgroundColor: retroMode ? 'rgba(139,105,20,0.18)' : 'rgba(255,255,255,0.15)',
     },
-    yrPillText: { fontSize: 13, fontWeight: '700', color: '#ffffff' },
+    yrPillText: {
+      fontSize: 13, fontWeight: '700',
+      color: retroMode ? c.text : '#ffffff',
+    },
     yrBiggestBlock: { width: '100%', marginTop: 20, gap: 8 },
     yrSectionLabel: {
       fontSize: 11, fontWeight: '800', letterSpacing: 1.5,
-      color: 'rgba(255,255,255,0.6)',
+      color: retroMode ? c.textDim : 'rgba(255,255,255,0.6)',
     },
-    yrBiggestName: { fontSize: 17, fontWeight: '800', color: '#ffffff' },
-    yrBiggestSub: { fontSize: 13, fontWeight: '500', color: 'rgba(255,255,255,0.75)' },
+    yrBiggestName: {
+      fontSize: 17, fontWeight: '800',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    yrBiggestSub: {
+      fontSize: 13, fontWeight: '500',
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.75)',
+    },
     yrMonthGrid: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
     yrMonthCell: { flex: 1, alignItems: 'center', gap: 4 },
     yrMonthBarWrap: { height: 56, width: '70%', justifyContent: 'flex-end', alignItems: 'center' },
-    yrMonthBar: { width: '100%', borderRadius: 3, backgroundColor: '#ff4fa3' },
-    yrMonthLabel: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.55)' },
+    yrMonthBar: {
+      width: '100%', borderRadius: 3,
+      backgroundColor: retroMode ? c.accent : '#ff4fa3',
+    },
+    yrMonthLabel: {
+      fontSize: 9, fontWeight: '700',
+      color: retroMode ? c.textFaint : 'rgba(255,255,255,0.55)',
+    },
     yrMilestoneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     yrMilestoneChip: {
       flexDirection: 'row', alignItems: 'center', gap: 6,
-      backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 14,
-      paddingVertical: 6, paddingHorizontal: 10, maxWidth: '100%',
+      borderRadius: 14, paddingVertical: 6, paddingHorizontal: 10, maxWidth: '100%',
+      backgroundColor: retroMode ? 'rgba(139,105,20,0.18)' : 'rgba(255,255,255,0.15)',
     },
     yrMilestoneIcon: { fontSize: 14 },
-    yrMilestoneLabel: { fontSize: 12, fontWeight: '700', color: '#ffffff' },
+    yrMilestoneLabel: {
+      fontSize: 12, fontWeight: '700',
+      color: retroMode ? c.text : '#ffffff',
+    },
     yrTagline: {
       marginTop: 24, fontSize: 12, fontWeight: '600', textAlign: 'center',
-      color: 'rgba(255,255,255,0.6)',
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.6)',
     },
 
     // Modal chrome around the Year in Review card — follows the app's own
@@ -1322,7 +1350,10 @@ function buildStyles(c, retroMode) {
     yrPickerWrap: {
       flexGrow: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.borderSubtle,
     },
-    yrPickerRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+    // paddingTop wider than paddingBottom: sitting right under the modal
+    // header, the chip row's own line-height was clipping against the
+    // header's bottom edge without the extra clearance.
+    yrPickerRow: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, gap: 8 },
     yrPickerChip: {
       borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7,
       backgroundColor: c.bg2, borderWidth: 1, borderColor: c.border,

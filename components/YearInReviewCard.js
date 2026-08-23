@@ -1,16 +1,19 @@
 import { forwardRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CATEGORY_ICONS } from '../constants';
 import { formatDisplayDate } from '../utils/dates';
 import { useTheme } from '../context/ThemeContext';
 
-// Fixed bold gradient regardless of app theme (standard or retro) — this is
-// meant to look like a Spotify-Wrapped-style keepsake with its own
-// signature look, not blend into the app's own light/dark chrome, the same
-// reasoning ShareStatsCard/RichShareCard already apply to their own fixed
-// backgrounds.
+// In standard mode this is a bold, fixed gradient — a Spotify-Wrapped-style
+// keepsake with its own signature look, independent of the app's own dark
+// theme (the same reasoning ShareStatsCard/RichShareCard apply to their own
+// fixed backgrounds). Retro mode instead reuses the app's own parchment
+// texture and sepia-ink styling (see styles.js's yr* definitions), so it
+// reads as a page from an old journal or explorer's logbook rather than a
+// standalone "wrapped" graphic.
 const GRADIENT_COLORS = ['#0f0026', '#3d0a6b', '#c2185b'];
+const PARCHMENT_BG = require('../assets/parchment.png');
 
 function MonthBars({ monthlyBreakdown, maxMonthCount }) {
   const { styles } = useTheme();
@@ -37,14 +40,26 @@ function MonthBars({ monthlyBreakdown, maxMonthCount }) {
 // at a fixed size so the shared PNG stays consistent regardless of screen
 // size or scroll position, the same convention as RichShareCard/ShareStatsCard.
 export const YearInReviewCard = forwardRef(function YearInReviewCard({ review }, ref) {
-  const { styles } = useTheme();
+  const { styles, retro } = useTheme();
   const { year, totalEvents, uniqueVenues, uniqueCities, topCategory, biggestEvent, monthlyBreakdown, maxMonthCount, milestonesUnlocked } = review;
 
   return (
     <View ref={ref} collapsable={false} style={styles.yrCard}>
-      <LinearGradient colors={GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+      {retro ? (
+        <ImageBackground source={PARCHMENT_BG} resizeMode="cover" style={StyleSheet.absoluteFill} />
+      ) : (
+        <LinearGradient colors={GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+      )}
 
       <View style={styles.yrContent}>
+        {retro && (
+          <View style={[styles.shareCardStamp, styles.shareCardStampRetro]}>
+            <View style={styles.shareCardStampInner}>
+              <Text style={styles.shareCardStampText} numberOfLines={1}>FANSTAMP</Text>
+            </View>
+          </View>
+        )}
+
         <Text style={styles.yrEyebrow}>YEAR IN REVIEW</Text>
         <Text style={styles.yrYear}>{year}</Text>
 
