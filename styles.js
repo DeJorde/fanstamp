@@ -1305,18 +1305,21 @@ function buildStyles(c, retroMode) {
       fontSize: 13, fontWeight: '700',
       color: retroMode ? c.text : '#ffffff',
     },
-    yrBiggestBlock: { width: '100%', marginTop: 20, gap: 8 },
+    yrSectionBlock: { width: '100%', marginTop: 20, gap: 8 },
     yrSectionLabel: {
       fontSize: 11, fontWeight: '800', letterSpacing: 1.5,
       color: retroMode ? c.textDim : 'rgba(255,255,255,0.6)',
     },
-    yrBiggestName: {
-      fontSize: 17, fontWeight: '800',
-      color: retroMode ? c.text : '#ffffff',
+    yrCatList: { width: '100%', gap: 10 },
+    yrCatRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    yrCatBadge: {
+      width: 32, height: 32, borderRadius: 16, borderWidth: 1.5,
+      alignItems: 'center', justifyContent: 'center',
     },
-    yrBiggestSub: {
-      fontSize: 13, fontWeight: '500',
-      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.75)',
+    yrCatBadgeIcon: { fontSize: 15 },
+    yrCatText: {
+      flex: 1, fontSize: 14, fontWeight: '600',
+      color: retroMode ? c.text : '#ffffff',
     },
     yrMonthGrid: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
     yrMonthCell: { flex: 1, alignItems: 'center', gap: 4 },
@@ -1354,13 +1357,28 @@ function buildStyles(c, retroMode) {
     // header, the chip row's own line-height was clipping against the
     // header's bottom edge without the extra clearance.
     yrPickerRow: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, gap: 8 },
+    // Retro uses explicit sepia/cream values rather than the usual c.bg2/
+    // c.border tokens — those read too close to the parchment background
+    // behind this modal's header, so the chips all but disappeared.
     yrPickerChip: {
-      borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7,
-      backgroundColor: c.bg2, borderWidth: 1, borderColor: c.border,
+      borderRadius: 19, minHeight: 38, paddingHorizontal: 16, paddingVertical: 8,
+      alignItems: 'center', justifyContent: 'center',
+      backgroundColor: retroMode ? '#F5ECD7' : c.bg2,
+      borderWidth: retroMode ? 1.5 : 1,
+      borderColor: retroMode ? '#5C3D1E' : c.border,
     },
-    yrPickerChipActive: { backgroundColor: c.accentBgSoft, borderColor: c.accent },
-    yrPickerChipText: { fontSize: 14, fontWeight: '600', color: c.textMuted },
-    yrPickerChipTextActive: { color: c.accent, fontWeight: '800' },
+    yrPickerChipActive: {
+      backgroundColor: retroMode ? '#5C3D1E' : c.accentBgSoft,
+      borderColor: retroMode ? '#5C3D1E' : c.accent,
+    },
+    yrPickerChipText: {
+      fontSize: 15, fontWeight: '500',
+      color: retroMode ? '#3E2000' : '#ffffff',
+    },
+    yrPickerChipTextActive: {
+      fontWeight: '800',
+      color: retroMode ? '#F5ECD7' : c.accent,
+    },
     yrModalScroll: { alignItems: 'center', padding: 20, paddingBottom: 12 },
     yrShareBtn: {
       marginHorizontal: 20, marginBottom: 20, marginTop: 4,

@@ -1,8 +1,7 @@
 import { forwardRef } from 'react';
 import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { CATEGORY_ICONS } from '../constants';
-import { formatDisplayDate } from '../utils/dates';
+import { CATEGORY_COLORS } from '../constants';
 import { useTheme } from '../context/ThemeContext';
 
 // In standard mode this is a bold, fixed gradient — a Spotify-Wrapped-style
@@ -14,6 +13,27 @@ import { useTheme } from '../context/ThemeContext';
 // standalone "wrapped" graphic.
 const GRADIENT_COLORS = ['#0f0026', '#3d0a6b', '#c2185b'];
 const PARCHMENT_BG = require('../assets/parchment.png');
+
+function CategoryBreakdown({ categoryBreakdown }) {
+  const { styles } = useTheme();
+  return (
+    <View style={styles.yrCatList}>
+      {categoryBreakdown.map(({ category, count, icon, unitLabel }) => {
+        const colors = CATEGORY_COLORS[category] ?? CATEGORY_COLORS.Other;
+        return (
+          <View key={category} style={styles.yrCatRow}>
+            <View style={[styles.yrCatBadge, { backgroundColor: colors.bg, borderColor: colors.text }]}>
+              <Text style={styles.yrCatBadgeIcon}>{icon}</Text>
+            </View>
+            <Text style={styles.yrCatText} numberOfLines={1}>
+              {category} · {count} {unitLabel}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 function MonthBars({ monthlyBreakdown, maxMonthCount }) {
   const { styles } = useTheme();
@@ -41,7 +61,7 @@ function MonthBars({ monthlyBreakdown, maxMonthCount }) {
 // size or scroll position, the same convention as RichShareCard/ShareStatsCard.
 export const YearInReviewCard = forwardRef(function YearInReviewCard({ review }, ref) {
   const { styles, retro } = useTheme();
-  const { year, totalEvents, uniqueVenues, uniqueCities, topCategory, biggestEvent, monthlyBreakdown, maxMonthCount, milestonesUnlocked } = review;
+  const { year, totalEvents, uniqueVenues, uniqueCities, topCategory, categoryBreakdown, monthlyBreakdown, maxMonthCount, milestonesUnlocked } = review;
 
   return (
     <View ref={ref} collapsable={false} style={styles.yrCard}>
@@ -84,27 +104,22 @@ export const YearInReviewCard = forwardRef(function YearInReviewCard({ review },
           </View>
         )}
 
-        {biggestEvent && (
-          <View style={styles.yrBiggestBlock}>
-            <Text style={styles.yrSectionLabel}>BIGGEST EVENT</Text>
-            <Text style={styles.yrBiggestName} numberOfLines={2}>
-              {CATEGORY_ICONS[biggestEvent.category] ?? '📌'} {biggestEvent.name}
-            </Text>
-            <Text style={styles.yrBiggestSub}>
-              {biggestEvent.venue} · {formatDisplayDate(biggestEvent.date)}
-            </Text>
+        {categoryBreakdown.length > 0 && (
+          <View style={styles.yrSectionBlock}>
+            <Text style={styles.yrSectionLabel}>EVENTS BREAKDOWN</Text>
+            <CategoryBreakdown categoryBreakdown={categoryBreakdown} />
           </View>
         )}
 
         {totalEvents > 0 && (
-          <View style={styles.yrBiggestBlock}>
+          <View style={styles.yrSectionBlock}>
             <Text style={styles.yrSectionLabel}>THE YEAR, MONTH BY MONTH</Text>
             <MonthBars monthlyBreakdown={monthlyBreakdown} maxMonthCount={maxMonthCount} />
           </View>
         )}
 
         {milestonesUnlocked.length > 0 && (
-          <View style={styles.yrBiggestBlock}>
+          <View style={styles.yrSectionBlock}>
             <Text style={styles.yrSectionLabel}>MILESTONES UNLOCKED</Text>
             <View style={styles.yrMilestoneRow}>
               {milestonesUnlocked.map((m) => (

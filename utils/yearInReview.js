@@ -1,15 +1,19 @@
-import { CATEGORY_GROUPS, CATEGORY_ICONS } from '../constants';
+import { CATEGORY_ICONS, CATEGORY_GROUP_MAP } from '../constants';
 import { parseDateStr } from './dates';
 import { hasDate } from './eventDates';
 import { computeBadges } from './badges';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// CATEGORY_GROUPS is already ordered stadium sports > outdoor > entertainment
-// — flattening it gives a notability rank so, when nothing else
-// distinguishes two events from the same year, a stadium sports game
-// outranks a concert for "biggest event."
-const CATEGORY_PRIORITY = CATEGORY_GROUPS.flatMap((g) => g.categories);
+// Singular unit noun per category group, for "2 games" / "1 show" — there's
+// no single natural noun spanning golf/ski/racing, so "outdoor" (and
+// anything uncategorized) falls back to the generic "event".
+const UNIT_NOUN_BY_GROUP = { stadium: 'game', entertainment: 'show' };
+
+function unitLabel(category, count) {
+  const singular = UNIT_NOUN_BY_GROUP[CATEGORY_GROUP_MAP[category]] || 'event';
+  return count === 1 ? singular : `${singular}s`;
+}
 
 export function getAvailableYears(events) {
   const years = new Set();
@@ -18,24 +22,6 @@ export function getAvailableYears(events) {
     if (!isNaN(y)) years.add(y);
   });
   return Array.from(years).sort((a, b) => b - a);
-}
-
-// "Biggest" is a notability heuristic, not an objective measure: category
-// priority first (a game outranks a concert), then whether a photo was
-// attached (a proxy for "this one mattered enough to document"), then most
-// recent as a final tiebreak.
-function pickBiggestEvent(yearEvents) {
-  const dated = yearEvents.filter(hasDate);
-  if (dated.length === 0) return null;
-  return [...dated].sort((a, b) => {
-    const rankA = CATEGORY_PRIORITY.indexOf(a.category);
-    const rankB = CATEGORY_PRIORITY.indexOf(b.category);
-    if (rankA !== rankB) return rankA - rankB;
-    const photoA = a.photos?.length > 0 ? 1 : 0;
-    const photoB = b.photos?.length > 0 ? 1 : 0;
-    if (photoA !== photoB) return photoB - photoA;
-    return parseDateStr(b.date) - parseDateStr(a.date);
-  })[0];
 }
 
 export function computeYearInReview(events, year) {
@@ -49,12 +35,19 @@ export function computeYearInReview(events, year) {
 
   const catMap = {};
   yearEvents.forEach((e) => { catMap[e.category] = (catMap[e.category] || 0) + 1; });
-  const topCategoryEntry = Object.entries(catMap).sort((a, b) => b[1] - a[1])[0];
+  const catEntries = Object.entries(catMap).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+  const topCategoryEntry = catEntries[0];
   const topCategory = topCategoryEntry
     ? { name: topCategoryEntry[0], count: topCategoryEntry[1], icon: CATEGORY_ICONS[topCategoryEntry[0]] ?? '📌' }
     : null;
 
-  const biggestEvent = pickBiggestEvent(yearEvents);
+  const categoryBreakdown = catEntries.map(([category, count]) => ({
+    category,
+    count,
+    icon: CATEGORY_ICONS[category] ?? '📌',
+    unitLabel: unitLabel(category, count),
+  }));
 
   const monthCounts = new Array(12).fill(0);
   yearEvents.forEach((e) => { monthCounts[parseDateStr(e.date).getMonth()]++; });
@@ -80,7 +73,7 @@ export function computeYearInReview(events, year) {
 
   return {
     year, totalEvents, uniqueVenues, uniqueCities,
-    topCategory, biggestEvent,
+    topCategory, categoryBreakdown,
     monthlyBreakdown, maxMonthCount,
     milestonesUnlocked,
   };
