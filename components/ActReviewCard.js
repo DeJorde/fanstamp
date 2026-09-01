@@ -7,18 +7,68 @@ import { useTheme } from '../context/ThemeContext';
 // (utils/actReview.js) — only the nouns differ, so one component covers both
 // rather than two near-identical files.
 export const ACT_REVIEW_CONFIG = {
-  Concert: { title: 'CONCERT REVIEW', unit: 'Concerts', actNoun: 'Artists', shareCaption: 'My Concert Review 🎵 #FanStamp' },
-  Comedy:  { title: 'COMEDY REVIEW',  unit: 'Shows',     actNoun: 'Comedians', shareCaption: 'My Comedy Review 🎤 #FanStamp' },
+  Concert: { eyebrow: 'CONCERT REVIEW', unit: 'Concerts', actNoun: 'Artists', emoji: '🎵' },
+  Comedy:  { eyebrow: 'COMEDY REVIEW',  unit: 'Shows',     actNoun: 'Comedians', emoji: '🎤' },
 };
 
-// Captured for sharing — see components/ReviewModal + utils/actReview.
-export const ActReviewCard = forwardRef(function ActReviewCard({ review, config }, ref) {
+function ActsList({ acts, actNoun }) {
   const { styles } = useTheme();
-  const { icon, total, uniqueActs, uniqueVenues, uniqueCities, mostActiveMonth, topGenre } = review;
+  if (acts.length === 0) return null;
+  return (
+    <View style={styles.yrSectionBlock}>
+      <Text style={styles.yrSectionLabel}>{actNoun.toUpperCase()} SEEN</Text>
+      <View style={styles.yrCatList}>
+        {acts.map((act) => (
+          <View key={act.name} style={styles.rvActRow}>
+            <View style={styles.rvActHeaderRow}>
+              <Text style={styles.rvActName} numberOfLines={1}>{act.name}</Text>
+              {act.count > 1 && <Text style={styles.rvActCount}>×{act.count}</Text>}
+            </View>
+            {act.appearances.map((a, i) => (
+              <Text key={a.id ?? i} style={styles.rvActAppearance} numberOfLines={1}>
+                {a.venue}{a.dateDisplay !== '—' ? ` · ${a.dateDisplay}` : ''}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function VenuesList({ venues }) {
+  const { styles } = useTheme();
+  if (venues.length === 0) return null;
+  return (
+    <View style={styles.yrSectionBlock}>
+      <Text style={styles.yrSectionLabel}>VENUES</Text>
+      <View style={styles.yrCatList}>
+        {venues.map((v) => (
+          <View key={v.name} style={styles.rvVenueRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rvVenueName} numberOfLines={1}>{v.name}</Text>
+              {!!v.city && <Text style={styles.rvVenueCity} numberOfLines={1}>{v.city}</Text>}
+            </View>
+            <Text style={styles.rvVenueCount}>{v.count}×</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// Captured for sharing — see components/ReviewModal + utils/actReview.
+// `periodLabel` (e.g. "2026", "Last 12 Months") comes from the active
+// FilterBar selection — annotated on the card itself (not just the modal
+// title) since captureRef only captures this card, not the modal chrome
+// around it. Null when the filter is "All Time".
+export const ActReviewCard = forwardRef(function ActReviewCard({ review, config, periodLabel }, ref) {
+  const { styles } = useTheme();
+  const { icon, total, uniqueActs, uniqueVenues, uniqueCities, acts, venues, mostActiveMonth, topGenre } = review;
 
   return (
     <ReviewCardShell ref={ref}>
-      <Text style={styles.yrEyebrow}>{config.title}</Text>
+      <Text style={styles.yrEyebrow}>{config.eyebrow}{periodLabel ? ` · ${periodLabel.toUpperCase()}` : ''}</Text>
       <Text style={styles.yrYear}>{icon}</Text>
 
       <View style={styles.yrStatRow}>
@@ -54,6 +104,9 @@ export const ActReviewCard = forwardRef(function ActReviewCard({ review, config 
           )}
         </View>
       )}
+
+      <ActsList acts={acts} actNoun={config.actNoun} />
+      <VenuesList venues={venues} />
 
       <Text style={styles.yrTagline}>Track your journey at FanStamp</Text>
     </ReviewCardShell>

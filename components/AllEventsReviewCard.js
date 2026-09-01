@@ -22,7 +22,11 @@ function Timeline({ timeline, maxYearCount }) {
 }
 
 // Captured for sharing — see components/ReviewModal + utils/allEventsReview.
-export const AllEventsReviewCard = forwardRef(function AllEventsReviewCard({ review }, ref) {
+// `periodLabel` (e.g. "2026", "Last 12 Months") comes from the active
+// FilterBar selection — annotated on the card itself (not just the modal
+// title) since captureRef only captures this card, not the modal chrome
+// around it. Null when the filter is "All Time".
+export const AllEventsReviewCard = forwardRef(function AllEventsReviewCard({ review, periodLabel }, ref) {
   const { styles } = useTheme();
   const {
     totalEvents, uniqueVenues, uniqueCities, statesVisited, yearsActive,
@@ -31,7 +35,7 @@ export const AllEventsReviewCard = forwardRef(function AllEventsReviewCard({ rev
 
   return (
     <ReviewCardShell ref={ref}>
-      <Text style={styles.yrEyebrow}>ALL EVENTS REVIEW</Text>
+      <Text style={styles.yrEyebrow}>ALL EVENTS REVIEW{periodLabel ? ` · ${periodLabel.toUpperCase()}` : ''}</Text>
       <Text style={styles.yrYear}>🎟</Text>
 
       <View style={styles.yrStatRow}>

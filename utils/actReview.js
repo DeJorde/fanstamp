@@ -1,22 +1,49 @@
 import { CATEGORY_ICONS } from '../constants';
-import { parseDateStr } from './dates';
-import { hasDate } from './eventDates';
+import { parseDateStr, formatDisplayDate } from './dates';
+import { hasDate, sortByDateAsc } from './eventDates';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 // Shared computation for Concert Review and Comedy Review — both categories
-// need the same shape (total, distinct acts, venues, cities, most active
-// month, optional genre breakdown), just with different nouns for what an
-// "act" is (see components/ActReviewCard's ACT_CONFIG).
+// need the same shape (total, distinct acts w/ per-appearance detail, venues,
+// cities, most active month, optional genre breakdown), just with different
+// nouns for what an "act" is (see components/ActReviewCard's ACT_REVIEW_CONFIG).
 export function computeActReview(events, category) {
   const catEvents = events.filter((e) => e.category === category);
   const total = catEvents.length;
 
   // FanStamp has no dedicated artist/comedian field on an event — the event
   // name (e.g. "Taylor Swift: Eras Tour") is the closest proxy for who the
-  // user actually saw, so distinct names stand in for distinct acts.
-  const uniqueActs = new Set(catEvents.map((e) => e.name.trim()).filter(Boolean)).size;
-  const uniqueVenues = new Set(catEvents.map((e) => e.venue)).size;
+  // user actually saw, so distinct names stand in for distinct acts, and
+  // every event sharing that name is one "appearance" (venue + date) by them.
+  const actMap = new Map();
+  catEvents.forEach((e) => {
+    const name = e.name.trim();
+    if (!name) return;
+    if (!actMap.has(name)) actMap.set(name, []);
+    actMap.get(name).push(e);
+  });
+  const acts = Array.from(actMap.entries())
+    .map(([name, actEvents]) => ({
+      name,
+      count: actEvents.length,
+      appearances: sortByDateAsc(actEvents).map((e) => ({
+        id: e.id, venue: e.venue, date: e.date, dateDisplay: formatDisplayDate(e.date),
+      })),
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const uniqueActs = acts.length;
+
+  const venueMap = new Map();
+  catEvents.forEach((e) => {
+    if (!venueMap.has(e.venue)) {
+      venueMap.set(e.venue, { name: e.venue, city: e.location && e.location !== '—' ? e.location : '', count: 0 });
+    }
+    venueMap.get(e.venue).count++;
+  });
+  const venues = Array.from(venueMap.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const uniqueVenues = venues.length;
+
   const uniqueCities = new Set(
     catEvents.filter((e) => e.location && e.location !== '—').map((e) => e.location)
   ).size;
@@ -40,6 +67,7 @@ export function computeActReview(events, category) {
     category,
     icon: CATEGORY_ICONS[category] ?? '📌',
     total, uniqueActs, uniqueVenues, uniqueCities,
+    acts, venues,
     mostActiveMonth, topGenre,
   };
 }

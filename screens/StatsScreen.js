@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { Alert, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP } from '../constants';
+import { CATEGORY_GROUPS, CATEGORY_COLORS, CATEGORY_ICONS, GROUP_COLORS, CATEGORY_GROUP_MAP, FILTERS } from '../constants';
 import { LEAGUE_ICONS, LEAGUE_KEYS } from '../leagueStadiums';
-import { matchesFilter, formatDisplayDate, parseDateStr } from '../utils/dates';
+import { matchesFilter, formatDisplayDate, parseDateStr, filterPeriodLabel } from '../utils/dates';
 import { computeTeamStats } from '../utils/teamStats';
 import { computeStatesVisited } from '../utils/statesVisited';
 import { computeVenueMarkers } from '../utils/geo';
@@ -56,30 +56,55 @@ export function StatsScreen({
   const [openReview, setOpenReview] = useState(null); // null | { type: 'sports', league } | { type: 'Concert' | 'Comedy' } | { type: 'all' }
   const overviewCardRef = useRef(null);
 
-  // Category reviews are lifetime (all-time), not scoped to the FilterBar
-  // selection above — same convention as Year in Review, which always
-  // receives the full `events` list rather than `filtered`.
-  const sportsLeagues = useMemo(() => getAvailableSportsLeagues(events), [events]);
-  const hasConcerts = useMemo(() => events.some((e) => e.category === 'Concert'), [events]);
-  const hasComedy = useMemo(() => events.some((e) => e.category === 'Comedy'), [events]);
+  const filtered = useMemo(
+    () => events.filter((e) => matchesFilter(e, filter)),
+    [events, filter]
+  );
+
+  // Human-readable suffix for the active FilterBar period (e.g. "2026",
+  // "Last 12 Months"), null for "All Time" — titles and annotates every
+  // category review below. Year in Review keeps its own year picker and
+  // isn't affected by this filter.
+  const periodLabel = filterPeriodLabel(filter);
+  const activeFilterLabel = FILTERS.find((f) => f.key === filter)?.label ?? '';
+
+  // Category reviews (other than Year in Review) are scoped to the active
+  // FilterBar period, same as every other section on this screen — so a
+  // review button only appears when its category has events in that period.
+  const sportsLeagues = useMemo(() => getAvailableSportsLeagues(filtered), [filtered]);
+  const hasConcerts = useMemo(() => filtered.some((e) => e.category === 'Concert'), [filtered]);
+  const hasComedy = useMemo(() => filtered.some((e) => e.category === 'Comedy'), [filtered]);
 
   const activeReview = useMemo(() => {
     if (!openReview) return null;
+    const suffix = periodLabel ? `${periodLabel} ` : '';
     if (openReview.type === 'sports') {
-      const review = computeSportsReview(events, openReview.league, favoriteTeam);
-      return { title: `${openReview.league} Review`, shareCaption: `My ${openReview.league} Review ${review.icon} #FanStamp`, card: <SportsReviewCard review={review} /> };
+      const review = computeSportsReview(filtered, openReview.league, favoriteTeam);
+      return {
+        title: `${openReview.league} ${suffix}Review`,
+        shareCaption: `My ${openReview.league} ${suffix}Review ${review.icon} #FanStamp`,
+        card: <SportsReviewCard review={review} periodLabel={periodLabel} />,
+      };
     }
     if (openReview.type === 'Concert' || openReview.type === 'Comedy') {
       const config = ACT_REVIEW_CONFIG[openReview.type];
-      const review = computeActReview(events, openReview.type);
-      return { title: `${openReview.type} Review`, shareCaption: config.shareCaption, card: <ActReviewCard review={review} config={config} /> };
+      const review = computeActReview(filtered, openReview.type);
+      return {
+        title: `${openReview.type} ${suffix}Review`,
+        shareCaption: `My ${openReview.type} ${suffix}Review ${config.emoji} #FanStamp`,
+        card: <ActReviewCard review={review} config={config} periodLabel={periodLabel} />,
+      };
     }
     if (openReview.type === 'all') {
-      const review = computeAllEventsReview(events);
-      return { title: 'All Events Review', shareCaption: 'My All Events Review 🎟 #FanStamp', card: <AllEventsReviewCard review={review} /> };
+      const review = computeAllEventsReview(filtered);
+      return {
+        title: `All Events ${suffix}Review`,
+        shareCaption: `My All Events ${suffix}Review 🎟 #FanStamp`,
+        card: <AllEventsReviewCard review={review} periodLabel={periodLabel} />,
+      };
     }
     return null;
-  }, [openReview, events, favoriteTeam]);
+  }, [openReview, filtered, favoriteTeam, periodLabel]);
 
   async function handleShareOverview() {
     if (!overviewCardRef.current) {
@@ -112,11 +137,6 @@ export function StatsScreen({
   }, [events, favoriteTeam]);
 
   const statesVisited = useMemo(() => computeStatesVisited(events), [events]);
-
-  const filtered = useMemo(
-    () => events.filter((e) => matchesFilter(e, filter)),
-    [events, filter]
-  );
 
   const venueMarkers = useMemo(() => computeVenueMarkers(filtered), [filtered]);
   const luckyPlayer  = useMemo(() => getOverallLuckyPlayer(filtered), [filtered]);
@@ -237,7 +257,7 @@ export function StatsScreen({
       <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
 
         {/* ─ REVIEWS ─ */}
-        <StatsSectionHeader title="REVIEWS" />
+        <StatsSectionHeader title={filter === 'all' ? 'REVIEWS' : `REVIEWS — ${activeFilterLabel.toUpperCase()}`} />
         <View style={styles.reviewsGrid}>
           <TouchableOpacity onPress={() => setShowYearInReview(true)} style={styles.yearInReviewBtn} activeOpacity={0.7}>
             <Text style={styles.yearInReviewBtnIcon}>🎉</Text>
@@ -266,7 +286,7 @@ export function StatsScreen({
               <Text style={styles.yearInReviewBtnText}>Comedy Review</Text>
             </TouchableOpacity>
           )}
-          {events.length > 0 && (
+          {filtered.length > 0 && (
             <TouchableOpacity onPress={() => setOpenReview({ type: 'all' })} style={styles.yearInReviewBtn} activeOpacity={0.7}>
               <Text style={styles.yearInReviewBtnIcon}>🎟</Text>
               <Text style={styles.yearInReviewBtnText}>All Events Review</Text>

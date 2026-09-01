@@ -1433,6 +1433,35 @@ function buildStyles(c, retroMode) {
       color: retroMode ? c.textMuted : 'rgba(255,255,255,0.65)',
     },
 
+    rvActRow: { width: '100%', gap: 2 },
+    rvActHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    rvActName: {
+      fontSize: 14, fontWeight: '700',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    rvActCount: {
+      fontSize: 12, fontWeight: '700',
+      color: retroMode ? c.textDim : 'rgba(255,255,255,0.6)',
+    },
+    rvActAppearance: {
+      fontSize: 12, fontWeight: '500',
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.65)',
+    },
+
+    rvVenueRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
+    rvVenueName: {
+      fontSize: 14, fontWeight: '600',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    rvVenueCity: {
+      fontSize: 12, fontWeight: '500',
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.65)',
+    },
+    rvVenueCount: {
+      fontSize: 13, fontWeight: '700',
+      color: retroMode ? c.textDim : 'rgba(255,255,255,0.7)',
+    },
+
     rvTimelineRow: { flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' },
     rvTimelineYear: {
       fontSize: 12, fontWeight: '700', minWidth: 34,

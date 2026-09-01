@@ -38,7 +38,11 @@ function BattingLeaders({ battingLeaders, luckyPlayer }) {
 }
 
 // Captured for sharing — see components/ReviewModal + utils/sportsReview.
-export const SportsReviewCard = forwardRef(function SportsReviewCard({ review }, ref) {
+// `periodLabel` (e.g. "2026", "Last 12 Months") comes from the active
+// FilterBar selection — annotated on the card itself (not just the modal
+// title) since captureRef only captures this card, not the modal chrome
+// around it. Null when the filter is "All Time".
+export const SportsReviewCard = forwardRef(function SportsReviewCard({ review, periodLabel }, ref) {
   const { styles } = useTheme();
   const {
     league, icon, totalGames, stadiums, yourTeam,
@@ -51,7 +55,7 @@ export const SportsReviewCard = forwardRef(function SportsReviewCard({ review },
 
   return (
     <ReviewCardShell ref={ref}>
-      <Text style={styles.yrEyebrow}>{league} REVIEW</Text>
+      <Text style={styles.yrEyebrow}>{league} REVIEW{periodLabel ? ` · ${periodLabel.toUpperCase()}` : ''}</Text>
       <Text style={styles.yrYear}>{icon}</Text>
 
       <View style={styles.yrStatRow}>

@@ -27,6 +27,24 @@ export function formatDisplayDate(str) {
   return `${mm}/${dd}/${d.getFullYear()}`;
 }
 
+const MONTH_NAMES_FULL = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+// Human-readable period for the active FilterBar selection (constants.js's
+// FILTERS) — null for 'all', since "All Time" needs no suffix. Used to
+// title the category Review cards (e.g. "MLB Review" -> "MLB 2026 Review")
+// and, uppercased, to annotate the shareable card image itself, since the
+// modal chrome around it isn't part of what gets captured/shared.
+export function filterPeriodLabel(filter) {
+  const now = new Date();
+  if (filter === 'year') return String(now.getFullYear());
+  if (filter === 'month12') return 'Last 12 Months';
+  if (filter === 'month') return `${MONTH_NAMES_FULL[now.getMonth()]} ${now.getFullYear()}`;
+  return null;
+}
+
 // Returns true if the event's date falls within the selected filter period
 export function matchesFilter(event, filter) {
   if (filter === 'all') return true;
