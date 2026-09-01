@@ -8,10 +8,17 @@ import { computeStatesVisited } from '../utils/statesVisited';
 import { computeVenueMarkers } from '../utils/geo';
 import { getOverallLuckyPlayer } from '../utils/mlbPlayerStats';
 import { shareViewAsImage } from '../utils/shareImage';
+import { getAvailableSportsLeagues, computeSportsReview } from '../utils/sportsReview';
+import { computeActReview } from '../utils/actReview';
+import { computeAllEventsReview } from '../utils/allEventsReview';
 import { FilterBar } from '../components/FilterBar';
 import { MilestonesSection } from '../components/MilestonesSection';
 import { RichShareCard } from '../components/RichShareCard';
 import { YearInReviewModal } from '../components/YearInReviewModal';
+import { ReviewModal } from '../components/ReviewModal';
+import { SportsReviewCard } from '../components/SportsReviewCard';
+import { ActReviewCard, ACT_REVIEW_CONFIG } from '../components/ActReviewCard';
+import { AllEventsReviewCard } from '../components/AllEventsReviewCard';
 import { TeamCard } from '../components/TeamCard';
 import { USStatesMap } from '../components/USStatesMap';
 import { useTheme } from '../context/ThemeContext';
@@ -46,7 +53,33 @@ export function StatsScreen({
   const { styles, colors } = useTheme();
   const [filter, setFilter] = useState('all');
   const [showYearInReview, setShowYearInReview] = useState(false);
+  const [openReview, setOpenReview] = useState(null); // null | { type: 'sports', league } | { type: 'Concert' | 'Comedy' } | { type: 'all' }
   const overviewCardRef = useRef(null);
+
+  // Category reviews are lifetime (all-time), not scoped to the FilterBar
+  // selection above — same convention as Year in Review, which always
+  // receives the full `events` list rather than `filtered`.
+  const sportsLeagues = useMemo(() => getAvailableSportsLeagues(events), [events]);
+  const hasConcerts = useMemo(() => events.some((e) => e.category === 'Concert'), [events]);
+  const hasComedy = useMemo(() => events.some((e) => e.category === 'Comedy'), [events]);
+
+  const activeReview = useMemo(() => {
+    if (!openReview) return null;
+    if (openReview.type === 'sports') {
+      const review = computeSportsReview(events, openReview.league, favoriteTeam);
+      return { title: `${openReview.league} Review`, shareCaption: `My ${openReview.league} Review ${review.icon} #FanStamp`, card: <SportsReviewCard review={review} /> };
+    }
+    if (openReview.type === 'Concert' || openReview.type === 'Comedy') {
+      const config = ACT_REVIEW_CONFIG[openReview.type];
+      const review = computeActReview(events, openReview.type);
+      return { title: `${openReview.type} Review`, shareCaption: config.shareCaption, card: <ActReviewCard review={review} config={config} /> };
+    }
+    if (openReview.type === 'all') {
+      const review = computeAllEventsReview(events);
+      return { title: 'All Events Review', shareCaption: 'My All Events Review 🎟 #FanStamp', card: <AllEventsReviewCard review={review} /> };
+    }
+    return null;
+  }, [openReview, events, favoriteTeam]);
 
   async function handleShareOverview() {
     if (!overviewCardRef.current) {
@@ -184,11 +217,7 @@ export function StatsScreen({
         </View>
       )}
 
-      <View style={styles.statsHeaderRow}>
-        <TouchableOpacity onPress={() => setShowYearInReview(true)} style={styles.yearInReviewBtn} activeOpacity={0.7}>
-          <Text style={styles.yearInReviewBtnIcon}>🎉</Text>
-          <Text style={styles.yearInReviewBtnText}>Year in Review</Text>
-        </TouchableOpacity>
+      <View style={[styles.statsHeaderRow, { justifyContent: 'flex-end' }]}>
         <TouchableOpacity onPress={handleShareOverview} style={styles.shareBtn} activeOpacity={0.7}>
           <Text style={styles.shareBtnIcon}>📤</Text>
         </TouchableOpacity>
@@ -196,8 +225,54 @@ export function StatsScreen({
       <FilterBar value={filter} onChange={setFilter} />
 
       <YearInReviewModal visible={showYearInReview} onClose={() => setShowYearInReview(false)} events={events} />
+      <ReviewModal
+        visible={!!openReview}
+        onClose={() => setOpenReview(null)}
+        title={activeReview?.title}
+        shareCaption={activeReview?.shareCaption}
+      >
+        {activeReview?.card}
+      </ReviewModal>
 
       <ScrollView style={styles.statsScroll} contentContainerStyle={styles.statsContent} showsVerticalScrollIndicator={false}>
+
+        {/* ─ REVIEWS ─ */}
+        <StatsSectionHeader title="REVIEWS" />
+        <View style={styles.reviewsGrid}>
+          <TouchableOpacity onPress={() => setShowYearInReview(true)} style={styles.yearInReviewBtn} activeOpacity={0.7}>
+            <Text style={styles.yearInReviewBtnIcon}>🎉</Text>
+            <Text style={styles.yearInReviewBtnText}>Year in Review</Text>
+          </TouchableOpacity>
+          {sportsLeagues.map((league) => (
+            <TouchableOpacity
+              key={league}
+              onPress={() => setOpenReview({ type: 'sports', league })}
+              style={styles.yearInReviewBtn}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.yearInReviewBtnIcon}>{LEAGUE_ICONS[league] ?? '🏟'}</Text>
+              <Text style={styles.yearInReviewBtnText}>{league} Review</Text>
+            </TouchableOpacity>
+          ))}
+          {hasConcerts && (
+            <TouchableOpacity onPress={() => setOpenReview({ type: 'Concert' })} style={styles.yearInReviewBtn} activeOpacity={0.7}>
+              <Text style={styles.yearInReviewBtnIcon}>🎵</Text>
+              <Text style={styles.yearInReviewBtnText}>Concert Review</Text>
+            </TouchableOpacity>
+          )}
+          {hasComedy && (
+            <TouchableOpacity onPress={() => setOpenReview({ type: 'Comedy' })} style={styles.yearInReviewBtn} activeOpacity={0.7}>
+              <Text style={styles.yearInReviewBtnIcon}>🎤</Text>
+              <Text style={styles.yearInReviewBtnText}>Comedy Review</Text>
+            </TouchableOpacity>
+          )}
+          {events.length > 0 && (
+            <TouchableOpacity onPress={() => setOpenReview({ type: 'all' })} style={styles.yearInReviewBtn} activeOpacity={0.7}>
+              <Text style={styles.yearInReviewBtnIcon}>🎟</Text>
+              <Text style={styles.yearInReviewBtnText}>All Events Review</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {/* ─ STATES VISITED ─ */}
         <StatsSectionHeader title="STATES VISITED" />

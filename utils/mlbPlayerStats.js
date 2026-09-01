@@ -397,6 +397,29 @@ export function getMlbCumulativeTeamPitchingStats(events, team) {
     .sort((a, b) => b.outsSort - a.outsSort);
 }
 
+// Batting leaders across every MLB team the user has attended games for (not
+// scoped to one team, unlike getMlbPlayerAttendanceStats) — feeds the MLB
+// Sports Review card, which spans the whole league. A player traded between
+// two attended teams would otherwise appear twice; keep whichever team entry
+// saw them in more attended games.
+export function getMlbLeagueBattingLeaders(events, limit = 5) {
+  const mlbTeams = Array.from(new Set(
+    events.filter((e) => e.category === 'MLB').flatMap((e) => [e.homeTeam, e.awayTeam]).filter(Boolean)
+  ));
+
+  const byPlayer = new Map();
+  mlbTeams.forEach((team) => {
+    getMlbPlayerAttendanceStats(events, team).forEach((p) => {
+      const existing = byPlayer.get(p.personId);
+      if (!existing || p.gamesAttended > existing.gamesAttended) byPlayer.set(p.personId, p);
+    });
+  });
+
+  return Array.from(byPlayer.values())
+    .sort((a, b) => b.gamesAttended - a.gamesAttended || b.sampleSize - a.sampleSize)
+    .slice(0, limit);
+}
+
 // One global "Your Lucky Player" across every MLB team the user has
 // attended games for (getMlbPlayerAttendanceStats crowns a lucky player per
 // team already) — picks whichever team's lucky player has the best delta,

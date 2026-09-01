@@ -14,7 +14,9 @@ import { useTheme } from '../context/ThemeContext';
 const GRADIENT_COLORS = ['#0f0026', '#3d0a6b', '#c2185b'];
 const PARCHMENT_BG = require('../assets/parchment.png');
 
-function CategoryBreakdown({ categoryBreakdown }) {
+// Exported for reuse by AllEventsReviewCard, which needs the same
+// icon-badge + count row for its own (all-time) category breakdown.
+export function CategoryBreakdown({ categoryBreakdown }) {
   const { styles } = useTheme();
   return (
     <View style={styles.yrCatList}>

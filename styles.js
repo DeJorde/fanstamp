@@ -517,6 +517,11 @@ function buildStyles(c, retroMode) {
     },
     statesModalCloseText: { fontSize: 14, fontWeight: '700', color: c.accent },
 
+    // Reviews section — one pill per available review type, reusing the
+    // same chip look as the original yearInReviewBtn (now one of many chips
+    // in this row rather than its own header button).
+    reviewsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+
     // Overview grid
     statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     statsMetricCard: {
@@ -1386,6 +1391,65 @@ function buildStyles(c, retroMode) {
       backgroundColor: c.accent, alignItems: 'center',
     },
     yrShareBtnText: { fontSize: 16, fontWeight: '800', color: '#ffffff' },
+
+    // ── Category Review cards (components/SportsReviewCard, ActReviewCard,
+    // AllEventsReviewCard + ReviewCardShell/ReviewModal) — these reuse the
+    // yr* stat-row/pill/section tokens above for the vocabulary Year in
+    // Review already defines; the keys below cover only what's new: the
+    // biggest-win/biggest-loss mini cards, MLB batting-leader rows, and the
+    // per-year timeline list. ────────────────────────────────────────────
+    rvPillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 4 },
+
+    rvMiniCardRow: { flexDirection: 'row', width: '100%', gap: 10 },
+    rvMiniCard: {
+      flex: 1, borderRadius: 14, padding: 12, gap: 3, borderWidth: 1,
+      backgroundColor: retroMode ? 'rgba(139,105,20,0.10)' : 'rgba(255,255,255,0.08)',
+    },
+    // Win/loss framing colors are fixed (not retro-branched to sepia) like
+    // CATEGORY_COLORS — green/red read as win/loss regardless of theme.
+    rvMiniCardWin:       { borderColor: '#3a9d4f' },
+    rvMiniCardLoss:      { borderColor: '#c04444' },
+    rvMiniCardLabel:     { fontSize: 10, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
+    rvMiniCardLabelWin:  { color: '#3a9d4f' },
+    rvMiniCardLabelLoss: { color: '#c04444' },
+    rvMiniCardScore: {
+      fontSize: 17, fontWeight: '800',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    rvMiniCardSub: {
+      fontSize: 11, fontWeight: '500',
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.65)',
+    },
+
+    rvPlayerRow: { width: '100%', gap: 2 },
+    rvPlayerTopRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    rvPlayerName: {
+      fontSize: 14, fontWeight: '700',
+      color: retroMode ? c.text : '#ffffff',
+    },
+    rvPlayerLuckyTag: { fontSize: 11 },
+    rvPlayerLine: {
+      fontSize: 12, fontWeight: '500',
+      color: retroMode ? c.textMuted : 'rgba(255,255,255,0.65)',
+    },
+
+    rvTimelineRow: { flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' },
+    rvTimelineYear: {
+      fontSize: 12, fontWeight: '700', minWidth: 34,
+      color: retroMode ? c.textDim : 'rgba(255,255,255,0.7)',
+    },
+    rvTimelineBarWrap: {
+      flex: 1, height: 8, borderRadius: 4,
+      backgroundColor: retroMode ? 'rgba(139,105,20,0.18)' : 'rgba(255,255,255,0.12)',
+    },
+    rvTimelineBar: {
+      height: 8, borderRadius: 4, minWidth: 4,
+      backgroundColor: retroMode ? c.accent : '#ff4fa3',
+    },
+    rvTimelineCount: {
+      fontSize: 12, fontWeight: '700', minWidth: 18, textAlign: 'right',
+      color: retroMode ? c.text : '#ffffff',
+    },
   };
 }
 
