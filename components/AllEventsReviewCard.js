@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import { View, Text } from 'react-native';
 import { ReviewCardShell } from './ReviewCardShell';
 import { CategoryBreakdown } from './YearInReviewCard';
+import { NewVenuesSection } from './NewVenuesSection';
 import { useTheme } from '../context/ThemeContext';
 
 function Timeline({ timeline, maxYearCount }) {
@@ -30,7 +31,7 @@ export const AllEventsReviewCard = forwardRef(function AllEventsReviewCard({ rev
   const { styles } = useTheme();
   const {
     totalEvents, uniqueVenues, uniqueCities, statesVisited, yearsActive,
-    topCategory, categoryBreakdown, timeline, maxYearCount,
+    topCategory, categoryBreakdown, timeline, maxYearCount, newVenues,
   } = review;
 
   return (
@@ -83,6 +84,8 @@ export const AllEventsReviewCard = forwardRef(function AllEventsReviewCard({ rev
           <Timeline timeline={timeline} maxYearCount={maxYearCount} />
         </View>
       )}
+
+      <NewVenuesSection newVenues={newVenues} />
 
       <Text style={styles.yrTagline}>Track your journey at FanStamp</Text>
     </ReviewCardShell>

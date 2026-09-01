@@ -2,6 +2,7 @@ import { TEAM_TRACKED_CATEGORIES } from '../constants';
 import { LEAGUE_ICONS } from '../leagueStadiums';
 import { computeTeamStats } from './teamStats';
 import { getOverallLuckyPlayer, getMlbLeagueBattingLeaders } from './mlbPlayerStats';
+import { getNewVenues } from './yearInReview';
 
 // Leagues with at least one attended event, most-attended first — feeds the
 // per-league Sports Review buttons on the Stats tab (one review per league,
@@ -35,7 +36,12 @@ function marginForTeam(event, team) {
 // for), since "win/loss record" and "biggest win/loss" only make sense from
 // one team's perspective. Games where the user never logged a home/away team
 // still count toward totalGames/stadiums but can't contribute to the record.
-export function computeSportsReview(events, league, favoriteTeam) {
+// `events` is whatever period this review covers (already scoped by the
+// caller — see screens/StatsScreen.js — to the active FilterBar window);
+// `allEvents` is the user's untouched full history, needed only to find each
+// venue's true first-ever-visit date for the "new venues" section, and
+// defaults to `events` itself for callers that don't distinguish the two.
+export function computeSportsReview(events, league, favoriteTeam, allEvents = events) {
   const leagueEvents = events.filter((e) => e.category === league);
   const totalGames = leagueEvents.length;
   const stadiums = new Set(leagueEvents.map((e) => e.venue)).size;
@@ -68,6 +74,8 @@ export function computeSportsReview(events, league, favoriteTeam) {
     ? { battingLeaders: getMlbLeagueBattingLeaders(events), luckyPlayer: getOverallLuckyPlayer(events) }
     : null;
 
+  const newVenues = getNewVenues(allEvents, leagueEvents);
+
   return {
     league,
     icon: LEAGUE_ICONS[league] ?? '🏟',
@@ -76,5 +84,6 @@ export function computeSportsReview(events, league, favoriteTeam) {
     wins, losses, ties, homeGames, awayGames,
     biggestWin, biggestLoss,
     mlb,
+    newVenues,
   };
 }

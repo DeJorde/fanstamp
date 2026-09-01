@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CATEGORY_COLORS } from '../constants';
+import { NewVenuesSection } from './NewVenuesSection';
 import { useTheme } from '../context/ThemeContext';
 
 // In standard mode this is a bold, fixed gradient — a Spotify-Wrapped-style
@@ -63,7 +64,7 @@ function MonthBars({ monthlyBreakdown, maxMonthCount }) {
 // size or scroll position, the same convention as RichShareCard/ShareStatsCard.
 export const YearInReviewCard = forwardRef(function YearInReviewCard({ review }, ref) {
   const { styles, retro } = useTheme();
-  const { year, totalEvents, uniqueVenues, uniqueCities, topCategory, categoryBreakdown, monthlyBreakdown, maxMonthCount, milestonesUnlocked } = review;
+  const { year, totalEvents, uniqueVenues, uniqueCities, topCategory, categoryBreakdown, monthlyBreakdown, maxMonthCount, milestonesUnlocked, newVenues } = review;
 
   return (
     <View ref={ref} collapsable={false} style={styles.yrCard}>
@@ -133,6 +134,8 @@ export const YearInReviewCard = forwardRef(function YearInReviewCard({ review },
             </View>
           </View>
         )}
+
+        <NewVenuesSection newVenues={newVenues} />
 
         <Text style={styles.yrTagline}>Track your journey at FanStamp</Text>
       </View>

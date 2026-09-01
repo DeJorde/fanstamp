@@ -79,7 +79,7 @@ export function StatsScreen({
     if (!openReview) return null;
     const suffix = periodLabel ? `${periodLabel} ` : '';
     if (openReview.type === 'sports') {
-      const review = computeSportsReview(filtered, openReview.league, favoriteTeam);
+      const review = computeSportsReview(filtered, openReview.league, favoriteTeam, events);
       return {
         title: `${openReview.league} ${suffix}Review`,
         shareCaption: `My ${openReview.league} ${suffix}Review ${review.icon} #FanStamp`,
@@ -88,7 +88,7 @@ export function StatsScreen({
     }
     if (openReview.type === 'Concert' || openReview.type === 'Comedy') {
       const config = ACT_REVIEW_CONFIG[openReview.type];
-      const review = computeActReview(filtered, openReview.type);
+      const review = computeActReview(filtered, openReview.type, events);
       return {
         title: `${openReview.type} ${suffix}Review`,
         shareCaption: `My ${openReview.type} ${suffix}Review ${config.emoji} #FanStamp`,
@@ -96,7 +96,7 @@ export function StatsScreen({
       };
     }
     if (openReview.type === 'all') {
-      const review = computeAllEventsReview(filtered);
+      const review = computeAllEventsReview(filtered, events);
       return {
         title: `All Events ${suffix}Review`,
         shareCaption: `My All Events ${suffix}Review 🎟 #FanStamp`,
@@ -104,7 +104,7 @@ export function StatsScreen({
       };
     }
     return null;
-  }, [openReview, filtered, favoriteTeam, periodLabel]);
+  }, [openReview, filtered, events, favoriteTeam, periodLabel]);
 
   async function handleShareOverview() {
     if (!overviewCardRef.current) {

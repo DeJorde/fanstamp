@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { View, Text } from 'react-native';
 import { ReviewCardShell } from './ReviewCardShell';
+import { NewVenuesSection } from './NewVenuesSection';
 import { useTheme } from '../context/ThemeContext';
 
 function MiniCard({ kind, label, data }) {
@@ -47,7 +48,7 @@ export const SportsReviewCard = forwardRef(function SportsReviewCard({ review, p
   const {
     league, icon, totalGames, stadiums, yourTeam,
     wins, losses, ties, homeGames, awayGames,
-    biggestWin, biggestLoss, mlb,
+    biggestWin, biggestLoss, mlb, newVenues,
   } = review;
 
   const hasRecord = !!yourTeam && (wins + losses + ties) > 0;
@@ -105,6 +106,8 @@ export const SportsReviewCard = forwardRef(function SportsReviewCard({ review, p
       )}
 
       {mlb && <BattingLeaders battingLeaders={mlb.battingLeaders} luckyPlayer={mlb.luckyPlayer} />}
+
+      <NewVenuesSection newVenues={newVenues} />
 
       <Text style={styles.yrTagline}>Track your journey at FanStamp</Text>
     </ReviewCardShell>

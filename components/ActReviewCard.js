@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { View, Text } from 'react-native';
 import { ReviewCardShell } from './ReviewCardShell';
+import { NewVenuesSection } from './NewVenuesSection';
 import { useTheme } from '../context/ThemeContext';
 
 // Concert Review and Comedy Review are the same layout over the same shape
@@ -64,7 +65,7 @@ function VenuesList({ venues }) {
 // around it. Null when the filter is "All Time".
 export const ActReviewCard = forwardRef(function ActReviewCard({ review, config, periodLabel }, ref) {
   const { styles } = useTheme();
-  const { icon, total, uniqueActs, uniqueVenues, uniqueCities, acts, venues, mostActiveMonth, topGenre } = review;
+  const { icon, total, uniqueActs, uniqueVenues, uniqueCities, acts, venues, newVenues, mostActiveMonth, topGenre } = review;
 
   return (
     <ReviewCardShell ref={ref}>
@@ -107,6 +108,7 @@ export const ActReviewCard = forwardRef(function ActReviewCard({ review, config,
 
       <ActsList acts={acts} actNoun={config.actNoun} />
       <VenuesList venues={venues} />
+      <NewVenuesSection newVenues={newVenues} />
 
       <Text style={styles.yrTagline}>Track your journey at FanStamp</Text>
     </ReviewCardShell>

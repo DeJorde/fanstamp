@@ -1448,6 +1448,15 @@ function buildStyles(c, retroMode) {
       color: retroMode ? c.textMuted : 'rgba(255,255,255,0.65)',
     },
 
+    rvNewVenueCount: {
+      fontSize: 13, fontWeight: '700', marginTop: -2, marginBottom: 2,
+      color: retroMode ? c.accent : '#ff4fa3',
+    },
+    rvNewVenueDate: {
+      fontSize: 11, fontWeight: '600',
+      color: retroMode ? c.textDim : 'rgba(255,255,255,0.6)',
+    },
+
     rvVenueRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
     rvVenueName: {
       fontSize: 14, fontWeight: '600',

@@ -1,6 +1,7 @@
 import { CATEGORY_ICONS } from '../constants';
 import { parseDateStr, formatDisplayDate } from './dates';
 import { hasDate, sortByDateAsc } from './eventDates';
+import { getNewVenues } from './yearInReview';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -8,7 +9,11 @@ const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'
 // need the same shape (total, distinct acts w/ per-appearance detail, venues,
 // cities, most active month, optional genre breakdown), just with different
 // nouns for what an "act" is (see components/ActReviewCard's ACT_REVIEW_CONFIG).
-export function computeActReview(events, category) {
+// `events` is whatever period this review covers (already scoped by the
+// caller to the active FilterBar window); `allEvents` is the user's untouched
+// full history, needed only for the "new venues" section, and defaults to
+// `events` for callers that don't distinguish the two.
+export function computeActReview(events, category, allEvents = events) {
   const catEvents = events.filter((e) => e.category === category);
   const total = catEvents.length;
 
@@ -63,11 +68,13 @@ export function computeActReview(events, category) {
   const topGenreEntry = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0];
   const topGenre = topGenreEntry ? { name: topGenreEntry[0], count: topGenreEntry[1] } : null;
 
+  const newVenues = getNewVenues(allEvents, catEvents);
+
   return {
     category,
     icon: CATEGORY_ICONS[category] ?? '📌',
     total, uniqueActs, uniqueVenues, uniqueCities,
-    acts, venues,
+    acts, venues, newVenues,
     mostActiveMonth, topGenre,
   };
 }

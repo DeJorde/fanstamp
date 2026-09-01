@@ -1,6 +1,6 @@
 import { CATEGORY_ICONS, CATEGORY_GROUP_MAP } from '../constants';
-import { parseDateStr } from './dates';
-import { hasDate } from './eventDates';
+import { parseDateStr, formatDisplayDate } from './dates';
+import { hasDate, sortByDateAsc } from './eventDates';
 import { computeBadges } from './badges';
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -13,6 +13,39 @@ const UNIT_NOUN_BY_GROUP = { stadium: 'game', entertainment: 'show' };
 function unitLabel(category, count) {
   const singular = UNIT_NOUN_BY_GROUP[CATEGORY_GROUP_MAP[category]] || 'event';
   return count === 1 ? singular : `${singular}s`;
+}
+
+// A venue counts as "new" for a review period if the very first time the
+// user ever visited it — across their whole history, any category — falls
+// inside that period, even if they've been back since. `events` is the
+// user's full history (used only to find each venue's true first-ever visit
+// date); `periodEvents` is whatever population this specific review covers
+// (a calendar year for Year in Review, a league+FilterBar window for a
+// Sports Review, a category+FilterBar window for Concert/Comedy, etc.) and
+// determines which venues are even in scope to check. Reused by every
+// review card (see utils/sportsReview.js, utils/actReview.js,
+// utils/allEventsReview.js) rather than duplicated per card type.
+export function getNewVenues(events, periodEvents) {
+  const firstVisitByVenue = new Map();
+  sortByDateAsc(events.filter(hasDate)).forEach((e) => {
+    if (!firstVisitByVenue.has(e.venue)) firstVisitByVenue.set(e.venue, e);
+  });
+
+  const periodIds = new Set(periodEvents.map((e) => e.id));
+  const periodVenues = new Set(periodEvents.map((e) => e.venue));
+
+  const venues = Array.from(periodVenues)
+    .map((venue) => firstVisitByVenue.get(venue))
+    .filter((e) => e && periodIds.has(e.id))
+    .map((e) => ({
+      name: e.venue,
+      city: e.location && e.location !== '—' ? e.location : '',
+      firstVisitDate: e.date,
+      firstVisitDateDisplay: formatDisplayDate(e.date),
+    }))
+    .sort((a, b) => parseDateStr(a.firstVisitDate) - parseDateStr(b.firstVisitDate));
+
+  return { count: venues.length, venues };
 }
 
 export function getAvailableYears(events) {
@@ -71,10 +104,13 @@ export function computeYearInReview(events, year) {
     (b) => b.unlocked && b.unlockDate && parseDateStr(b.unlockDate).getFullYear() === year
   );
 
+  const newVenues = getNewVenues(events, yearEvents);
+
   return {
     year, totalEvents, uniqueVenues, uniqueCities,
     topCategory, categoryBreakdown,
     monthlyBreakdown, maxMonthCount,
     milestonesUnlocked,
+    newVenues,
   };
 }

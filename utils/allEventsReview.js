@@ -2,6 +2,7 @@ import { CATEGORY_ICONS, CATEGORY_GROUPS, CATEGORY_GROUP_MAP, GROUP_COLORS } fro
 import { parseDateStr } from './dates';
 import { hasDate } from './eventDates';
 import { computeStatesVisited } from './statesVisited';
+import { getNewVenues } from './yearInReview';
 
 // Same noun convention as utils/yearInReview.js's CategoryBreakdown rows —
 // duplicated rather than imported since yearInReview.js keeps it private.
@@ -13,8 +14,12 @@ function unitLabel(category, count) {
 
 // Master review across every category and every year — the "combine
 // everything" review, as opposed to Year in Review (one calendar year) or
-// the per-category reviews (one league/category, all time).
-export function computeAllEventsReview(events) {
+// the per-category reviews (one league/category, all time). `events` is
+// whatever period this review covers (already scoped by the caller to the
+// active FilterBar window); `allEvents` is the user's untouched full
+// history, needed only for the "new venues" section, and defaults to
+// `events` for callers that don't distinguish the two.
+export function computeAllEventsReview(events, allEvents = events) {
   const totalEvents = events.length;
   const uniqueVenues = new Set(events.map((e) => e.venue)).size;
   const uniqueCities = new Set(
@@ -54,9 +59,11 @@ export function computeAllEventsReview(events) {
     .map((g) => ({ key: g.key, label: g.label, count: groupCounts[g.key] || 0, color: GROUP_COLORS[g.key] }))
     .filter((g) => g.count > 0);
 
+  const newVenues = getNewVenues(allEvents, events);
+
   return {
     totalEvents, uniqueVenues, uniqueCities, statesVisited, yearsActive,
     topCategory, categoryBreakdown, groupBreakdown,
-    timeline, maxYearCount,
+    timeline, maxYearCount, newVenues,
   };
 }
