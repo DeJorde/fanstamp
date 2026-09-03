@@ -1488,6 +1488,50 @@ function buildStyles(c, retroMode) {
       fontSize: 12, fontWeight: '700', minWidth: 18, textAlign: 'right',
       color: retroMode ? c.text : '#ffffff',
     },
+
+    // ── Friends tab — activity feed, search, friend profile, follow UI ───────────
+    friendsSectionRow: { flexDirection: 'row', gap: 8, padding: 16, paddingBottom: 8 },
+
+    feedFriendName: { fontSize: 13, fontWeight: '700', color: c.accent },
+    feedEventName:  { fontSize: 16, fontWeight: '700', color: c.text, marginTop: 4 },
+    feedVenue:      { fontSize: 13, color: c.textSecondary, marginTop: 2 },
+    feedDate:       { fontSize: 12, color: c.textMuted, marginTop: 4, fontWeight: '500' },
+
+    friendResultRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      backgroundColor: c.bg2, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border, padding: 12,
+    },
+    friendResultAvatar: {
+      width: 44, height: 44, borderRadius: 22,
+      backgroundColor: c.accentBgSoft, borderWidth: 1, borderColor: c.accent,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    friendResultAvatarText: { fontSize: 17, fontWeight: '800', color: c.accent },
+    friendResultBody:  { flex: 1, gap: 2 },
+    friendResultName:  { fontSize: 15, fontWeight: '700', color: c.text },
+    friendResultStats: { fontSize: 12, color: c.textMuted, fontWeight: '500' },
+
+    followBtn: {
+      borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8,
+      backgroundColor: c.accent, borderWidth: 1, borderColor: c.accent,
+    },
+    followBtnActive: { backgroundColor: c.bg2, borderColor: c.border },
+    followBtnText:       { fontSize: 13, fontWeight: '700', color: '#ffffff' },
+    followBtnTextActive: { color: c.textMuted },
+
+    friendProfileHeader:    { alignItems: 'center', gap: 8, paddingBottom: 20 },
+    friendProfileName:      { fontSize: 20, fontWeight: '800', color: c.text, marginTop: 4 },
+    friendProfileJoinDate:  { fontSize: 13, color: c.textDim, fontWeight: '500' },
+    friendProfileCountsRow: { flexDirection: 'row', gap: 20, marginVertical: 8 },
+    friendProfileCount:     { fontSize: 13, color: c.textMuted, fontWeight: '500' },
+    friendProfileCountNum:  { fontSize: 15, fontWeight: '800', color: c.text },
+
+    profileSectionLabel: {
+      fontSize: 12, fontWeight: '700', color: c.textDim,
+      textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10,
+    },
+    privacyRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   };
 }
 

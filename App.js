@@ -15,10 +15,12 @@ import {
   subscribeToUserData, ensureMigrated, syncEventsToFirestore,
   syncBucketListToFirestore, setUserFields,
 } from './utils/firestoreSync';
+import { ensureProfileDoc, syncProfileStats } from './utils/socialSync';
 import { EventsScreen } from './screens/EventsScreen';
 import { MapScreen } from './screens/MapScreen';
 import { StatsScreen } from './screens/StatsScreen';
 import { LeaguesScreen } from './screens/LeaguesScreen';
+import { FriendsScreen } from './screens/FriendsScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { EventFormModal } from './components/EventFormModal';
 import { DetailScreen } from './components/DetailScreen';
@@ -26,6 +28,7 @@ import { LeagueDetailScreen } from './components/LeagueDetailScreen';
 import { TeamGameLogScreen } from './components/TeamGameLogScreen';
 import { BoxScoreScreen } from './components/BoxScoreScreen';
 import { CumulativeTeamStatsScreen } from './components/CumulativeTeamStatsScreen';
+import { FriendProfileScreen } from './components/FriendProfileScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { ProfileModal } from './components/ProfileModal';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -50,6 +53,7 @@ const TABS = [
   { key: 'map',     label: 'Map',     icon: '🗺' },
   { key: 'stats',   label: 'Stats',   icon: '📊' },
   { key: 'leagues', label: 'Leagues', icon: '🏆' },
+  { key: 'friends', label: 'Friends', icon: '👥' },
 ];
 
 export default function App() {
@@ -72,6 +76,7 @@ function AppContent() {
   const [hasLoaded, setHasLoaded]     = useState(false);
   const [detailEvent, setDetailEvent]   = useState(null);
   const [selectedLeague, setSelectedLeague] = useState(null);
+  const [selectedFriendUid, setSelectedFriendUid] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [boxScoreEvent, setBoxScoreEvent] = useState(null);
   const [showFullTeamStats, setShowFullTeamStats] = useState(false);
@@ -166,6 +171,7 @@ function AppContent() {
       .catch((err) => console.log('[FanStamp] cloud migration failed:', err))
       .finally(() => {
         if (cancelled) return;
+        ensureProfileDoc(user.uid, user, events).catch((err) => console.log('[FanStamp] profile init failed:', err));
         unsubscribe = subscribeToUserData(user.uid, {
           onEvents: setEvents,
           onBucketList: setBucketList,
@@ -193,6 +199,7 @@ function AppContent() {
     if (!hasLoaded || !user) return;
     const t = setTimeout(() => {
       syncEventsToFirestore(user.uid, events, lastSyncedEventsRef)
+        .then(() => syncProfileStats(user.uid, user, events))
         .catch((err) => console.log('[FanStamp] event sync failed:', err));
     }, 1200);
     return () => clearTimeout(t);
@@ -334,7 +341,8 @@ function AppContent() {
   const inTeamDetail   = selectedTeam !== null && activeTab === 'stats';
   const inBoxScore     = boxScoreEvent !== null && inTeamDetail;
   const inFullTeamStats = showFullTeamStats && inTeamDetail;
-  const inDetail = inEventDetail || inLeagueDetail || inTeamDetail;
+  const inFriendDetail = selectedFriendUid !== null && activeTab === 'friends';
+  const inDetail = inEventDetail || inLeagueDetail || inTeamDetail || inFriendDetail;
   const formInitialValues = formConfig.editingId && detailEvent
     ? eventToForm(detailEvent)
     : formPrefill
@@ -350,11 +358,13 @@ function AppContent() {
     else if (inEventDetail)       setDetailEvent(null);
     else if (inLeagueDetail)      setSelectedLeague(null);
     else if (inTeamDetail)        setSelectedTeam(null);
+    else if (inFriendDetail)      setSelectedFriendUid(null);
   }
 
   const backLabel = inLeagueDetail ? 'Leagues'
     : (inBoxScore || inFullTeamStats) ? selectedTeam.team
-    : inTeamDetail ? 'Stats' : 'Events';
+    : inTeamDetail ? 'Stats'
+    : inFriendDetail ? 'Friends' : 'Events';
 
   // Still checking AsyncStorage for the onboarding flag — native splash
   // screen is still showing, so render nothing rather than a content flash.
@@ -441,6 +451,16 @@ function AppContent() {
             ) : (
               <LeaguesScreen events={events} onSelectLeague={setSelectedLeague} />
             )
+          ) : activeTab === 'friends' ? (
+            inFriendDetail ? (
+              <FriendProfileScreen uid={selectedFriendUid} currentUser={user} />
+            ) : (
+              <FriendsScreen
+                user={user}
+                onSelectFriend={setSelectedFriendUid}
+                onRequestSignIn={() => setShowAuthScreen(true)}
+              />
+            )
           ) : inTeamDetail ? (
             inBoxScore ? (
               <BoxScoreScreen event={boxScoreEvent} onRetryStats={retryGameStats} />
@@ -492,7 +512,11 @@ function AppContent() {
         />
 
         <AuthScreen visible={showAuthScreen} onClose={() => setShowAuthScreen(false)} />
-        <ProfileModal visible={showProfile} onClose={() => setShowProfile(false)} />
+        <ProfileModal
+          visible={showProfile}
+          onClose={() => setShowProfile(false)}
+          onOpenFriend={(uid) => { setShowProfile(false); setActiveTab('friends'); setSelectedFriendUid(uid); }}
+        />
 
         {/* Painted last so they sit on top of the header, screen, and tab
             bar — all transparent now that the single texture layer above
