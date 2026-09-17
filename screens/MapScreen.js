@@ -44,7 +44,10 @@ export function MapScreen({ events }) {
 
   const filtered = useMemo(() => events.filter((e) => matchesFilter(e, filter)), [events, filter]);
 
-  const venueMarkers = useMemo(() => computeVenueMarkers(filtered), [filtered]);
+  // computeVenueMarkers always returns Object.values(...), which is already
+  // guaranteed array — the `?? []` is a defensive backstop so a future change
+  // to that function can never hand the map view an undefined marker list.
+  const venueMarkers = useMemo(() => computeVenueMarkers(filtered) ?? [], [filtered]);
 
   const initialRegion = useMemo(() => computeRegion(venueMarkers), [venueMarkers]);
 
@@ -55,18 +58,28 @@ export function MapScreen({ events }) {
   // the camera never moves to show it, so it can render entirely off-screen
   // and look like it "didn't appear." Explicitly animate to the new region
   // whenever a marker is added.
+  //
+  // This must only fire for a venue that's genuinely new to the CURRENT
+  // filter — not merely whenever the marker count goes up. Tracking count
+  // alone (the previous approach) also fired when switching to a broader
+  // filter chip (e.g. "This Month" -> "All Time" always increases the
+  // count), which queued an animateToRegion from a narrow bbox to a huge one
+  // on every filter tap. Rapid chip taps stacked overlapping camera
+  // animations, which is a known way to get react-native-maps/Google Maps
+  // SDK to render a blank frame mid-transition on Android — i.e. the map
+  // "disappearing" when toggling filters. Comparing venue keys within the
+  // same filter (not raw counts across any filter change) avoids that.
   const mapRef = useRef(null);
   const mapCaptureRef = useRef(null);
-  const prevMarkerCount = useRef(venueMarkers.length);
+  const prevMarkersRef = useRef({ filter, keys: new Set(venueMarkers.map((m) => m.key)) });
   useEffect(() => {
-    console.log('[MapScreen] venueMarkers changed:', prevMarkerCount.current, '->', venueMarkers.length);
-    if (venueMarkers.length > prevMarkerCount.current && mapRef.current) {
-      const region = computeRegion(venueMarkers);
-      console.log('[MapScreen] new marker detected, animating camera to', region);
-      mapRef.current.animateToRegion(region, 600);
+    const prev = prevMarkersRef.current;
+    const newlyAdded = filter === prev.filter && venueMarkers.some((m) => !prev.keys.has(m.key));
+    if (newlyAdded && mapRef.current) {
+      mapRef.current.animateToRegion(computeRegion(venueMarkers), 600);
     }
-    prevMarkerCount.current = venueMarkers.length;
-  }, [venueMarkers]);
+    prevMarkersRef.current = { filter, keys: new Set(venueMarkers.map((m) => m.key)) };
+  }, [venueMarkers, filter]);
 
   const activeStyle = MAP_STYLES[styleKey];
 
